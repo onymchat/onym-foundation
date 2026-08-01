@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Audit &amp; attestation</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/audit/Audit.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/audit/Audit.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-audit-contract-boundary">Onym Audit Contract Boundary</h1>
@@ -59,7 +59,7 @@ builds, deployments, privacy profiles, conformance claims—and issues signed
 <strong>attestations</strong> other participants may choose to rely on. It gives a
 defined carrier to the audit statements the
 <a href="../WHITEPAPER.html">whitepaper</a> already assumes: notary bundles carry &quot;audit
-and build-provenance statements&quot; (§9.2), directories imply vetting (§15.2),
+and build-provenance statements&quot; (§9.2), Discovery implies vetting (§15.2),
 the roadmap funds audits before promoting paid listings (Phase 3), and the
 current system's own limitation list says no production-grade independent
 audit program has completed (§19).</p>
@@ -73,8 +73,8 @@ whose refusal excludes, and this seat must never hold that power
 (whitepaper §3.7: interoperability is permissionless; endorsement is not).</p>
 <h2 id="1-decision">1. Decision</h2>
 <p>Onym treats the auditor, the audit subject, the sponsor of the engagement,
-directories, and relying parties as independently owned components joined by
-versioned interfaces.</p>
+Discovery providers, and relying parties as independently owned components
+joined by versioned interfaces.</p>
 <ul>
 <li>The <strong>auditor</strong> owns its methodology, staffing, professional judgment,
 liability, and reputation. It sells examinations and signs attestations.
@@ -85,17 +85,17 @@ courier operator, notary provider, registry, bank provider, or SDK
 author. It cooperates with an engagement it accepted; it does not gain a
 veto over honest findings beyond the disclosure terms both parties signed.</li>
 <li>The <strong>engagement sponsor</strong> pays. It may be the subject itself, a
-foundation's commons fund, a directory, or a third party. Who paid is
-part of the attestation.</li>
-<li><strong>Directories</strong> may cite attestations in their inclusion policies. A
-directory citing an attestation adopts a visible input, not a delegated
+foundation's commons fund, a Discovery provider, or a third party. Who paid
+is part of the attestation.</li>
+<li><strong>Discovery providers</strong> may cite attestations in their inclusion policies. A
+provider citing an attestation adopts a visible input, not a delegated
 authority.</li>
 <li>The <strong>relying party</strong>—a user, group, provider, or another institution—
 decides what any attestation is worth, per issuer, per scope, per its own
 stakes.</li>
 </ul>
 <p>One organization may occupy several roles, but the profile does not merge
-their authority: an auditor that also operates a directory discloses that
+their authority: an auditor that also operates Discovery discloses that
 conflict; a foundation that funds an audit does not co-sign its findings.</p>
 <p>The boundary has three interfaces:</p>
 <ol>
@@ -152,7 +152,7 @@ invalidates them; and</li>
 </tr>
 </tbody>
 </table></div><p>It does not approve releases, license participants, rank providers, operate
-directories under this seat, fix the defects it finds, or acquire any
+Discovery catalogs under this seat, fix the defects it finds, or acquire any
 standing over components it was not engaged to examine.</p>
 <h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
 <h3 id="31-trust-claims-need-an-accountable-author">3.1 Trust claims need an accountable author</h3>
@@ -163,11 +163,11 @@ those judgments float unattributed—&quot;audited,&quot; says a README. This se
 forces every such claim into a signed object with a named issuer, an exact
 artifact, a scope, and an expiry, so misplaced trust at least has a return
 address.</p>
-<h3 id="32-directories-need-inputs-not-opinions-of-their-own">3.2 Directories need inputs, not opinions of their own</h3>
-<p>A directory that vets in private becomes an unaccountable quality
-authority. When directories cite attestations, their inclusion policy
+<h3 id="32-discovery-needs-inputs-not-opinions-of-its-own">3.2 Discovery needs inputs, not opinions of its own</h3>
+<p>A Discovery provider that vets in private becomes an unaccountable quality
+authority. When Discovery providers cite attestations, their inclusion policy
 becomes auditable—&quot;we list message couriers with a current
-<code>conformance-run</code> from issuers on this list&quot;—and competing directories can
+<code>conformance-run</code> from issuers on this list&quot;—and competing providers can
 weigh the same attestations differently. Curation stays replaceable
 (§15.2) because its evidence is portable.</p>
 <h3 id="33-attestation-must-not-become-gatekeeping">3.3 Attestation must not become gatekeeping</h3>
@@ -206,7 +206,7 @@ discovering the conflict later.</p>
                                           ┌──────────────────────────┐
                      cite as inputs       │ Attestation              │
 ┌────────────────┐&lt;───────────────────────│ signed · scoped · bound  │
-│ Directories    │                        │ to hashes · expiring ·   │
+│ Discovery      │                        │ to hashes · expiring ·   │
 └────────────────┘                        │ revocable                │
 ┌────────────────┐    verify + match      └──────────────────────────┘
 │ Relying clients│&lt;──────────────────────────────┘
@@ -392,8 +392,9 @@ every unexpired attestation the auditor has issued. Clients enforce epoch
 monotonicity—a status answer carrying a lower epoch than one already seen
 is a rollback and is rejected—and treat a list older than the profile's
 freshness bounds as <em>stale</em>, never as <code>active</code>. Because the list covers all
-of an issuer's attestations at once, a subject, directory, or provider can
-<strong>staple</strong> the latest signed list alongside a component manifest, letting
+of an issuer's attestations at once, a subject, Discovery provider, or the
+component operator can <strong>staple</strong> the latest signed list alongside a component
+manifest, letting
 relying clients verify current status without contacting the auditor at
 selection time. Clients apply these freshness rules before high-stakes
 reliance, exactly as they do for registry records.</p>
@@ -501,7 +502,7 @@ nonconforming curation;</li>
 <li>apply freshness rules before purchase, group-creation, custody, and
 other high-stakes selections;</li>
 <li>let users choose which auditors they credit, as they choose registries
-and directories, without a hardcoded mandatory issuer; and</li>
+and Discovery providers, without a hardcoded mandatory issuer; and</li>
 <li>prefer stapled status lists or full-list retrieval over per-attestation
 queries: a <code>query-status</code> call for one attestation ID tells the auditor
 exactly which component the user is about to rely on, so per-ID queries
@@ -544,8 +545,8 @@ to check—and cooperates per the order.</li>
 <li>The subject may commission re-examination after fixes; it may not demand
 un-issuance of honest results beyond the disclosure terms it signed.</li>
 <li>A sponsor funding audits of components it did not author (a foundation's
-commons program, a directory raising its bar) gains attribution in the
-attestation and nothing else: no findings pre-approval, no verdict
+commons program, a Discovery provider raising its bar) gains attribution in
+the attestation and nothing else: no findings pre-approval, no verdict
 influence, no early exploit access beyond the order's disclosure terms.</li>
 <li><strong>Verdict shopping</strong> — commissioning serial engagements and publishing
 only the favorable one — is constrained, not prevented: conforming
@@ -555,15 +556,16 @@ attestation more by what its issuer's terms would have published had it
 gone badly. The boundary makes selective silence expensive and
 detectable, not impossible.</li>
 </ul>
-<h2 id="10-directories-and-attestations">10. Directories and attestations</h2>
-<p>A directory's inclusion policy may cite attestation requirements. A
+<h2 id="10-discovery-and-attestations">10. Discovery and attestations</h2>
+<p>A Discovery provider's inclusion policy may cite attestation requirements. A
 conforming citation names accepted issuers (or issuer criteria), required
-methodology classes and scopes, and maximum age. The directory remains a
-replaceable curator (whitepaper §15.2): it adopts attestations as visible
-inputs; it neither issues them under this seat nor gains any power to make
-an unattested component invalid. A directory that also operates an audit
-seat, or accepts payment from subjects it lists, discloses those conflicts
-in its own policy.</p>
+methodology classes and scopes, and maximum age. The provider remains a
+replaceable curator under the
+<a href="../discovery/Discovery.html">Discovery contract</a>: it adopts attestations as
+visible inputs; it neither issues them under this seat nor gains any power to
+make an unattested component invalid. A Discovery provider that also operates
+an audit seat, or accepts payment from subjects it lists, discloses those
+conflicts in its own policy.</p>
 <h2 id="11-payment-at-the-audit-boundary">11. Payment at the audit boundary</h2>
 <p>Auditors publish engagement offers as <code>SeatOffer</code>s: fixed-fee reviews,
 per-suite conformance runs, measurement subscriptions, retainer programs.
@@ -649,8 +651,8 @@ co-signing the findings.</p>
        -&gt; expired
 </code></pre>
 <p>Both exits from <code>active</code> besides expiry are the auditor's unilateral acts;
-no subject, sponsor, or directory can revoke or extend an attestation it
-did not sign.</p>
+no subject, sponsor, or Discovery provider can revoke or extend an attestation
+it did not sign.</p>
 <h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
 <ol>
 <li><strong>Attestations bind bytes, not brands.</strong> Exact source revision and
@@ -660,8 +662,8 @@ judged, under what methodology, at whose expense.</li>
 <li><strong>Scope is the whole claim.</strong> What was excluded travels with what was
 examined; a result class never outruns its scope.</li>
 <li><strong>Absence is not failure, and attestation is not permission.</strong> Direct
-use needs no auditor; no client, directory, or auditor can convert this
-seat into licensure.</li>
+use needs no auditor; no client, Discovery provider, or auditor can convert
+this seat into licensure.</li>
 <li><strong>Verdicts are not for sale.</strong> Fees are verdict-independent; sponsors
 are named; conflicts are declared in the attestation itself.</li>
 <li><strong>Opinions expire and can be withdrawn.</strong> Judgment classes carry
@@ -703,7 +705,7 @@ unsolicited-form validation and subject-response display;
 embargoed-report handling;
 sponsor and conflict rendering; absence-vs-fail rendering; and
 issuer-trust filtering.</li>
-<li>A relying client, an auditor, and a directory from three different
+<li>A relying client, an auditor, and a Discovery provider from three different
 authors must interoperate using only published profiles and fixtures.</li>
 </ul>
 <h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>

@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../index.html">← Foundation</a> · <a href="../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Repository guide</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/README.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/README.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-system">Onym System</h1>
@@ -63,9 +63,9 @@ zero-knowledge proofs without storing conversations or a readable member
 list. <strong>Association registries</strong> attach human-readable names as revocable,
 consent-bound claims — the name is never the identity. Around this core, an
 open set of service and institutional seats (banking, charity, audit,
-arbitration, growth, sponsorship, recruitment) can be operated by anyone,
-and each earns only when a user or group actually selects it. The governing
-rule for every seat:</p>
+arbitration, discovery, growth, sponsorship, recruitment) can be operated by
+anyone, and each earns only when a user or group actually selects it. The
+governing rule for every seat:</p>
 <blockquote>
 <p>A component may exercise the minimum authority required for its role, and
 it may earn only when a user or group chooses it for that role.</p>
@@ -81,6 +81,10 @@ it may earn only when a user or group chooses it for that role.</p>
 <tr>
 <td><a href="WHITEPAPER.html">WHITEPAPER.md</a></td>
 <td>The complete system model, design principles, economics, threat model, and roadmap</td>
+</tr>
+<tr>
+<td><a href="interface/Interface.html">interface/</a></td>
+<td>The interface seat: honest presentation, no accounts, protected consent surfaces, disclosed economics, permanent exit</td>
 </tr>
 <tr>
 <td><a href="identity/UI-Identity.html">identity/</a></td>
@@ -99,6 +103,10 @@ it may earn only when a user or group chooses it for that role.</p>
 <td>Group shared-state validation — with the current <a href="notary/UI-Notary-Stellar.html">Stellar/Soroban profile</a></td>
 </tr>
 <tr>
+<td><a href="recovery/Recovery-Trustee.html">recovery/</a></td>
+<td>Recovery Trustee boundary — provider-neutral enrollment, recovery, rotation, and exit, with <a href="recovery/Recovery-Trustee-Cloud.html">cloud-custody</a> and <a href="recovery/Recovery-Trustee-Shamir.html">Shamir</a> profiles</td>
+</tr>
+<tr>
 <td><a href="charity/UI-Charity.html">charity/</a></td>
 <td>Charitable coordination as the first non-messaging application seat (<a href="charity/Charity.html">contract</a>)</td>
 </tr>
@@ -109,6 +117,10 @@ it may earn only when a user or group chooses it for that role.</p>
 <tr>
 <td><a href="arbitration/Arbitration.html">arbitration/</a></td>
 <td>Party-chosen dispute deciders whose authority is bounded to one order's escrowed stake</td>
+</tr>
+<tr>
+<td><a href="discovery/Discovery.html">discovery/</a></td>
+<td>Signed, replaceable catalogs for finding compatible instances of every seat without becoming a gatekeeper</td>
 </tr>
 <tr>
 <td><a href="lead/Lead-Generation.html">lead/</a></td>
@@ -154,7 +166,8 @@ see whitepaper §19–§22.</p>
 <li><strong>Not an investment prospectus.</strong> No token exists or is implied; seats
 earn service revenue, not protocol rent.</li>
 <li><strong>Not a certification authority.</strong> Anyone may implement any seat without
-permission. Directories and audits recommend; they never gate direct use.</li>
+permission. Discovery providers and auditors recommend; they never gate
+direct use.</li>
 </ul>
 <h2 id="related-repositories">Related repositories</h2>
 <div class="tscroll"><table><thead>
@@ -178,7 +191,7 @@ permission. Directories and audits recommend; they never gate direct use.</li>
 </tr>
 <tr>
 <td><a href="https://github.com/onymchat/onym-relayer"><code>onym-relayer</code></a></td>
-<td>Fee-paying transaction relayer and discovery manifests</td>
+<td>Fee-paying transaction relayer and current deployment-manifest endpoints</td>
 </tr>
 <tr>
 <td><a href="https://github.com/onymchat/onym-infra"><code>onym-infra</code></a></td>

@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Message carriage</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/message/UI-Message.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/message/UI-Message.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-ui-message-transport-boundary">Onym UI ↔ Message Transport Boundary</h1>
@@ -253,8 +253,8 @@ frames.</p>
 }
 </code></pre>
 <p>The UI verifies the operator signature, both profiles, endpoint syntax,
-limits, validity, privacy declaration, and selected offer. A directory entry
-or friendly name is insufficient.</p>
+limits, validity, privacy declaration, and selected offer. A Discovery catalog
+entry or friendly name is insufficient.</p>
 <p>Mutable health and load reports remain separate from signed policy. They must
 not replace an operator, endpoint, implementation profile, or offer.</p>
 <h3 id="54-message-route">5.4 Message Route</h3>
@@ -417,7 +417,7 @@ same logical address.</p>
 <p>A conforming frontend and application layer must:</p>
 <ol>
 <li>verify message and implementation profiles plus every selected manifest;</li>
-<li>preserve the user's route across UI, directory, and catalog updates;</li>
+<li>preserve the user's route across UI, Discovery catalog, and offer updates;</li>
 <li>display operator, price, retention, limits, redundancy, and material
 metadata exposure before selection or purchase;</li>
 <li>authenticate and encrypt the inner envelope before invoking transport;</li>

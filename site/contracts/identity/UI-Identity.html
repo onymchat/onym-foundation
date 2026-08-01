@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Identity — not a seat; stays with the person</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/identity/UI-Identity.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/identity/UI-Identity.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-ui-identity-vault-boundary">Onym UI ↔ Identity Vault Boundary</h1>
@@ -153,10 +153,10 @@ the recovery root, one stolen device or one malicious requester compromises a
 declared scope. Rotation and revocation then repair that scope without
 abandoning every relationship the identity has.</p>
 <h3 id="35-it-keeps-names-and-identities-separable">3.5 It keeps names and identities separable</h3>
-<p>Registries, directories, and applications attach meaning to an identity. The
-vault boundary guarantees the reverse never holds: losing a name, a registry,
-or an application does not lose the identity, and no issuer can rotate,
-freeze, or transfer keys it never held.</p>
+<p>Registries, Discovery providers, and applications attach meaning to an
+identity. The vault boundary guarantees the reverse never holds: losing a
+name, a registry, or an application does not lose the identity, and no issuer
+can rotate, freeze, or transfer keys it never held.</p>
 <h2 id="4-logical-topology">4. Logical topology</h2>
 <pre><code class="language-text">┌──────────────────────────────────────────────────────────────────────┐
 │ UI process                                                           │
@@ -671,8 +671,8 @@ identity publishes chosen public facts, never the existence of undisclosed
 keys, addresses, or relationships.</li>
 <li><strong>Grants are narrower than the identity.</strong> Scoped, constrained, expiring,
 individually revocable—and revocation does not require root rotation.</li>
-<li><strong>Names are claims, not control.</strong> No registry, directory, or application
-holds authority over keys by virtue of naming or paying.</li>
+<li><strong>Names are claims, not control.</strong> No registry, Discovery provider, or
+application holds authority over keys by virtue of naming or paying.</li>
 <li><strong>Rotation has declared reach.</strong> Every profile states what a rotation
 repairs, what it re-proves, and what it cannot fix.</li>
 <li><strong>Recovery is a holder ceremony.</strong> No capability requester can trigger,

@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Group verification</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/notary/UI-Notary.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/notary/UI-Notary.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-ui-notary-boundary">Onym UI ↔ Notary Boundary</h1>
@@ -256,7 +256,7 @@ Similar marketing language or shared function names are not compatibility.</p>
 </code></pre>
 <p>The UI verifies the profile, operator signature, backend binding,
 implementation identity, evidence roots, and validity period before offering
-the deployment. A directory entry or friendly name is insufficient.</p>
+the deployment. A Discovery catalog entry or friendly name is insufficient.</p>
 <p>The deployment manifest declares operator powers. If the operator can upgrade
 rules, pause transitions, censor creation, rewrite state, rotate verification
 material, or delete history, those powers must be explicit and reflected in
@@ -658,8 +658,8 @@ authority, and every policy-dependent public value.</li>
 rejected rather than applied to a different revision.</li>
 <li><strong>The submitter is not an oracle.</strong> Its success response is not canonical
 state without independently verified evidence.</li>
-<li><strong>The binding is sticky.</strong> UI, directory, price, default, or endpoint changes
-cannot silently move an existing group.</li>
+<li><strong>The binding is sticky.</strong> UI, Discovery catalog, price, default, or endpoint
+changes cannot silently move an existing group.</li>
 <li><strong>Payment and identity are scoped.</strong> Billing evidence and access keys do not
 reveal global identity, transport topics, or message relationships.</li>
 <li><strong>Errors fail closed.</strong> Decode, evidence, read, consistency, and finality

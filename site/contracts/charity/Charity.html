@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Charitable coordination</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/charity/Charity.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/charity/Charity.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-charity-contract-boundary">Onym Charity Contract Boundary</h1>
@@ -86,8 +86,9 @@ funds under its own legal and operational authority.</li>
 <li>A <strong>notary</strong> records narrow public state and produces verifiable evidence.</li>
 <li>An <strong>auditor or report issuer</strong> makes signed claims about receipts,
 allocation, expenditure, or impact.</li>
-<li>A <strong>directory or association registry</strong> maps human-readable names to signed
-organization records. It is not automatically a credential issuer.</li>
+<li>A <strong>Discovery provider or association registry</strong> helps resolve human-readable
+names to signed organization records under its own policy. Neither is
+automatically a credential issuer.</li>
 </ul>
 <p>Anyone may implement or operate one of these roles and publish an offer. Open
 participation means permissionless authorship and entry, not automatic trust,
@@ -889,7 +890,7 @@ change the meaning of a code or cause the application to sign a new operation.</
 <li>No seed phrase, root secret, or unscoped private key crosses the boundary.</li>
 <li>User authorization covers exact amount, asset, destination, campaign
 revision, quote, expiry, fees, and relevant privacy choice.</li>
-<li>A message, link, QR code, or directory entry can propose an operation but
+<li>A message, link, QR code, or Discovery entry can propose an operation but
 cannot authorize it.</li>
 <li>Organization trust is derived from an explicit issuer policy, not UI brand.</li>
 <li>Campaign changes cannot mutate an already authorized intent.</li>

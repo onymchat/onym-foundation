@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Interface Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Interface Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/interface/Interface.html">
+<meta property="og:title" content="Onym Interface Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/interface/Interface.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/InstrumentSans-Variable.woff2">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow mb12">Interface</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/interface/Interface.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-interface-contract-boundary">Onym Interface Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>The interface is a window, not a gatekeeper. It presents the network and
+the user's choices honestly, holds no accounts, owns no users, and can
+always be replaced without asking anyone.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary for the <strong>interface
+seat</strong>: the applications through which people use the Onym network. A
+conforming interface may be a native mobile app, desktop app, web client,
+command-line tool, accessibility-first interface, institutional console, or
+embedded component.</p>
+<p>The <strong>interface seat</strong> is the same seat that <a href="../WHITEPAPER.html#7-messenger-and-ui-seat">whitepaper
+§7</a> calls the <strong>Messenger and UI
+seat</strong>; it is not an additional role. <code>Interface.md</code> defines that seat's
+user-facing obligations, while the sibling <code>UI-X.md</code> documents define its
+boundaries with particular counterparties.</p>
+<p>The interface is the one seat that is party to every other UI ↔ seat
+boundary — <a href="../identity/UI-Identity.html">identity</a>,
+<a href="../message/UI-Message.html">message</a>, <a href="../blob/UI-Blob.html">blob</a>,
+<a href="../notary/UI-Notary.html">notary</a>, and the service and institutional seats.
+Those documents fix what the interface may ask of each counterparty. This
+document fixes the obligations the interface owes the <strong>user</strong>: honest
+presentation, bounded authority, disclosed economics, and a permanent exit.</p>
+<p>This contract does not require a platform, UI toolkit, distribution channel,
+programming language, update mechanism, or business model. A concrete
+implementation profile must define its supported seat profiles, release
+integrity mechanism, and conformance evidence.</p>
+<p>This is proposed architecture. The current Onym clients implement parts of
+this contract; §18 records the known gaps honestly.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym separates presenting the system from owning the user.</p>
+<ul>
+<li>Anyone may build, distribute, and charge for an interface without
+permission from the Foundation, the protocol authors, or any other seat.</li>
+<li>An interface authenticates nothing about the person except what the
+identity vault proves; it maintains no server-side account of its own as a
+condition of use.</li>
+<li>The user's identity, conversations, groups, funds, names, and service
+selections survive the interface: switching or running several interfaces
+concurrently requires no one's consent and loses no protocol state.</li>
+<li>An interface earns from its own pricing and from disclosed marketplace
+commissions — never from the user's data, attention, or captivity.</li>
+</ul>
+<p>The governing rule of the whitepaper applies with full force: the interface
+may exercise the minimum authority required to present choices and construct
+protocol objects, and it may earn only when a user chooses it.</p>
+<h2 id="2-roles-and-authority">2. Roles and authority</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Role</th>
+<th scope="col">Holds</th>
+<th scope="col">Must never hold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interface publisher</td>
+<td>Source, releases, pricing, its own brand and support channel</td>
+<td>User accounts as a gate, root secrets, a veto over the user's seat selections</td>
+</tr>
+<tr>
+<td>Distribution channel</td>
+<td>Store listing, payment processing for the app itself</td>
+<td>Authority over protocol state or other seats' revenue</td>
+</tr>
+<tr>
+<td>Identity vault</td>
+<td>Root secret and purpose keys (its <a href="../identity/UI-Identity.html">own boundary</a>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>User</td>
+<td>Every selection: interface, couriers, notary, registries, services</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Other seats</td>
+<td>Their own boundaries, invoked by the interface on the user's instruction</td>
+<td>Influence over how the interface renders competitors</td>
+</tr>
+</tbody>
+</table></div><p>One organization may publish an interface and also operate other seats. The
+authorities remain separate: operating a courier gives its interface no right
+to preselect that courier silently, and publishing an interface gives its
+operator no right to read what the courier carries.</p>
+<h2 id="3-what-the-interface-does">3. What the interface does</h2>
+<p>A conforming interface:</p>
+<ol>
+<li>presents identities and qualified claims without conflating them — a
+display name, a registry claim, and a key are three different things and
+are rendered as such;</li>
+<li>keeps secrets behind the identity-vault boundary and invokes typed vault
+capabilities instead of handling raw key material;</li>
+<li>renders the exact transport, notary, registry, service route, and price
+the user selected — what is shown is what will be used;</li>
+<li>constructs and validates protocol objects, and refuses to render invalid
+ones as valid;</li>
+<li>maintains local state encrypted at rest;</li>
+<li>obtains meaningful consent for every signature and payment through
+protected consent surfaces (§7);</li>
+<li>exposes export and migration paths (§10) in the running product, not in a
+support document; and</li>
+<li>warns — plainly, before the action — when a selected component is
+incompatible, unaudited, unavailable, or privacy-degrading relative to the
+user's current selection.</li>
+</ol>
+<h2 id="4-what-the-interface-must-not-do">4. What the interface must not do</h2>
+<ol>
+<li><strong>No account gate.</strong> It must not require registration with the publisher,
+a phone number, an email address, or any publisher-held identifier as a
+condition of using the protocol.</li>
+<li><strong>No silent steering.</strong> It must not redirect, reorder, default, or delay a
+user's service choice to favor a commission, an affiliate, or the
+publisher's own seats. A default must be labeled as a default and be
+replaceable in place.</li>
+<li><strong>No surveillance revenue.</strong> It must not collect, sell, or monetize
+person-level behavioral data. Diagnostics are opt-in, aggregate,
+documented, and off by default.</li>
+<li><strong>No dark patterns on protected surfaces.</strong> Consent, payment, safety
+warnings, recovery, and export surfaces carry no advertising, no
+sponsorship placement, no urgency theater, and no design that makes
+refusal harder than acceptance.</li>
+<li><strong>No retention hostage.</strong> It must not degrade export, migration, or
+concurrent use of another interface, and must not treat leaving as a
+failure mode to be interrupted.</li>
+<li><strong>No invented authority.</strong> It must not claim approval, verification, or
+endorsement it does not have, and must not present a Discovery listing,
+audit attestation, or registry claim as anything stronger than what the
+signed object actually says.</li>
+</ol>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<p>The interface's counterparty objects are defined by the seat boundaries it
+invokes. Two objects are its own:</p>
+<h3 id="51-release-manifest">5.1 Release manifest</h3>
+<p>Every distributed build is described by a signed release manifest:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Field</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>manifestId</code></td>
+<td>Stable unique identifier for this manifest</td>
+</tr>
+<tr>
+<td><code>publisher</code></td>
+<td>Signing identity of the interface publisher</td>
+</tr>
+<tr>
+<td><code>profileVersion</code></td>
+<td>Interface contract and implementation-profile version used by the build</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Human-readable version and monotonic build identifier</td>
+</tr>
+<tr>
+<td><code>artifacts</code></td>
+<td>Content hashes of the distributed binaries or bundles</td>
+</tr>
+<tr>
+<td><code>sourceRef</code></td>
+<td>Source revision the build claims to correspond to, when source is published</td>
+</tr>
+<tr>
+<td><code>profiles</code></td>
+<td>Seat implementation profiles this build supports</td>
+</tr>
+<tr>
+<td><code>channels</code></td>
+<td>Distribution channels this release is published to</td>
+</tr>
+<tr>
+<td><code>issuedAt</code></td>
+<td>Manifest issuance time</td>
+</tr>
+<tr>
+<td><code>supersedes</code></td>
+<td>Prior manifest identifier, or null for the first release</td>
+</tr>
+<tr>
+<td><code>signature</code></td>
+<td>Publisher signature over the canonical manifest</td>
+</tr>
+</tbody>
+</table></div><p>The manifest lets an auditor, a distribution channel, or a cautious user
+bind &quot;the app I run&quot; to &quot;the code that was reviewed&quot;. Where reproducible
+builds are not yet achieved, the manifest must say so rather than imply
+verification that does not exist.</p>
+<p>A release manifest is the publisher's signed claim, not an independent
+assurance result. Exact-artifact review, build-provenance claims, expiry,
+supersession, and revocation are owned by the <a href="../audit/Audit.html">audit
+boundary</a>. An audit attestation references the exact
+manifest and artifact hashes it examined; an interface must never render the
+publisher's manifest alone as an audit.</p>
+<h3 id="52-commission-disclosure">5.2 Commission disclosure</h3>
+<p>When the interface operates a billing channel for other seats, the
+commission is defined by its signed
+<a href="../WHITEPAPER.html#161-channel-offer"><code>ChannelOffer</code></a>, and the interface
+renders it as a line item before consent. There is no undisclosed spread: the
+price the provider offered, the commission, and the total the user pays are
+all visible on the payment surface.</p>
+<h2 id="6-selection-and-presentation">6. Selection and presentation</h2>
+<p>The interface is how competition between seats becomes real:</p>
+<ul>
+<li>every replaceable component — courier, media store, notary, registry,
+bank, discovery provider — is replaceable <em>from the interface</em>, by the
+user, at any time;</li>
+<li>comparison views show the signed facts (price, terms, attestations,
+availability) and never a secretly weighted order;</li>
+<li>Discovery catalogs may be integrated, with the provider and its inclusion
+policy identified, and direct manual entry always available beside them;</li>
+<li>warnings from §3.8 appear at selection time and again at first use, not
+buried in settings.</li>
+</ul>
+<h2 id="7-consent-surfaces">7. Consent surfaces</h2>
+<p>Signatures move funds, change group state, enroll <a href="../recovery/Recovery-Trustee.html">recovery
+trustees</a>, and bind names. The surfaces that
+obtain this consent are <strong>protected</strong>:</p>
+<ol>
+<li>the object being signed is summarized in the user's language, with the
+full canonical object one gesture away;</li>
+<li>the counterparty, the price, the commission, and the irreversibility of
+the action are stated before the confirming gesture;</li>
+<li>nothing on the surface is sponsored, animated toward acceptance, or
+defaulted to the more expensive choice; and</li>
+<li>a declined consent leaves no protocol trace and triggers no retaliation
+in the interface's behavior.</li>
+</ol>
+<p>The <a href="../sponsor/Sponsor.html">sponsorship contract</a> permits recognition only on
+resources in a signed <code>RecognitionInventory</code>, which may include a specifically
+declared acknowledgement area in a foundation-published app. Under this
+interface contract, a protected consent surface is never eligible for that
+inventory: any acknowledgement area must be separate from consent, payment,
+safety, recovery, and export surfaces. No sponsor recognition, sponsored
+placement, or consideration for placement may reach a protected surface.</p>
+<h2 id="8-data-and-privacy-boundary">8. Data and privacy boundary</h2>
+<p>The interface necessarily sees more than any other seat: plaintext after
+decryption, drafts, contact labels, usage rhythm. Therefore:</p>
+<ul>
+<li>local state is encrypted at rest and excluded from cloud backup unless the
+user explicitly includes it;</li>
+<li>plaintext, keys, and social graphs never leave the device except as
+protocol objects the user chose to send;</li>
+<li>crash and performance diagnostics, if offered, are opt-in, stripped of
+message content and identifiers, and documented field by field;</li>
+<li>the interface adds no tracking pixels, third-party analytics SDKs, or
+fingerprinting to any surface, including its web presence inside the app.</li>
+</ul>
+<p>If the publisher also operates a billing broker or support service, it may
+hold the minimum subscription, entitlement, refund/revocation, tax, support,
+and provider-settlement records required for that service. Each
+<code>ChannelOffer</code> or support contract declares the fields and retention period:
+only for the active commercial relationship plus a stated dispute, accounting,
+or legally required retention period, after which records are deleted or
+lawfully anonymized. This state is neither a publisher account required for
+protocol use nor a behavioral record, and it cannot gate direct or free seat
+access.</p>
+<p>What the interface cannot hide: the platform it runs on may observe app
+usage, notifications, and network timing. A conforming interface documents
+this honestly instead of promising privacy it cannot deliver.</p>
+<h2 id="9-economics">9. Economics</h2>
+<p>An interface may earn from:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Source</th>
+<th scope="col">Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App pricing</td>
+<td>Purchase, subscription, or feature tiers for the interface itself</td>
+</tr>
+<tr>
+<td>Marketplace commission</td>
+<td>Disclosed per §5.2, only on channels the user knowingly bills through</td>
+</tr>
+<tr>
+<td>Support and deployment services</td>
+<td>Institutional contracts that grant no protocol privilege</td>
+</tr>
+</tbody>
+</table></div><p>An interface must not earn from selling defaults, ranking, user data,
+attention, or exclusivity. A publisher's other businesses buy no placement
+its competitors cannot have for free.</p>
+<h2 id="10-replaceability-and-exit">10. Replaceability and exit</h2>
+<ol>
+<li>Export produces the user's protocol state — identity material via the
+vault's own ceremony, conversations, group descriptors, selections — in
+documented formats, without fee, delay, or account.</li>
+<li>The same identity may run in several interfaces concurrently; the
+interface must tolerate state it did not author.</li>
+<li>Uninstalling the interface deletes its local state and nothing else. No
+publisher-held account or behavioral record exists to delete. Billing or
+support state described in §8 may remain until its disclosed retention
+period expires; the interface exposes cancellation and any available
+deletion request, and states what must be retained and until when.</li>
+<li>A discontinued interface strands nothing: the publisher's disappearance
+removes support, not access.</li>
+</ol>
+<h2 id="11-distribution-and-build-integrity">11. Distribution and build integrity</h2>
+<ul>
+<li>Releases are signed; the signing identity is published and stable.</li>
+<li>Source-available publication and reproducible builds are the goal; until
+achieved, the release manifest records the gap (§5.1).</li>
+<li>Distribution through app stores follows the
+<a href="../acquisition/Acquisition.html">acquisition</a> boundary's aggregate-only
+measurement: the interface does not tell the publisher who installed it.</li>
+<li>An update must not silently change the user's selections, weaken a privacy
+default, or re-ask a consent the user already refused, without presenting
+the change as a change.</li>
+</ul>
+<h2 id="12-common-contract-surface">12. Common contract surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inspectRelease</code></td>
+<td>Distributed artifact</td>
+<td>Validated publisher manifest, exact-artifact audit attestations, or explicit absence</td>
+</tr>
+<tr>
+<td><code>listComponents</code></td>
+<td>Seat type and optional discovery catalogs</td>
+<td>Signed candidates plus a direct-entry path</td>
+</tr>
+<tr>
+<td><code>selectComponent</code></td>
+<td>User choice and implementation profile</td>
+<td>Persisted local selection or typed incompatibility</td>
+</tr>
+<tr>
+<td><code>prepareAction</code></td>
+<td>User intent and selected profiles</td>
+<td>Canonical unsigned protocol object and validation result</td>
+</tr>
+<tr>
+<td><code>requestConsent</code></td>
+<td>Canonical object, effects, price, and counterparty</td>
+<td>Decline, or one bounded authorization for that exact action</td>
+</tr>
+<tr>
+<td><code>invokeComponent</code></td>
+<td>Selected component and authorized object</td>
+<td>Unmodified typed counterparty result; never a silent substitute</td>
+</tr>
+<tr>
+<td><code>quoteChannelOffer</code></td>
+<td><code>SeatOffer</code> and signed <code>ChannelOffer</code></td>
+<td>Provider price, commission, total, and retention terms</td>
+</tr>
+<tr>
+<td><code>exportState</code></td>
+<td>Holder ceremony and export scope</td>
+<td>Documented portable protocol and local state</td>
+</tr>
+<tr>
+<td><code>importState</code></td>
+<td>Documented portable state</td>
+<td>Validated local reconstruction without an ownership change</td>
+</tr>
+<tr>
+<td><code>eraseLocalState</code></td>
+<td>Holder confirmation</td>
+<td>Local deletion result plus any separate billing/support retention notice</td>
+</tr>
+</tbody>
+</table></div><p>These operations are local unless they explicitly invoke a selected seat or
+billing broker. There is no operation for <code>createPublisherAccount</code>,
+<code>silentlySubstitute</code>, <code>autoPay</code>, <code>sellBehavior</code>, or <code>blockExport</code>.</p>
+<h2 id="13-error-semantics">13. Error semantics</h2>
+<p>The interface normalizes its own and counterparty failures to stable,
+technology-neutral codes while preserving any signed or profile-specific
+detail. Concrete profiles may map transport statuses such as HTTP <code>402</code> to
+these codes; the abstract interface uses <code>payment_required</code>.</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Responsible party</th>
+<th scope="col">Required remedy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>counterparty_unavailable</code></td>
+<td>Selected seat or network</td>
+<td>Preserve the real pending/failed outcome; offer retry or a user-chosen route change</td>
+</tr>
+<tr>
+<td><code>counterparty_rejected</code></td>
+<td>Selected seat</td>
+<td>Render its typed reason and authoritative state; do not blame or rewrite it</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>Provider and selected billing channel</td>
+<td>Show the <code>ChannelOffer</code> price, payee, commission, and total; require fresh consent before retry</td>
+</tr>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Interface or selected seat</td>
+<td>Refuse with both version facts and the compatible choices</td>
+</tr>
+<tr>
+<td><code>vault_refused</code></td>
+<td>Identity vault or holder policy</td>
+<td>Render the refusal and constraint; never re-ask in a loop</td>
+</tr>
+<tr>
+<td><code>manifest_invalid</code></td>
+<td>Interface publisher or distribution channel</td>
+<td>Do not treat the release as verified or claim conformance</td>
+</tr>
+<tr>
+<td><code>artifact_mismatch</code></td>
+<td>Publisher, distribution channel, or auditor claim</td>
+<td>Treat the manifest or attestation as inapplicable to the running artifact</td>
+</tr>
+<tr>
+<td><code>consent_denied</code></td>
+<td>User</td>
+<td>Stop without a signature, payment, protocol trace, or retaliation</td>
+</tr>
+<tr>
+<td><code>selection_unavailable</code></td>
+<td>Interface</td>
+<td>Preserve the user's selection; never substitute the publisher's choice</td>
+</tr>
+<tr>
+<td><code>export_unavailable</code></td>
+<td>Interface publisher</td>
+<td>Preserve state, show the failure, and repair export before claiming conformance</td>
+</tr>
+</tbody>
+</table></div><p>An interface must not fabricate success, retry a signature without fresh
+consent, or blame a competitor's seat without evidence it renders.</p>
+<h2 id="14-threat-model">14. Threat model</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Threat</th>
+<th scope="col">Control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Malicious interface steals secrets</td>
+<td>Vault boundary, hardware-backed keys, signed releases, source publication, independent distributions</td>
+</tr>
+<tr>
+<td>Interface lies about signing intent</td>
+<td>Protected consent surfaces, canonical object inspection, conformance fixtures</td>
+</tr>
+<tr>
+<td>Commission steering</td>
+<td>Disclosure line items, labeled and replaceable defaults, §4.2 prohibition</td>
+</tr>
+<tr>
+<td>Surveillance monetization</td>
+<td>§4.3 prohibition, opt-in aggregate diagnostics, no third-party analytics</td>
+</tr>
+<tr>
+<td>Update attack</td>
+<td>Signed releases, release manifests, change-presentation duty (§11)</td>
+</tr>
+<tr>
+<td>Lock-in by friction</td>
+<td>Export/exit obligations (§10), concurrent-interface tolerance</td>
+</tr>
+<tr>
+<td>Fake endorsement</td>
+<td>§4.6 — signed objects rendered no stronger than they are</td>
+</tr>
+</tbody>
+</table></div><p>No contract makes a compromised device or a hostile publisher harmless.
+Open source, reproducible builds, independent audits, and the ability to
+walk away remain the real controls; this boundary exists so that walking
+away is always possible.</p>
+<h2 id="15-obligations">15. Obligations</h2>
+<h3 id="151-interface-publisher">15.1 Interface publisher</h3>
+<ol>
+<li>Honor every UI ↔ seat boundary this interface invokes.</li>
+<li>Publish signed release manifests for every distributed build.</li>
+<li>Keep protected surfaces free of any third-party or self-interested
+influence.</li>
+<li>Disclose all revenue mechanics of §9 in the product, before they bind.</li>
+<li>Ship export, migration, and warning surfaces as working features.</li>
+</ol>
+<h3 id="152-distribution-channel">15.2 Distribution channel</h3>
+<ol>
+<li>Carries the app under its own store contract; gains no authority over
+protocol state, seat selection, or other seats' revenue.</li>
+<li>Measured only in aggregates, per the acquisition boundary.</li>
+</ol>
+<h3 id="153-user-facing-claims">15.3 User-facing claims</h3>
+<p>Marketing may claim conformance only for the profiles listed in the release
+manifest, and must repeat the unaudited/alpha status honestly while it is
+true.</p>
+<h2 id="16-security-privacy-and-economic-invariants">16. Security, privacy, and economic invariants</h2>
+<ul>
+<li><strong>I1.</strong> No publisher-held account is required to use the protocol.</li>
+<li><strong>I2.</strong> Secrets stay behind the vault boundary; the interface handles
+capabilities, not keys.</li>
+<li><strong>I3.</strong> What is rendered as selected is what is used; what is rendered as
+a price is what is charged.</li>
+<li><strong>I4.</strong> Protected surfaces carry no sponsorship, placement, or steering —
+at any price.</li>
+<li><strong>I5.</strong> Person-level behavioral data is neither collected by default nor
+ever sold.</li>
+<li><strong>I6.</strong> Export and concurrent use of competing interfaces are permanent
+capabilities, not negotiable features.</li>
+<li><strong>I7.</strong> The interface earns only when chosen: app pricing and disclosed
+commissions, nothing structural.</li>
+</ul>
+<h2 id="17-versioning-and-conformance">17. Versioning and conformance</h2>
+<p>This boundary versions as <code>onym:interface:v1</code>. An implementation profile
+declares the seat profiles it supports, its release-integrity mechanism, and
+its conformance evidence. Conformance fixtures for consent surfaces, export,
+and error rendering are open work (whitepaper §21); until they exist,
+claims of conformance are self-assessed and must say so.</p>
+<h2 id="18-known-gaps">18. Known gaps</h2>
+<p>The current Onym iOS and Android clients, honestly measured against this
+contract:</p>
+<ul>
+<li>release manifests and reproducible builds are not yet implemented;</li>
+<li>export exists for identity material via the vault ceremony, but full
+conversation/state export formats are undocumented;</li>
+<li>conformance fixtures for protected surfaces do not yet exist;</li>
+<li>diagnostics are absent (which conforms), but so is the documented
+opt-in mechanism this contract expects;</li>
+<li>no independent <a href="../audit/Audit.html">audit</a> attestation of any client has
+occurred.</li>
+</ul>
+<h2 id="19-acceptance-criteria">19. Acceptance criteria</h2>
+<p>An interface conforms when:</p>
+<ol>
+<li>it passes the boundary contracts of every seat profile it declares;</li>
+<li>a reviewer can bind a distributed artifact to a signed release manifest;</li>
+<li>protected surfaces satisfy §7 under the conformance fixtures, once they
+exist, and under manual review until then;</li>
+<li>export and concurrent-use behaviors of §10 are demonstrable; and</li>
+<li>its pricing and commission disclosures match what users are actually
+charged.</li>
+</ol>
+<h2 id="20-justification-in-one-sentence">20. Justification in one sentence</h2>
+<p>The interface sees the most and must therefore own the least: a window with
+published prices, protected consent, and a door that always opens outward.</p>
+<h2 id="references">References</h2>
+<ol>
+<li>Onym system whitepaper, §7, §16–§17, and §21:
+<a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
+<li>Onym identity-vault boundary:
+<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a></li>
+<li>Onym message and blob boundaries:
+<a href="../message/UI-Message.html">../message/UI-Message.md</a> and
+<a href="../blob/UI-Blob.html">../blob/UI-Blob.md</a></li>
+<li>Onym notary boundary:
+<a href="../notary/UI-Notary.html">../notary/UI-Notary.md</a></li>
+<li>Onym Recovery Trustee boundary:
+<a href="../recovery/Recovery-Trustee.html">../recovery/Recovery-Trustee.md</a></li>
+<li>Onym audit boundary for exact-artifact attestations and build provenance:
+<a href="../audit/Audit.html">../audit/Audit.md</a></li>
+<li>Onym acquisition boundary for aggregate-only distribution measurement:
+<a href="../acquisition/Acquisition.html">../acquisition/Acquisition.md</a></li>
+<li>Onym sponsor boundary for bounded recognition:
+<a href="../sponsor/Sponsor.html">../sponsor/Sponsor.md</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/interface/Interface.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

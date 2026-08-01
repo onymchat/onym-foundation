@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Recovery trustee</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/recovery/Recovery-Trustee.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/recovery/Recovery-Trustee.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-recovery-trustee-seat">Onym Recovery Trustee Seat</h1>
@@ -86,7 +86,7 @@ It need not be trusted with plaintext recovery material.</li>
 trustees to recover to that device.</li>
 <li>An <strong>implementation-profile author</strong> defines how artifacts and trustee
 contributions are protected and combined.</li>
-<li>A <strong>directory or UI publisher</strong> may recommend providers under its own
+<li>A <strong>Discovery provider or UI publisher</strong> may recommend providers under its own
 policy, but cannot make direct use of a compatible trustee invalid.</li>
 </ul>
 <p>One party may occupy several roles, but their authority remains explicit. A
@@ -261,7 +261,7 @@ can recover, deny recovery, or destroy availability. “Encrypted” and
 }
 </code></pre>
 <p><code>trustDomain</code> is a provider assertion used to help users avoid accidental
-concentration; it is not proof of independence. A directory may verify
+concentration; it is not proof of independence. A Discovery provider may verify
 corporate control, infrastructure, audits, insurance, jurisdiction, or
 incident history under a separately published listing policy.</p>
 <h3 id="54-recovery-policy">5.4 Recovery Policy</h3>
@@ -340,7 +340,7 @@ service enrollment; possession of its published encryption key alone cannot
 create an accepted record. It treats <code>policyDigest</code> as an opaque binding
 because it cannot recompute the private full-policy digest. The holder and
 recovering vault verify the full policy and require every contribution to bind
-the same digest. A directory, coordinator, or trustee receives no other
+the same digest. A Discovery provider, coordinator, or trustee receives no other
 trustee entry merely to validate one slot.</p>
 <p>The healthy vault authorizes each enrollment slot with a distinct trustee-
 scoped key recorded in the private policy. Separate trustees therefore do not
@@ -749,8 +749,8 @@ They must not be placed on a public notary or blockchain by default.</p>
 <p>Trustee-specific pseudonymous keys and opaque slot identifiers should be used
 so separate providers cannot trivially join the holder's other seat activity.
 Payment credentials must not be placed in recovery artifacts or identity
-descriptors. A directory or billing broker does not receive candidate factors
-or recovery contributions.</p>
+descriptors. A Discovery provider or billing broker does not receive candidate
+factors or recovery contributions.</p>
 <h2 id="11-security-invariants-and-threats">11. Security invariants and threats</h2>
 <div class="tscroll"><table><thead>
 <tr>
@@ -816,8 +816,8 @@ or recovery contributions.</p>
 before it is protected or after it is reconstructed. Endpoint integrity remains
 decisive.</p>
 <h2 id="12-offers-payment-and-open-participation">12. Offers, payment, and open participation</h2>
-<p>Anyone may offer a trustee seat directly or through competing directories. A
-<code>SeatOffer</code> may charge:</p>
+<p>Anyone may offer a trustee seat directly or through competing Discovery
+providers. A <code>SeatOffer</code> may charge:</p>
 <ul>
 <li>once per enrollment or rotation;</li>
 <li>periodically for custody and availability;</li>
@@ -835,7 +835,8 @@ audited operations; or</li>
 <li>export and migration rights;</li>
 <li>retention and deletion schedule;</li>
 <li>operator jurisdiction and complaint path; and</li>
-<li>any UI publisher, billing broker, directory, or other disclosed split.</li>
+<li>any UI publisher, billing broker, Discovery provider, or other disclosed
+split.</li>
 </ul>
 <p>Each provider receives only its selected offer revenue after disclosed channel
 fees, taxes, refunds, and agreed splits. It acquires no claim on future UI,
@@ -843,9 +844,10 @@ transport, bank, charity, notary, or identity revenue. A trustee may not sell
 or transfer its enrolled role to a new operator without the holder-authorized
 rotation required by the policy.</p>
 <p>Open participation means permissionless compatibility, not automatic trust.
-A UI or directory may require audits, legal identity, insurance, hardware
-controls, uptime, incident response, or conformance tests before recommending
-a provider. A holder remains free to import a compatible manifest directly.</p>
+A UI or Discovery provider may require audits, legal identity, insurance,
+hardware controls, uptime, incident response, or conformance tests before
+recommending a provider. A holder remains free to import a compatible manifest
+directly.</p>
 <h2 id="13-portability-and-replacement">13. Portability and replacement</h2>
 <p>Replaceability depends on custody class:</p>
 <ul>

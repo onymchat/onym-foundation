@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/recovery/Recovery-Trustee-Cloud.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/recovery/Recovery-Trustee-Cloud.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-recovery-trustee-cloud-custody-implementation">Onym Recovery Trustee: Cloud Custody Implementation</h1>
@@ -459,9 +459,9 @@ maintenance, not holder recovery rotation.</p>
 fresh destination key with the active identity and satisfies the offer's
 declared export factors. The provider rewraps <code>RUK</code> to that destination and
 returns the protected artifact and receipts.</p>
-<p>The provider is technically capable of refusing export. The UI and directory
-must retain this fact in the provider's risk description even when contracts
-promise portability.</p>
+<p>The provider is technically capable of refusing export. The UI and Discovery
+provider must retain this fact in the provider's risk description even when
+contracts promise portability.</p>
 <h3 id="93-service-lapse">9.3 Service lapse</h3>
 <p>The seat offer specifies:</p>
 <ul>
@@ -518,7 +518,7 @@ account reference is sufficient;</li>
 notifications;</li>
 <li>use recovery events to enrich advertising, credit, social, or identity
 profiles;</li>
-<li>disclose enrollment existence to directories or other seats; or</li>
+<li>disclose enrollment existence to Discovery providers or other seats; or</li>
 <li>join this seat's scoped identity to messages, names, banking addresses, or
 charity activity without separate holder action and a lawful purpose.</li>
 </ul>
@@ -535,7 +535,7 @@ funded custody, paid recovery, or capped hybrid. The signed offer names:</p>
 <li>grace and deletion rules;</li>
 <li>refunds and service credits;</li>
 <li>billing channel and taxes; and</li>
-<li>disclosed UI, directory, broker, or contributor splits.</li>
+<li>disclosed UI, Discovery provider, broker, or contributor splits.</li>
 </ul>
 <p>Payment success changes entitlement state; it does not release <code>RUK</code>. The
 billing broker cannot call the release path and the recovery service does not

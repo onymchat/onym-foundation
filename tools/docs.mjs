@@ -6,7 +6,7 @@
 export const REPO = 'onymchat/onym-system';
 
 export const REFS = {
-  main: '16e5bad66202e52fde4d7529f4d2854414ed6a2d',
+  main: '00000000ed8164ae7efef4f20c114cb3a22bf813',
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
@@ -16,6 +16,7 @@ export const REFS = {
 export const DOCS = {
   'README.md':                          { ref: 'main', seat: 'Repository guide' },
   'WHITEPAPER.md':                      { ref: 'main', seat: 'The system model' },
+  'interface/Interface.md':             { ref: 'main', seat: 'Interface' },
   'identity/UI-Identity.md':            { ref: 'main', seat: 'Identity — not a seat; stays with the person' },
   'identity/UI-Identity-BIP39.md':      { ref: 'main' },
   'message/UI-Message.md':              { ref: 'main', seat: 'Message carriage' },
@@ -26,7 +27,7 @@ export const DOCS = {
   'notary/UI-Notary-Stellar.md':        { ref: 'main' },
   'audit/Audit.md':                     { ref: 'main', seat: 'Audit & attestation' },
   'arbitration/Arbitration.md':         { ref: 'main', seat: 'Arbitration' },
-  'discovery/Discovery.md':             { ref: 'discovery-seat', seat: 'Discovery', review: true },
+  'discovery/Discovery.md':             { ref: 'main', seat: 'Discovery' },
   'charity/Charity.md':                 { ref: 'main', seat: 'Charitable coordination' },
   'charity/UI-Charity.md':              { ref: 'main' },
   'lead/Lead-Generation.md':            { ref: 'main', seat: 'Distribution (lead generation)' },
