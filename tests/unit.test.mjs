@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { parseFrontmatter, headingId, resolveMdHref, DOCS, REFS } from '../tools/docs.mjs';
 import { renderDoc } from '../tools/build-contracts.mjs';
 
@@ -81,6 +83,32 @@ test('render: column alignment becomes classes, never inline styles', () => {
   assert.match(html, /<th[^>]*class="ta-r"/);
   assert.match(html, /<td class="ta-c">/);
   assert.match(html, /<td class="ta-l">/);
+});
+
+test('policy: the retired 4% endowment rule cannot reappear', () => {
+  const files = [];
+  for (const dir of ['pages', 'site']) {
+    for (const f of fs.readdirSync(dir)) {
+      if (f.endsWith('.html')) files.push(path.join(dir, f)); // site/contracts/ is upstream-pinned and excluded
+    }
+  }
+  // statements of the old rule are banned; a historical mention of the
+  // superseded "4%-draft" in the upstream profile note is allowed
+  const banned = [/capped at 4%/i, /4% of trailing/i, /the 4% rule/i, /(^|[^-])>4%</];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    for (const re of banned) {
+      assert.ok(!re.test(html), `${f}: retired 4% rule language matched ${re}`);
+    }
+  }
+  // and the adopted wording must be present where the policy lives
+  const gov = fs.readFileSync('site/governance.html', 'utf8');
+  assert.ok(gov.includes('target 5% of its average value measured at the previous twelve quarter-ends'),
+    'governance page must state the 5% distribution target');
+  assert.ok(gov.includes('two-thirds vote of disinterested directors'),
+    'governance page must state the 7% exceptional-distribution rule');
+  assert.ok(gov.includes('may not occur in more than two consecutive financial years'),
+    'governance page must state the consecutive-years limit');
 });
 
 test('manifest: every doc ref has a pinned SHA', () => {
