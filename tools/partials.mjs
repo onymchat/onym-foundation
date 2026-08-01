@@ -49,6 +49,7 @@ export function nav({ up, current }) {
       <a href="${up}seats.html"${cur('seats')}>Seats</a>
       <a href="${up}governance.html"${cur('governance')}>Governance</a>
       <a href="${up}transparency.html"${cur('transparency')}>Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
       <a class="pill accent" href="${up}sponsors.html"${cur('sponsors')}>Become a founding sponsor</a>
     </div>
     <div class="navctl">

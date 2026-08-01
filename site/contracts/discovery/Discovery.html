@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Discovery Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Discovery Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/discovery/Discovery.html">
+<meta property="og:title" content="Onym Discovery Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/discovery/Discovery.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/InstrumentSans-Variable.woff2">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow mb12">Discovery</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b1c286b58d1fef638e7dc98fe0dcb4081256441d/discovery/Discovery.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-discovery-contract-boundary">Onym Discovery Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>Discovery helps a user find compatible instances of every seat. It may
+curate and recommend, but it cannot approve participation, rewrite a
+provider's manifest, or prevent direct use.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary for the <strong>Discovery
+seat</strong>: independently operated catalogs through which users and groups find
+concrete service, application, and institutional instances for any Onym seat.</p>
+<p>A seat is a protocol role. An <strong>instance</strong> is one concrete operator,
+deployment, application, institution, or offer for that role, described by a
+signed manifest under <a href="../WHITEPAPER.html">whitepaper §16</a>. Discovery indexes
+references to those manifests. It does not turn the catalog into a root of
+trust.</p>
+<p>This contract does not require a search engine, DNS system, transport, storage
+layer, ranking algorithm, payment rail, jurisdiction, or business model. A
+concrete implementation profile must define canonical encodings, transport,
+pagination, signatures, and test vectors.</p>
+<p>This is proposed architecture. No current Onym repository implements this
+contract or a conforming Discovery profile.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym separates finding an instance from trusting or selecting it.</p>
+<ul>
+<li>Any operator may publish a signed manifest for an instance of a defined
+seat.</li>
+<li>Any Discovery provider may publish a signed catalog of manifest references
+under a visible inclusion and ranking policy.</li>
+<li>A client may use one Discovery provider, combine several, use a pinned local
+catalog, or import a provider manifest directly.</li>
+<li>Catalog inclusion is a recommendation by the named Discovery provider. It
+is not protocol approval, certification, or proof that the instance is safe
+or currently available.</li>
+<li>The client verifies the selected instance's own manifest, compatibility,
+expiry, operator signature, and applicable evidence before use.</li>
+<li>The user or group selects the downstream instance. A Discovery provider
+cannot select it merely by returning or ranking it.</li>
+<li>A Discovery provider may earn only under a disclosed catalog, curation, or
+placement offer chosen by the paying party. Payment never creates protocol
+authority over listed or unlisted instances.</li>
+</ul>
+<p>Discovery is a seat because catalog policy, availability, conflicts, privacy,
+and commercial incentives belong to an accountable operator that users can
+replace. It is not a singleton system service.</p>
+<h2 id="2-roles-and-authority">2. Roles and authority</h2>
+<ul>
+<li>The <strong>instance operator</strong> controls one concrete seat instance and signs its
+service or institutional manifest.</li>
+<li>The <strong>Discovery provider</strong> selects manifest references under its published
+policy, signs catalog snapshots, answers queries, and discloses ranking and
+commercial relationships.</li>
+<li>The <strong>catalog sponsor</strong>, when present, funds a catalog intended for a
+community, enterprise, jurisdiction, accessibility need, or other declared
+audience. Funding does not silently change the provider's policy.</li>
+<li>The <strong>auditor or attestation issuer</strong> signs scoped evidence about an exact
+instance or artifact under the <a href="../audit/Audit.html">audit contract</a>.
+Discovery may cite that evidence but cannot speak for its issuer.</li>
+<li>The <strong>client</strong> verifies catalogs and manifests, applies local compatibility
+checks, preserves direct import, and presents the source and basis of
+recommendations.</li>
+<li>The <strong>user or group</strong> chooses which Discovery sources to consult and which
+downstream instance, if any, to select.</li>
+</ul>
+<p>One party may hold several roles, but the signed objects keep their authorities
+separate. A Discovery provider that also operates, audits, sponsors, or earns
+from a listed instance discloses that relationship on the affected entry.</p>
+<h2 id="3-coverage-every-seat">3. Coverage: every seat</h2>
+<p>Discovery is cross-cutting. A catalog can contain instances for every
+versioned <code>seatType</code>, including:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Seat family</th>
+<th scope="col">Example discoverable instance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interface</td>
+<td>a web, desktop, or mobile client publisher</td>
+</tr>
+<tr>
+<td>Message carriage</td>
+<td>a relay or sealed-message delivery service</td>
+</tr>
+<tr>
+<td>Media storage</td>
+<td>a sealed-blob storage provider</td>
+</tr>
+<tr>
+<td>Group verification</td>
+<td>a notary deployment and its compatible profile</td>
+</tr>
+<tr>
+<td>Naming and credentials</td>
+<td>an association registry or credential issuer</td>
+</tr>
+<tr>
+<td>Banking and payments</td>
+<td>a provider and its custody/payment class</td>
+</tr>
+<tr>
+<td>Audit and attestation</td>
+<td>an auditor and offered methodology classes</td>
+</tr>
+<tr>
+<td>Arbitration</td>
+<td>an arbiter or dispute-resolution institution</td>
+</tr>
+<tr>
+<td>Charitable coordination</td>
+<td>an application or campaign coordinator</td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td>a lead-generation provider and its offer</td>
+</tr>
+<tr>
+<td>Acquisition</td>
+<td>a landing or store-evidence provider</td>
+</tr>
+<tr>
+<td>Recruitment</td>
+<td>a recruitment provider or public opening source</td>
+</tr>
+<tr>
+<td>Recovery trustee</td>
+<td>a trustee provider and custody profile</td>
+</tr>
+<tr>
+<td>Sponsorship</td>
+<td>a foundation or commons-funding program</td>
+</tr>
+<tr>
+<td>Discovery</td>
+<td>another Discovery provider or catalog</td>
+</tr>
+</tbody>
+</table></div><p>This table is illustrative, not a closed registry. A new seat becomes
+discoverable by publishing a versioned seat contract and signed manifests; it
+does not need a change to the Discovery authority model.</p>
+<p>Some instances have network endpoints. Others are institutions, applications,
+or offers reached through a contact or order interface. Discovery indexes the
+manifest defined by the destination seat and does not require every seat to
+pretend to be a network daemon.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">instance operator                         audit / measurement issuer
+      | signs manifest                              | signs evidence
+      v                                             v
++--------------------+                    +--------------------+
+| Instance manifest  |&lt;-------------------| scoped attestation |
++----------+---------+      citation      +--------------------+
+           |
+           | digest + retrieval location
+           v
++-----------------------------+       signed policy + snapshot
+| Discovery provider          |--------------------------------+
+| catalog · query · ranking   |                                |
++--------------+--------------+                                v
+               |                                      +----------------+
+               +-------------------------------------&gt;| Client         |
+                                                      | verify · merge |
+direct manifest import ------------------------------&gt;| filter · show  |
+                                                      +-------+--------+
+                                                              |
+                                                              | explicit choice
+                                                              v
+                                                      selected instance
+</code></pre>
+<p>No arrow from Discovery grants operating authority to an instance. No missing
+arrow prevents a client from importing a conforming manifest directly.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<p>The JSON below is explanatory. An implementation profile defines canonical
+encoding, identifier syntax, signature suite, and transport.</p>
+<h3 id="51-discovery-provider-manifest">5.1 Discovery provider manifest</h3>
+<p>A provider first publishes a signed <code>DiscoveryProviderManifest</code>:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;providerId&quot;: &quot;onym:component:&lt;discovery-provider-id&gt;&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;seat&quot;: &quot;discovery&quot;,
+  &quot;catalogs&quot;: [
+    {
+      &quot;catalogId&quot;: &quot;public-all-seats&quot;,
+      &quot;snapshot&quot;: &quot;https://discover.example/catalog.json&quot;,
+      &quot;audience&quot;: &quot;public&quot;,
+      &quot;seatTypes&quot;: [&quot;*&quot;],
+      &quot;policy&quot;: &quot;sha256:&lt;inclusion-and-ranking-policy&gt;&quot;
+    }
+  ],
+  &quot;capabilities&quot;: [&quot;signed-snapshot-v1&quot;, &quot;local-filtering-v1&quot;],
+  &quot;privacyProfile&quot;: &quot;sha256:&lt;privacy-profile&gt;&quot;,
+  &quot;offers&quot;: [],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The manifest states exactly which catalogs and protocol profiles the provider
+operates. <code>seatTypes: [&quot;*&quot;]</code> means the policy accepts every defined seat type;
+it is not a claim that the current snapshot contains an instance for each one.</p>
+<h3 id="52-catalog-snapshot">5.2 Catalog snapshot</h3>
+<p>A <code>CatalogSnapshot</code> is an immutable, signed view of one catalog:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;catalogId&quot;: &quot;public-all-seats&quot;,
+  &quot;providerId&quot;: &quot;onym:component:&lt;discovery-provider-id&gt;&quot;,
+  &quot;sequence&quot;: 42,
+  &quot;previousDigest&quot;: &quot;sha256:&lt;snapshot-41&gt;&quot;,
+  &quot;policyDigest&quot;: &quot;sha256:&lt;inclusion-and-ranking-policy&gt;&quot;,
+  &quot;generatedAt&quot;: &quot;2026-08-01T12:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2026-08-02T12:00:00Z&quot;,
+  &quot;entries&quot;: [&quot;&lt;CatalogEntry&gt;&quot;, &quot;&lt;CatalogEntry&gt;&quot;],
+  &quot;signature&quot;: &quot;&lt;discovery-provider-signature&gt;&quot;
+}
+</code></pre>
+<p>The monotonically increasing sequence and previous digest make removal,
+replacement, and equivocation observable to clients that retain or compare
+snapshots. They do not create global consensus: two Discovery providers may
+publish different catalogs, and one provider may intentionally publish
+different named catalogs for different declared audiences.</p>
+<h3 id="53-catalog-entry">5.3 Catalog entry</h3>
+<p>A catalog entry points to an operator-signed manifest without rewriting it:</p>
+<pre><code class="language-json">{
+  &quot;componentId&quot;: &quot;onym:component:&lt;instance-id&gt;&quot;,
+  &quot;seatType&quot;: &quot;transport.message&quot;,
+  &quot;manifest&quot;: {
+    &quot;uri&quot;: &quot;https://relay.example/.well-known/onym-manifest.json&quot;,
+    &quot;digest&quot;: &quot;sha256:&lt;manifest-bytes&gt;&quot;
+  },
+  &quot;profiles&quot;: [&quot;onym-message-nostr-v1&quot;],
+  &quot;evidence&quot;: [
+    {
+      &quot;type&quot;: &quot;audit-attestation&quot;,
+      &quot;uri&quot;: &quot;https://auditor.example/attestations/123&quot;,
+      &quot;digest&quot;: &quot;sha256:&lt;attestation-bytes&gt;&quot;
+    }
+  ],
+  &quot;listedAt&quot;: &quot;2026-07-20T09:00:00Z&quot;,
+  &quot;reviewedAt&quot;: &quot;2026-07-31T09:00:00Z&quot;,
+  &quot;relationship&quot;: &quot;none&quot;,
+  &quot;placement&quot;: &quot;policy-ranked&quot;
+}
+</code></pre>
+<p>The entry may repeat bounded, non-authoritative fields such as <code>seatType</code> and
+profiles for indexing. The fetched manifest remains authoritative. A mismatch
+between the entry and the signed manifest is an error, not permission for the
+catalog to override the operator.</p>
+<p><code>relationship</code> and <code>placement</code> disclose why the entry appears where it does.
+Profiles define an extensible set including <code>none</code>, <code>catalog-subscriber</code>,
+<code>listing-fee</code>, <code>sponsored-placement</code>, <code>common-owner</code>, <code>catalog-sponsor</code>, and
+<code>other-disclosed</code>.</p>
+<h3 id="54-query-and-result">5.4 Query and result</h3>
+<p>The portable query is deliberately small:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;catalogId&quot;: &quot;public-all-seats&quot;,
+  &quot;seatTypes&quot;: [&quot;transport.message&quot;],
+  &quot;requiredProfiles&quot;: [&quot;onym-message-nostr-v1&quot;],
+  &quot;requiredCapabilities&quot;: [&quot;nip42-auth&quot;],
+  &quot;jurisdictions&quot;: [],
+  &quot;languages&quot;: [],
+  &quot;limit&quot;: 25,
+  &quot;cursor&quot;: null
+}
+</code></pre>
+<p>A result identifies the exact snapshot and preserves entry order:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;catalogId&quot;: &quot;public-all-seats&quot;,
+  &quot;snapshotDigest&quot;: &quot;sha256:&lt;snapshot-42&gt;&quot;,
+  &quot;policyDigest&quot;: &quot;sha256:&lt;inclusion-and-ranking-policy&gt;&quot;,
+  &quot;entries&quot;: [&quot;&lt;CatalogEntry&gt;&quot;, &quot;&lt;CatalogEntry&gt;&quot;],
+  &quot;nextCursor&quot;: null
+}
+</code></pre>
+<p>The baseline publishes complete signed snapshots so a client can download once
+and filter locally. A server-side query profile may return proofs or a signed
+result binding it to a snapshot. An unsigned, mutable search response must not
+be presented as if it were the provider's signed catalog.</p>
+<h2 id="6-publication-and-verification-flow">6. Publication and verification flow</h2>
+<ol>
+<li>An instance operator publishes a signed manifest under its destination-seat
+contract.</li>
+<li>The Discovery provider retrieves and verifies the manifest, applies its
+published inclusion policy, and records only a digest-bound reference.</li>
+<li>The provider publishes a signed, expiring catalog snapshot.</li>
+<li>The client obtains the Discovery provider manifest through direct import,
+a user-selected source, or a replaceable application default.</li>
+<li>The client verifies provider identity, snapshot signature, sequence,
+policy digest, expiry, bounds, and requested seat type.</li>
+<li>The client fetches candidate instance manifests, verifies their operator
+signatures and digests, and evaluates compatibility locally.</li>
+<li>The UI shows catalog source, relevant evidence, commercial relationship,
+and material risk or compatibility information.</li>
+<li>The user or group explicitly selects an instance under that seat's own
+contract.</li>
+</ol>
+<p>Discovery completion is not service selection. Fetching, viewing, or ranking
+an entry grants the instance no capability and creates no downstream order.</p>
+<h2 id="7-inclusion-ranking-and-presentation">7. Inclusion, ranking, and presentation</h2>
+<p>Each catalog pins a human-readable and machine-identifiable policy that states:</p>
+<ul>
+<li>eligible seat types, profiles, jurisdictions, and audiences;</li>
+<li>required manifest freshness and availability checks;</li>
+<li>required attestations, methodologies, issuers, and maximum ages, if any;</li>
+<li>legal, safety, quality, accessibility, or service-level criteria;</li>
+<li>listing, subscription, sponsorship, referral, and common-ownership terms;</li>
+<li>ranking inputs and their relative priority or deterministic ordering rule;</li>
+<li>removal, correction, appeal, emergency, and conflict processes;</li>
+<li>review cadence and catalog expiry; and</li>
+<li>what the provider does not verify.</li>
+</ul>
+<p>The provider may curate. It is not required to list every technically
+compatible instance. It must not claim completeness unless the claim defines a
+reproducible source population and measurement time.</p>
+<p>Paid placement is allowed only when the affected entries say so and the UI can
+distinguish it without relying on color alone. A paid entry still has to meet
+the catalog's published minimum criteria. Payment cannot be described as an
+audit, certification, popularity measure, or organic rank.</p>
+<p>A client may re-rank locally, but it must not attribute the resulting order to
+the Discovery provider. When a client merges catalogs, each entry retains its
+sources and conflicting claims remain visible.</p>
+<h2 id="8-direct-use-and-provider-replacement">8. Direct use and provider replacement</h2>
+<p>Every conforming client supports a direct manifest path appropriate to its
+platform: paste, scan, file import, deep link, local configuration, or another
+profile-defined mechanism. Direct import applies the same signature, schema,
+compatibility, and safety validation used for catalog results.</p>
+<p>A client may ship with a default Discovery provider when it:</p>
+<ol>
+<li>identifies that provider and its operator;</li>
+<li>lets the user add, remove, and replace sources;</li>
+<li>does not silently restore a removed source;</li>
+<li>labels which source produced each recommendation;</li>
+<li>preserves direct import; and</li>
+<li>does not treat absence from the default as protocol invalidity.</li>
+</ol>
+<p>Discovery itself bootstraps through direct import or a replaceable application
+default. A Discovery provider may list other Discovery providers, but no
+provider is required to list itself and no recursive catalog establishes a
+root authority.</p>
+<h2 id="9-freshness-removal-and-disputes">9. Freshness, removal, and disputes</h2>
+<p>Catalog snapshots expire. Clients must distinguish:</p>
+<ul>
+<li>an active entry in a fresh snapshot;</li>
+<li>a previously listed entry absent from a newer snapshot;</li>
+<li>an entry whose destination manifest expired or changed;</li>
+<li>an unreachable manifest or instance;</li>
+<li>an entry under a disclosed warning or review; and</li>
+<li>an invalid signature or digest.</li>
+</ul>
+<p>Removal means only that the named catalog no longer recommends or indexes the
+entry. It does not revoke the operator's manifest or prevent direct use. The
+provider should publish a bounded reason code such as <code>manifest_expired</code>,
+<code>policy_mismatch</code>, <code>evidence_expired</code>, <code>unreachable</code>, <code>operator_request</code>,
+<code>security_response</code>, or <code>commercial_term_ended</code>.</p>
+<p>Policies provide correction and appeal channels where practical. Emergency
+removal may precede a detailed explanation when disclosure would worsen an
+active vulnerability, violate law, or expose private reports. The catalog must
+still identify the governing policy and record that an emergency path was
+used.</p>
+<p>A dispute over inclusion or ranking does not give an arbiter authority over
+the destination seat. Any order under the
+<a href="../arbitration/Arbitration.html">arbitration contract</a> is bounded to the catalog
+agreement and its escrowed stake.</p>
+<h2 id="10-privacy-boundary">10. Privacy boundary</h2>
+<p>Public catalog discovery should not require an account or stable identifier.
+The baseline prefers complete snapshots and local filtering because a remote
+query can reveal which seat, jurisdiction, capability, bank, charity, recovery
+provider, or other sensitive service interests a person.</p>
+<p>A conforming privacy profile states:</p>
+<ul>
+<li>whether queries are local or server-side;</li>
+<li>network metadata visible to the provider and intermediaries;</li>
+<li>query and access-log fields, purpose, retention, and deletion;</li>
+<li>whether rate limiting uses anonymous, rotating, or account-bound state;</li>
+<li>whether results are personalized and from which explicit inputs;</li>
+<li>proxy, cache, padding, batching, or private-retrieval behavior, if any; and</li>
+<li>subprocessors and cross-border handling.</li>
+</ul>
+<p>The baseline forbids:</p>
+<ol>
+<li>requiring an identity root key, recovery secret, message key, or group
+membership proof for public discovery;</li>
+<li>using a stable identifier shared with a destination instance;</li>
+<li>joining queries across seat types into a behavioral profile;</li>
+<li>selling or disclosing query histories for advertising, eligibility,
+pricing, credit, employment, insurance, or surveillance;</li>
+<li>encoding a user or query identifier into a returned manifest URI;</li>
+<li>making undisclosed personalized rank look like catalog policy; and</li>
+<li>telling a listed instance who viewed, rejected, or selected alternatives.</li>
+</ol>
+<p>Private enterprise or group catalogs may require authentication, but the
+credential is scoped to that catalog and does not become a cross-seat user
+identifier.</p>
+<h2 id="11-economics-and-conflicts">11. Economics and conflicts</h2>
+<p>A Discovery provider may offer:</p>
+<ul>
+<li>a user, organization, or community subscription for maintained catalogs;</li>
+<li>fixed-fee catalog construction or policy administration;</li>
+<li>monitoring, availability measurement, or change alerts;</li>
+<li>operator-paid listing review under published criteria;</li>
+<li>clearly labeled sponsored placement; or</li>
+<li>zero-priced public catalogs funded by a disclosed sponsor or commons grant.</li>
+</ul>
+<p>Every offer states payer, service, period, price, refund terms, data handling,
+and maximum liability. Operator payment or common ownership is attached to the
+affected entries. A provider cannot receive an undisclosed downstream
+commission, fabricate selection evidence, or claim a perpetual share of an
+instance's future revenue merely because it listed the instance.</p>
+<p>The Discovery service earns when its catalog or curation offer is chosen. The
+destination instance earns separately when the user or group chooses and uses
+that seat. These are independent decisions and orders.</p>
+<h2 id="12-error-semantics">12. Error semantics</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Meaning</th>
+<th scope="col">Client behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider_manifest_invalid</code></td>
+<td>Discovery provider identity, signature, schema, or expiry failed</td>
+<td>Reject the source</td>
+</tr>
+<tr>
+<td><code>snapshot_invalid</code></td>
+<td>Snapshot signature, sequence, digest, bounds, or schema failed</td>
+<td>Reject the snapshot; retain last valid snapshot only within its expiry</td>
+</tr>
+<tr>
+<td><code>snapshot_expired</code></td>
+<td>Catalog freshness window ended</td>
+<td>Mark stale; refresh or use another source</td>
+</tr>
+<tr>
+<td><code>policy_unavailable</code></td>
+<td>Pinned inclusion/ranking policy cannot be retrieved or matched</td>
+<td>Do not present rank as policy-backed</td>
+</tr>
+<tr>
+<td><code>entry_manifest_unavailable</code></td>
+<td>Destination manifest cannot be fetched</td>
+<td>Mark unavailable; do not invent current fields</td>
+</tr>
+<tr>
+<td><code>entry_manifest_mismatch</code></td>
+<td>Entry fields or fetched bytes conflict with the pinned manifest digest</td>
+<td>Reject the entry and report source conflict</td>
+</tr>
+<tr>
+<td><code>entry_manifest_invalid</code></td>
+<td>Destination signature, schema, seat type, or expiry failed</td>
+<td>Reject the entry</td>
+</tr>
+<tr>
+<td><code>profile_incompatible</code></td>
+<td>Client cannot use the declared implementation profile</td>
+<td>Hide only under an explicit compatibility filter</td>
+</tr>
+<tr>
+<td><code>query_unsupported</code></td>
+<td>Provider does not support a requested server-side filter</td>
+<td>Download and filter locally or use another source</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Declared query limit reached</td>
+<td>Respect bounded retry metadata; do not change identity to evade policy</td>
+</tr>
+<tr>
+<td><code>result_incomplete</code></td>
+<td>A bounded result omitted entries or could not prove completeness</td>
+<td>Show incompleteness; never claim no instances exist</td>
+</tr>
+<tr>
+<td><code>source_conflict</code></td>
+<td>Selected catalogs disagree about an instance or evidence</td>
+<td>Preserve source-specific claims for user evaluation</td>
+</tr>
+</tbody>
+</table></div><p>An empty result means only that this catalog returned no matching entry under
+this query and snapshot. It does not prove that no compatible instance exists.</p>
+<h2 id="13-threat-model">13. Threat model</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Threat</th>
+<th scope="col">Consequence</th>
+<th scope="col">Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Catalog capture</td>
+<td>One operator becomes a practical gate</td>
+<td>Multiple sources, source visibility, direct import, exportable pins</td>
+</tr>
+<tr>
+<td>Equivocation</td>
+<td>Provider shows different signed catalogs to different users</td>
+<td>Sequence and previous digest, snapshot comparison, optional transparency profile</td>
+</tr>
+<tr>
+<td>Manifest substitution</td>
+<td>Catalog redirects a trusted name to attacker bytes</td>
+<td>Operator signature and digest verification after retrieval</td>
+</tr>
+<tr>
+<td>Stale catalog</td>
+<td>Removed, compromised, or incompatible instance remains recommended</td>
+<td>Short expiry, refresh, destination-manifest revalidation</td>
+</tr>
+<tr>
+<td>Sybil flooding</td>
+<td>Low-quality instances bury useful results</td>
+<td>Published inclusion costs and evidence criteria; never call curation completeness</td>
+</tr>
+<tr>
+<td>Pay-to-rank deception</td>
+<td>Advertising appears organic</td>
+<td>Entry-level relationship and placement disclosure; distinct UI treatment</td>
+</tr>
+<tr>
+<td>Hidden personalization</td>
+<td>Users receive manipulative or discriminatory orderings</td>
+<td>Baseline non-personalized rank; explicit inputs and local controls for variants</td>
+</tr>
+<tr>
+<td>Query surveillance</td>
+<td>Seat interests reveal sensitive intent</td>
+<td>Local filtering, minimal logs, no cross-seat joining or destination callbacks</td>
+</tr>
+<tr>
+<td>Audit laundering</td>
+<td>Catalog turns a narrow attestation into broad approval</td>
+<td>Exact attestation issuer, subject, scope, artifact, result, expiry, and status</td>
+</tr>
+<tr>
+<td>Common ownership</td>
+<td>Catalog favors its operator's other seats</td>
+<td>Entry-level conflict disclosure and replaceable sources</td>
+</tr>
+<tr>
+<td>Availability spoofing</td>
+<td>Listed endpoint is dead or intermittently hostile</td>
+<td>Timestamped measurements as evidence, not promises; client runtime checks</td>
+</tr>
+<tr>
+<td>Malicious URI</td>
+<td>Fetch reaches local networks, oversized bodies, or downgrade redirects</td>
+<td>Profile-defined schemes, SSRF protections, size limits, TLS, redirect bounds</td>
+</tr>
+</tbody>
+</table></div><p>Discovery reduces search cost; it cannot make adversarial providers harmless.</p>
+<h2 id="14-obligations">14. Obligations</h2>
+<h3 id="141-discovery-provider">14.1 Discovery provider</h3>
+<p>A conforming provider must:</p>
+<ol>
+<li>sign its provider manifest and every catalog snapshot;</li>
+<li>publish the exact inclusion, ranking, commercial, conflict, removal, and
+appeal policy pinned by each snapshot;</li>
+<li>preserve operator-signed manifests rather than rewriting their claims;</li>
+<li>bind entries to manifest digests and verify them before inclusion;</li>
+<li>disclose sponsored placement, listing payments, sponsorship, and common
+ownership at entry level;</li>
+<li>expire snapshots and remove or warn on known-invalid entries promptly;</li>
+<li>bound catalog size, entry size, pagination, redirects, and fetched content;</li>
+<li>follow its declared privacy and retention profile;</li>
+<li>avoid claims of certification, completeness, or availability it cannot
+substantiate; and</li>
+<li>provide exportable signed snapshots so exit does not depend on continued
+access to its service.</li>
+</ol>
+<h3 id="142-instance-operator">14.2 Instance operator</h3>
+<p>A listed operator must:</p>
+<ol>
+<li>sign and publish the destination seat's conforming manifest;</li>
+<li>keep operator identity, endpoints, profiles, capabilities, offers, privacy,
+limits, and expiry accurate;</li>
+<li>rotate, supersede, or revoke its own manifest under that seat's rules;</li>
+<li>not treat listing as certification or user selection;</li>
+<li>disclose its relationship with the Discovery provider; and</li>
+<li>not receive query or viewer identity outside a separately selected service
+interaction.</li>
+</ol>
+<h3 id="143-client">14.3 Client</h3>
+<p>A conforming client must:</p>
+<ol>
+<li>verify Discovery and destination signatures, digests, versions, and expiry;</li>
+<li>identify the catalog source and distinguish catalog claims from instance
+claims and third-party attestations;</li>
+<li>preserve direct import and source replacement;</li>
+<li>apply compatibility and safety checks after discovery;</li>
+<li>distinguish sponsored placement and material conflicts accessibly;</li>
+<li>avoid turning absence from a default catalog into protocol invalidity;</li>
+<li>not identify the user to the destination before explicit selection; and</li>
+<li>report stale, incomplete, conflicting, and unavailable states honestly.</li>
+</ol>
+<h2 id="15-security-privacy-and-economic-invariants">15. Security, privacy, and economic invariants</h2>
+<ol>
+<li><strong>Discovery is not permission.</strong> Inclusion grants no seat authority.</li>
+<li><strong>Absence is not invalidity.</strong> Directly imported conforming manifests remain
+usable.</li>
+<li><strong>Every claim keeps its author.</strong> Operator manifests, Discovery policy,
+audits, measurements, and client-local ranking are never collapsed into one
+endorsement.</li>
+<li><strong>The destination manifest wins.</strong> A catalog cannot rewrite operator-signed
+fields.</li>
+<li><strong>Selection is separate.</strong> A result or rank cannot activate an instance,
+grant a capability, or create a downstream order.</li>
+<li><strong>All seats fit one boundary.</strong> Discovery indexes versioned manifest
+references without acquiring destination-seat powers.</li>
+<li><strong>Commercial influence is visible.</strong> Listing fees, sponsorship, placement,
+referral terms, and common ownership are attached to affected entries.</li>
+<li><strong>Public search needs no stable identity.</strong> Cross-seat query profiling and
+destination callbacks are forbidden by the baseline.</li>
+<li><strong>Snapshots are bounded and expiring.</strong> Stale or incomplete data is never
+presented as current or complete.</li>
+<li><strong>Sources are plural and replaceable.</strong> Clients can add, remove, merge, and
+leave Discovery providers without migrating identity or downstream state.</li>
+<li><strong>Empty is source-scoped.</strong> An empty result from one catalog is not proof
+that no instance exists.</li>
+<li><strong>Revenue follows a chosen Discovery service.</strong> It does not create a tax on
+every future interaction with a listed instance.</li>
+</ol>
+<h2 id="16-versioning-and-conformance">16. Versioning and conformance</h2>
+<ul>
+<li><code>DiscoveryContract</code> changes when role, authority, object, privacy, ranking,
+error, or economic semantics change.</li>
+<li>A <code>DiscoveryImplementationProfile</code> pins canonical encoding, signature suite,
+transport, URI rules, snapshot limits, pagination, query behavior, and
+compatibility identifiers.</li>
+<li>Every provider manifest and catalog snapshot states exact versions and
+expiry. Clients reject unknown critical fields or unsupported major versions.</li>
+<li>Catalog corrections append a new sequence and previous digest; they do not
+mutate a signed historical snapshot.</li>
+<li>Conformance fixtures cover signatures, canonicalization, sequence rollback,
+equivocation, expiry, manifest mismatch, duplicate entries, pagination,
+unsupported filters, sponsored placement, source conflicts, malicious URIs,
+oversized content, and privacy-profile behavior.</li>
+</ul>
+<p>No concrete implementation profile exists yet. A first profile should prefer
+signed static snapshots over account-based remote search, because that makes
+verification, caching, mirroring, comparison, and local private filtering
+straightforward.</p>
+<h2 id="17-acceptance-criteria">17. Acceptance criteria</h2>
+<p>The Discovery boundary is successfully separated when:</p>
+<ol>
+<li>an operator can publish a conforming instance manifest for any defined
+seat without asking a Discovery provider;</li>
+<li>independent providers can publish different signed catalogs under visible
+policies;</li>
+<li>a client can verify, merge, compare, and replace those sources;</li>
+<li>every result points to an independently verified operator manifest;</li>
+<li>users can filter by seat and compatibility without revealing a stable
+identity under the baseline profile;</li>
+<li>paid placement and common ownership cannot appear as organic rank;</li>
+<li>an expired, removed, conflicting, or unreachable entry has explicit
+semantics;</li>
+<li>direct import works when every catalog omits the instance;</li>
+<li>viewing a result neither identifies the user to the instance nor selects
+it; and</li>
+<li>a Discovery provider can earn for chosen catalog or curation service
+without becoming a toll gate on downstream seat revenue.</li>
+</ol>
+<h2 id="18-justification-in-one-sentence">18. Justification in one sentence</h2>
+<blockquote>
+<p>Onym needs a replaceable way to find instances of every seat, while keeping
+trust, compatibility, and final selection with the user rather than the
+catalog.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/discovery-seat/discovery/Discovery.md">latest version on discovery-seat →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>
