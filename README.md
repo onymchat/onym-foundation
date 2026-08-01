@@ -19,7 +19,9 @@ dependency: plain HTML, one stylesheet, one small script.
 | `site/theme.js`, `site/main.js` | Pre-paint theme application; menu, theme toggle, scroll reveal, mailto builders |
 | `site/assets/fonts/` | Self-hosted Instrument Sans (variable) + IBM Plex Mono, with OFL licenses |
 | `site/_headers` | Deployment headers (CSP without `unsafe-inline`, etc.) in Netlify/Cloudflare Pages format |
-| `tools/docs.mjs` | Manifest of contract documents with **pinned commit SHAs** |
+| `tools/docs.mjs` | Manifest of contract documents with **pinned commit SHAs** and visible notices for known draft conflicts |
+| `governance/foundation-policy.json` | Single machine-readable source for proposed board and endowment constants |
+| `governance/REMEDIATION.md` | Foundation/system work ledger and operational stop conditions |
 | `tools/build-pages.mjs`, `tools/build-contracts.mjs` | `npm run build` renders `site/` from `pages/` and the pinned docs + `sitemap.xml` |
 | `tools/check-links.mjs` | Internal link and anchor checker |
 | `tests/` | Unit tests (render/resolution) and browser tests (390px/1440px layout, mobile menu, fonts, dark mode, theme persistence, axe) |
@@ -94,8 +96,12 @@ the two in sync when the policy changes. The canonical origin is
   Keep these properties when editing copy.
 - The sponsor and pledge language (tiers, terms, conversion, lapse on failed
   formation), the fund/endowment policy (Founding Fund vs. reserves vs.
-  permanent endowment; 5% distribution target, 7% exception), gift terms,
+  permanent endowment; 5% ordinary ceiling, 7% exceptional ceiling), gift terms,
   the Investment Policy Statement, and tax treatment must be reviewed by
   Estonian legal/accounting counsel before the founding round opens for real
-  money. The 5%/7% figures are proposed internal governance limits, not
-  requirements of Estonian law.
+  money. The 5%/7% figures and seven-of-nine/four-non-sponsor exceptional vote
+  (including at least two directors from each non-sponsor class)
+  are proposed internal governance limits generated from
+  `governance/foundation-policy.json`, not requirements of Estonian law. A
+  conflict with pinned upstream drafts blocks contribution conversion until
+  the texts are reconciled and re-consented.

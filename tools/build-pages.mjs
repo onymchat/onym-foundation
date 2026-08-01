@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { page } from './partials.mjs';
+import { renderPolicyTokens } from './foundation-policy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PAGES = path.join(ROOT, 'pages');
@@ -17,7 +18,7 @@ for (const file of fs.readdirSync(PAGES).filter(f => f.endsWith('.html')).sort()
   const m = src.match(/^<!--page\s+({[\s\S]*?})\s*-->\n?/);
   if (!m) throw new Error(`${file}: missing <!--page {…}--> meta comment`);
   const meta = JSON.parse(m[1]);
-  const content = src.slice(m[0].length).trimEnd();
+  const content = renderPolicyTokens(src.slice(m[0].length)).trimEnd();
   fs.writeFileSync(path.join(SITE, file), page({ meta, content }));
   n++;
 }

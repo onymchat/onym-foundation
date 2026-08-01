@@ -47,7 +47,8 @@ if (!fs.existsSync(CHROME)) {
     t.after(async () => { await browser.close(); srv.close(); });
 
     const PAGES = ['/index.html', '/seats.html', '/governance.html', '/transparency.html',
-      '/sponsors.html', '/pledge.html', '/contracts/message/UI-Message.html', '/contracts/bank/UI-Bank.html'];
+      '/remediation.html', '/sponsors.html', '/pledge.html',
+      '/contracts/message/UI-Message.html', '/contracts/bank/UI-Bank.html'];
 
     await t.test('no horizontal overflow at 390px on any page', async () => {
       const page = await browser.newPage();

@@ -1,7 +1,7 @@
 <!--page {"title": "Sponsors — Onym Foundation", "desc": "Fund the network that no one — including us — can own. What your contribution funds, what you receive, what sponsorship can never buy, and who controls spending.", "ogDesc": "Fund the network that no one — including us — can own.", "path": "sponsors.html", "current": "sponsors"}-->
 <main id="main">
   <header class="hero wrap">
-    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <span class="chip"><span class="dot"></span>In formation — founding pledges open · no money accepted</span>
     <h1 class="h1-sm">Fund the network that no one — including us — can own.</h1>
     <p class="lede">Your contribution funds formation, audits, grants, and conformance infrastructure now — and, where expressly designated, a permanent endowment. It can never buy the protocol, the users, or a majority.</p>
     <div class="ctarow">
@@ -23,7 +23,7 @@
         <div class="card"><h3>Independent audits</h3><p class="micro mt8">Security and conformance examinations of the components everyone relies on, published openly.</p><p class="number mt14">governed by public spending rules</p></div>
         <div class="card"><h3>Conformance infrastructure</h3><p class="micro mt8">The public test suites that make "anyone can build a compatible component" true in practice.</p><p class="number mt14">governed by public spending rules</p></div>
         <div class="card"><h3>Grants</h3><p class="micro mt8">Seeding the first operators of new seats: registries, auditors, arbiters, couriers in new regions.</p><p class="number mt14">governed by public spending rules</p></div>
-        <div class="card"><h3>Permanent endowment</h3><p class="micro mt8">Only contributions expressly accepted as permanent. Distributed at a 5% annual target so the commons outlives any single donor, market, or board.</p><p class="number mt14">governed by public spending rules</p></div>
+        <div class="card"><h3>Permanent endowment</h3><p class="micro mt8">Only contributions expressly accepted as permanent. Ordinary annual appropriation is capped at {{policy.endowment.ordinaryMaximumPercent}}% of the trailing {{policy.endowment.valuationQuarterEnds}} quarter-end average, subject to the stricter legal, restriction, prudence, liquidity, and budget limits.</p><p class="number mt14">governed by public spending rules</p></div>
       </div>
       <p class="micro mt16 maxw680">Where your money goes: Contributor, Supporting, and Sustaining sponsorship normally funds current mission work through the Founding Fund. Endowment and Principal Endowment sponsorship is expressly allocated to permanent endowment, subject to accepted gift terms. A sponsor may request a different permitted allocation before the pledge is accepted.</p>
     </div>
@@ -56,7 +56,7 @@
           <ul class="cardlist">
             <li>Sponsor briefings and proposal rights — Supporting tier and up</li>
             <li>Sponsor Council membership with elections — Sustaining and Endowment tiers</li>
-            <li>Eligibility to stand for one of three Sponsor Director seats — Principal Endowment tier</li>
+            <li>Eligibility to stand for one of {{policy.board.sponsorSeats}} Sponsor Director seats — Principal Endowment tier</li>
           </ul>
           <p class="micro mt16">Reporting cadence: quarterly reports and an annual report, from the first period of legal existence. Council communications begin at formation.</p>
         </div>
@@ -117,13 +117,14 @@
           <p class="number">05</p>
           <h2>How your money is governed</h2>
         </div>
-        <p class="slede">Designed so that the largest donor and the smallest user can trust the same books. <span class="micro">Proposed governance — adopted at formation.</span></p>
+        <p class="slede">Designed so that the largest donor and the smallest user can trust the same books. <span class="micro">Proposed governance — must be lawfully adopted; not yet in force.</span></p>
       </div>
       <div class="grid3">
-        <div class="card"><p class="stat mono">3·3·3</p><p class="micro mt10">Three Sponsor, three Ecosystem, three Independent Public-Interest Directors. Chair and treasurer: never sponsors.</p></div>
-        <div class="card"><p class="stat mono">6/9</p><p class="micro mt10">Ordinary spending needs 6 of 9 directors, including 2 non-sponsor directors.</p></div>
-        <div class="card"><p class="stat mono">5% · 7%</p><p class="micro mt10">Endowment distributions target 5% of the trailing twelve quarter-end average. Up to 7% for one financial year by a two-thirds vote of disinterested directors, published with reasons — never more than two consecutive years above 5%. A conflicted director does not take part in the discussion or vote and is not counted toward quorum. <a href="governance.html#funds">The full policy →</a></p></div>
+        <div class="card"><p class="stat mono">{{policy.board.sponsorSeats}}·{{policy.board.ecosystemSeats}}·{{policy.board.publicInterestSeats}}</p><p class="micro mt10">Sponsor, Ecosystem, and Independent Public-Interest Directors. {{policy.board.nonSponsorSeats}} of {{policy.board.totalSeats}} seats have selection routes that do not depend on contribution size. Chair and treasurer: never sponsors.</p></div>
+        <div class="card"><p class="stat mono">{{policy.board.ordinaryApprovalVotes}}/{{policy.board.totalSeats}}</p><p class="micro mt10">An annual budget or ordinary endowment appropriation needs {{policy.board.ordinaryApprovalVotes}} of {{policy.board.totalSeats}} directors, including {{policy.board.ordinaryMinimumEcosystemVotes}} Ecosystem and {{policy.board.ordinaryMinimumPublicInterestVotes}} Public-Interest Directors.</p></div>
+        <div class="card"><p class="stat mono">{{policy.endowment.ordinaryMaximumPercent}}% · {{policy.endowment.exceptionalMaximumPercent}}%</p><p class="micro mt10">Ordinary endowment appropriations are capped at {{policy.endowment.ordinaryMaximumPercent}}% of the trailing {{policy.endowment.valuationQuarterEnds}} quarter-end average. Up to {{policy.endowment.exceptionalMaximumPercent}}% for one financial year requires {{policy.board.exceptionalApprovalVotes}} of {{policy.board.totalSeats}} votes including {{policy.board.exceptionalMinimumNonSponsorVotes}} non-sponsor directors—at least {{policy.board.exceptionalMinimumEcosystemVotes}} from the Ecosystem and {{policy.board.exceptionalMinimumPublicInterestVotes}} from the Public-Interest class—published with reasons. Distributions above {{policy.endowment.ordinaryMaximumPercent}}% cannot occur for more than {{policy.endowment.maximumConsecutiveExceptionalYears}} consecutive years. A conflicted director does not take part or count toward quorum. <a href="governance.html#spending">The full policy →</a></p></div>
       </div>
+      <p class="note mt20 maxw680">No rule is yet in force. The pinned upstream drafts contain known percentage and voting conflicts; pledges cannot convert until those drafts, the final MTÜ articles, and this public summary agree. <a href="remediation.html">See the activation gates →</a></p>
     </div>
   </section>
 

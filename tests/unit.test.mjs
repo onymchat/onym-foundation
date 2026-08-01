@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseFrontmatter, headingId, resolveMdHref, DOCS, REFS } from '../tools/docs.mjs';
-import { renderDoc } from '../tools/build-contracts.mjs';
+import { parseFrontmatter, headingId, resolveMdHref, DOCS, DOCUMENT_NOTICES, REFS } from '../tools/docs.mjs';
+import { renderDoc, pageHtml } from '../tools/build-contracts.mjs';
+import { FOUNDATION_POLICY, renderPolicyTokens, validateFoundationPolicy } from '../tools/foundation-policy.mjs';
 
 test('frontmatter: parses status/proposed/date and strips the block', () => {
   const { meta, body } = parseFrontmatter('---\nstatus: draft\nproposed: X & @y\ndate: 01.08.2026\n---\n\n# Title\n');
@@ -85,30 +86,70 @@ test('render: column alignment becomes classes, never inline styles', () => {
   assert.match(html, /<td class="ta-l">/);
 });
 
-test('policy: the retired 4% endowment rule cannot reappear', () => {
+test('foundation policy: structural and anti-capture invariants hold', () => {
+  const p = FOUNDATION_POLICY;
+  assert.equal(p.status, 'proposed_non_operational');
+  assert.equal(p.board.sponsorSeats + p.board.ecosystemSeats + p.board.publicInterestSeats,
+    p.board.totalSeats);
+  assert.ok(p.board.sponsorSeats < Math.ceil(p.board.totalSeats / 2));
+  assert.ok(p.board.exceptionalApprovalVotes > p.board.ordinaryApprovalVotes);
+  assert.ok(p.board.ordinaryMinimumEcosystemVotes + p.board.ordinaryMinimumPublicInterestVotes >=
+    p.board.ordinaryMinimumNonSponsorVotes);
+  assert.ok(p.board.exceptionalMinimumEcosystemVotes + p.board.exceptionalMinimumPublicInterestVotes >=
+    p.board.exceptionalMinimumNonSponsorVotes);
+  assert.ok(p.endowment.exceptionalMaximumBasisPoints > p.endowment.ordinaryMaximumBasisPoints);
+
+  const invalid = structuredClone(p);
+  invalid.board.sponsorSeats = 5;
+  invalid.board.ecosystemSeats = 1;
+  assert.throws(() => validateFoundationPolicy(invalid), /majority/);
+});
+
+test('foundation policy: page tokens render and unknown tokens fail', () => {
+  assert.equal(renderPolicyTokens('ordinary={{policy.endowment.ordinaryMaximumPercent}}%'), 'ordinary=5%');
+  assert.equal(renderPolicyTokens('votes={{policy.board.exceptionalApprovalVotes}}/{{policy.board.totalSeats}}'), 'votes=7/9');
+  assert.throws(() => renderPolicyTokens('{{policy.no.such.value}}'), /unknown/);
+});
+
+test('policy: public pages use the one 5% / 7% rule and stronger vote threshold', () => {
   const files = [];
   for (const dir of ['pages', 'site']) {
     for (const f of fs.readdirSync(dir)) {
       if (f.endsWith('.html')) files.push(path.join(dir, f)); // site/contracts/ is upstream-pinned and excluded
     }
   }
-  // statements of the old rule are banned; a historical mention of the
-  // superseded "4%-draft" in the upstream profile note is allowed
-  const banned = [/capped at 4%/i, /4% of trailing/i, /the 4% rule/i, /(^|[^-])>4%</];
+  // Upstream-pinned contract pages carry a consistency warning and are
+  // excluded. Foundation-authored pages may not reintroduce either the old
+  // 4% rule or the ambiguous two-thirds exceptional threshold.
+  const banned = [/capped at 4%/i, /4% of trailing/i, /the 4% rule/i,
+    /two-thirds vote of disinterested directors/i];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
+    if (f.startsWith('site/')) assert.ok(!html.includes('{{policy.'), `${f}: unresolved policy token`);
     for (const re of banned) {
-      assert.ok(!re.test(html), `${f}: retired 4% rule language matched ${re}`);
+      assert.ok(!re.test(html), `${f}: conflicting governance language matched ${re}`);
     }
   }
-  // and the adopted wording must be present where the policy lives
+  // The generated governance page must state every material constant.
   const gov = fs.readFileSync('site/governance.html', 'utf8');
-  assert.ok(gov.includes('target 5% of its average value measured at the previous twelve quarter-ends'),
-    'governance page must state the 5% distribution target');
-  assert.ok(gov.includes('two-thirds vote of disinterested directors'),
-    'governance page must state the 7% exceptional-distribution rule');
-  assert.ok(gov.includes('may not occur in more than two consecutive financial years'),
+  assert.ok(gov.includes('capped at 5% of the average value measured at the previous 12 quarter-ends'),
+    'governance page must state the 5% ordinary ceiling');
+  assert.ok(gov.includes('requires 7 of 9 affirmative votes including at least 4 non-sponsor directors'),
+    'governance page must state the fixed exceptional vote and cross-class threshold');
+  assert.ok(gov.includes('at least 2 Ecosystem and 2 Public-Interest Directors'),
+    'governance page must require support from both non-sponsor classes');
+  assert.ok(gov.includes('may not occur in more than 2 consecutive financial years'),
     'governance page must state the consecutive-years limit');
+});
+
+test('rendered upstream drafts surface known consistency notices', () => {
+  for (const docPath of ['WHITEPAPER.md', 'sponsor/Sponsor-Onym.md',
+    'arbitration/Arbitration.md', 'interface/Interface.md']) {
+    assert.ok(DOCUMENT_NOTICES[docPath], `${docPath} must have a notice`);
+    const html = pageHtml(docPath, { status: 'draft' }, DOCS[docPath], '<p>body</p>', 'Title');
+    assert.match(html, /Consistency notice:/);
+    assert.match(html, /remediation\.html/);
+  }
 });
 
 test('manifest: every doc ref has a pinned SHA', () => {

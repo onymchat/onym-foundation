@@ -48,6 +48,16 @@ export const DOCS = {
 
 export const SITE_ORIGIN = 'https://onym.foundation';
 
+// The source repository is authoritative, but these pinned drafts contain
+// known cross-document conflicts. Rendering a warning prevents the Foundation
+// site from silently presenting contradictory draft rules as one policy.
+export const DOCUMENT_NOTICES = {
+  'WHITEPAPER.md': 'Known draft conflict: this whitepaper states a 4% ordinary endowment rule, while the Foundation proposal selects 5% ordinary and 7% exceptional limits. No rule is in force; the upstream drafts must be harmonized before the Foundation accepts money.',
+  'sponsor/Sponsor-Onym.md': 'Known draft conflict: prose and the example policy record in this profile disagree about ordinary and exceptional endowment percentages and approval thresholds. The Foundation proposal selects 5% ordinary, 7% exceptional, and a seven-of-nine vote including four non-sponsor directors with support from both non-sponsor classes. No rule is in force.',
+  'arbitration/Arbitration.md': 'Dependency notice: this draft depends on the bank escrow boundary, which is bundled here from a proposal still in review and is not merged into the onym-system main branch. No arbitration enforcement rail is operational.',
+  'interface/Interface.md': 'Known draft conflict: “replaceable at any time” does not permit one user to replace an existing group’s canonical notary. Personal defaults and read/submission providers may be replaceable; canonical group state requires the group’s governed migration rule.',
+};
+
 export function parseFrontmatter(md) {
   const meta = {};
   let body = md;
