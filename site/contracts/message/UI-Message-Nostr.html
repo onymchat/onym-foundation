@@ -11,6 +11,7 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://onym.foundation/contracts/message/UI-Message-Nostr.html">
 <meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
 <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
@@ -31,7 +32,7 @@
       <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
     </div>
     <div class="navctl">
-      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Auto</button>
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
       <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
     </div>
   </div>
@@ -528,25 +529,25 @@ overhead, rather than comparing only the opaque payload length.</p>
 <div class="tscroll"><table><thead>
 <tr>
 <th scope="col">Limit</th>
-<th style="text-align:right" scope="col">Current value</th>
+<th class="ta-r" scope="col">Current value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Maximum event size</td>
-<td style="text-align:right">65,536 bytes</td>
+<td class="ta-r">65,536 bytes</td>
 </tr>
 <tr>
 <td>Maximum WebSocket payload</td>
-<td style="text-align:right">131,072 bytes</td>
+<td class="ta-r">131,072 bytes</td>
 </tr>
 <tr>
 <td>Maximum concurrent subscriptions per connection</td>
-<td style="text-align:right">20</td>
+<td class="ta-r">20</td>
 </tr>
 <tr>
 <td>Relay automatic ping interval</td>
-<td style="text-align:right">55 seconds</td>
+<td class="ta-r">55 seconds</td>
 </tr>
 </tbody>
 </table></div><p>Current iOS and Android parsers reject inbound relay frames above 1,048,576

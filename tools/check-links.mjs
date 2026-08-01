@@ -30,6 +30,12 @@ function idsOf(file) {
 let errors = 0;
 for (const file of htmlFiles) {
   const html = fs.readFileSync(file, 'utf8');
+  // the deployed CSP has no unsafe-inline: any style attribute is dead weight
+  const inline = html.match(/\sstyle="/g);
+  if (inline) {
+    console.error(`${path.relative(SITE, file)} → ${inline.length} inline style attribute(s); CSP blocks these`);
+    errors++;
+  }
   const refs = [...html.matchAll(/\s(?:href|src)="([^"]+)"/g)].map(m => m[1]);
   for (const ref of refs) {
     if (/^(https?:|mailto:|data:)/.test(ref)) continue;

@@ -44,11 +44,22 @@ export function renderDoc(docPath, markdown) {
   md.renderer.rules.table_open = () => '<div class="tscroll"><table>';
   md.renderer.rules.table_close = () => '</table></div>';
 
-  // header cells carry an explicit scope (WCAG H63)
-  md.renderer.rules.th_open = (tokens, idx, opts, env, self) => {
-    tokens[idx].attrSet('scope', 'col');
+  // markdown-it expresses column alignment as inline styles, which the
+  // strict CSP (no unsafe-inline) blocks — convert to classes; header
+  // cells also carry an explicit scope (WCAG H63)
+  const cell = (tokens, idx, opts, env, self) => {
+    const t = tokens[idx];
+    const style = t.attrGet('style');
+    if (style) {
+      t.attrs = t.attrs.filter(([k]) => k !== 'style');
+      const m = style.match(/text-align:(left|center|right)/);
+      if (m) t.attrJoin('class', 'ta-' + m[1][0]);
+    }
+    if (t.type === 'th_open') t.attrSet('scope', 'col');
     return self.renderToken(tokens, idx, opts);
   };
+  md.renderer.rules.td_open = cell;
+  md.renderer.rules.th_open = cell;
 
   return md.render(markdown);
 }

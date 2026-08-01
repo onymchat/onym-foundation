@@ -9,27 +9,35 @@ function currentTheme() {
   return 'system';
 }
 function applyTheme(mode) {
+  // visual state first, unconditionally — persistence must not gate it
   const html = document.documentElement;
-  try {
-    if (mode === 'system') { delete html.dataset.theme; localStorage.removeItem('theme'); }
-    else { html.dataset.theme = mode; localStorage.setItem('theme', mode); }
-  } catch (e) {}
-  const effective = mode === 'system'
-    ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : mode;
+  if (mode === 'system') delete html.dataset.theme;
+  else html.dataset.theme = mode;
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
-    if (!m.media || matchMedia(m.media).matches || mode !== 'system') m.content = THEME_COLOR[effective];
+    if (mode === 'system') {
+      // restore per-media values so the browser follows the OS again
+      m.content = m.media && m.media.includes('dark') ? THEME_COLOR.dark : THEME_COLOR.light;
+    } else {
+      m.content = THEME_COLOR[mode];
+    }
   });
   if (themeBtn) {
-    themeBtn.textContent = THEME_LABEL[mode];
+    themeBtn.textContent = 'Theme: ' + THEME_LABEL[mode];
     themeBtn.setAttribute('aria-label', 'Color theme: ' + mode + ' — activate to change');
   }
+  try {
+    if (mode === 'system') localStorage.removeItem('theme');
+    else localStorage.setItem('theme', mode);
+  } catch (e) { /* not persisted; the page state above still applied */ }
 }
 if (themeBtn) {
   applyTheme(currentTheme());
   themeBtn.addEventListener('click', () => {
     const order = ['system', 'light', 'dark'];
     applyTheme(order[(order.indexOf(currentTheme()) + 1) % order.length]);
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (currentTheme() === 'system') applyTheme('system');
   });
 }
 

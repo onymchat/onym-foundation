@@ -124,6 +124,7 @@ if (!fs.existsSync(CHROME)) {
     await t.test('manual theme choice persists across pages', async () => {
       const page = await browser.newPage();
       await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
+      await page.evaluate(() => localStorage.clear());
       await page.click('.themebtn'); // system → light
       await page.click('.themebtn'); // light → dark
       assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark');
@@ -131,6 +132,42 @@ if (!fs.existsSync(CHROME)) {
       assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark', 'choice survives navigation');
       assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
         'rgb(15, 17, 21)');
+      await page.evaluate(() => localStorage.clear());
+      await page.close();
+    });
+
+    await t.test('returning to Auto restores per-media theme-color metas', async () => {
+      const page = await browser.newPage();
+      await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
+      await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
+      await page.evaluate(() => localStorage.clear());
+      await page.reload({ waitUntil: 'networkidle0' });
+      await page.click('.themebtn'); // → light
+      await page.click('.themebtn'); // → dark
+      await page.click('.themebtn'); // → auto
+      const metas = await page.evaluate(() =>
+        [...document.querySelectorAll('meta[name="theme-color"]')].map(m => [m.media, m.content]));
+      assert.deepEqual(metas, [
+        ['(prefers-color-scheme: light)', '#f5f5f3'],
+        ['(prefers-color-scheme: dark)', '#0f1115'],
+      ], 'Auto must hand theme-color selection back to the browser');
+      assert.equal(await page.$eval('.themebtn', el => el.textContent), 'Theme: Auto');
+      await page.evaluate(() => localStorage.clear());
+      await page.close();
+    });
+
+    await t.test('no-JS mobile: static stacked nav, controls hidden, no overflow', async () => {
+      const page = await browser.newPage();
+      await page.setJavaScriptEnabled(false);
+      await page.setViewport({ width: 390, height: 844 });
+      await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
+      assert.equal(await page.$eval('.site', el => getComputedStyle(el).position), 'static', 'nav must not overlap the hero without JS');
+      assert.equal(await page.$eval('.themebtn', el => getComputedStyle(el).display), 'none', 'inert theme button must be hidden');
+      assert.equal(await page.$eval('.menubtn', el => getComputedStyle(el).display), 'none');
+      assert.equal(await page.$eval('#sitemenu', el => getComputedStyle(el).flexDirection), 'column', 'links stack vertically');
+      const over = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert.ok(over <= 1, `no-JS page is ${over}px wider than the viewport`);
       await page.close();
     });
 

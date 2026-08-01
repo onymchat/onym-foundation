@@ -75,6 +75,14 @@ test('render: tables are wrapped in a scroll container', () => {
   assert.match(html, /<div class="tscroll"><table>/);
 });
 
+test('render: column alignment becomes classes, never inline styles', () => {
+  const html = renderDoc('README.md', '| a | b | c |\n|--:|:-:|:--|\n| 1 | 2 | 3 |\n');
+  assert.ok(!html.includes('style='), 'generated output must not carry style attributes (CSP)');
+  assert.match(html, /<th[^>]*class="ta-r"/);
+  assert.match(html, /<td class="ta-c">/);
+  assert.match(html, /<td class="ta-l">/);
+});
+
 test('manifest: every doc ref has a pinned SHA', () => {
   for (const [p, e] of Object.entries(DOCS)) {
     assert.ok(REFS[e.ref], `${p} references unknown ref ${e.ref}`);

@@ -11,6 +11,7 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://onym.foundation/contracts/blob/UI-Blob-Blossom.html">
 <meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
 <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
@@ -31,7 +32,7 @@
       <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
     </div>
     <div class="navctl">
-      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Auto</button>
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
       <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
     </div>
   </div>
@@ -346,57 +347,57 @@ only through bounded implementation diagnostics.</p>
 <h3 id="73-upload-status-mapping">7.3 Upload status mapping</h3>
 <div class="tscroll"><table><thead>
 <tr>
-<th style="text-align:right" scope="col">HTTP status</th>
+<th class="ta-r" scope="col">HTTP status</th>
 <th scope="col">Abstract outcome</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:right">200</td>
+<td class="ta-r">200</td>
 <td><code>already_stored</code> after descriptor verification</td>
 </tr>
 <tr>
-<td style="text-align:right">201</td>
+<td class="ta-r">201</td>
 <td><code>stored</code> after descriptor verification</td>
 </tr>
 <tr>
-<td style="text-align:right">400</td>
+<td class="ta-r">400</td>
 <td><code>upload_rejected</code> or invalid payment proof by context</td>
 </tr>
 <tr>
-<td style="text-align:right">401</td>
+<td class="ta-r">401</td>
 <td><code>auth_required</code> or <code>invalid_entitlement</code></td>
 </tr>
 <tr>
-<td style="text-align:right">402</td>
+<td class="ta-r">402</td>
 <td><code>payment_required</code></td>
 </tr>
 <tr>
-<td style="text-align:right">403</td>
+<td class="ta-r">403</td>
 <td><code>upload_rejected</code> / <code>unauthorized</code></td>
 </tr>
 <tr>
-<td style="text-align:right">409</td>
+<td class="ta-r">409</td>
 <td><code>descriptor_mismatch</code> or <code>invalid_reference</code></td>
 </tr>
 <tr>
-<td style="text-align:right">411</td>
+<td class="ta-r">411</td>
 <td><code>upload_rejected</code> because length is required</td>
 </tr>
 <tr>
-<td style="text-align:right">413</td>
+<td class="ta-r">413</td>
 <td><code>payload_too_large</code></td>
 </tr>
 <tr>
-<td style="text-align:right">415</td>
+<td class="ta-r">415</td>
 <td><code>unsupported_wire_type</code></td>
 </tr>
 <tr>
-<td style="text-align:right">429</td>
+<td class="ta-r">429</td>
 <td><code>rate_limited</code></td>
 </tr>
 <tr>
-<td style="text-align:right">5xx</td>
+<td class="ta-r">5xx</td>
 <td><code>unreachable</code> or provider failure</td>
 </tr>
 </tbody>
