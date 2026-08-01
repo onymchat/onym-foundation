@@ -39,7 +39,11 @@ if (!fs.existsSync(CHROME)) {
   test('browser', async t => {
     const srv = await serve();
     const base = `http://localhost:${srv.address().port}`;
-    const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new' });
+    const browser = await puppeteer.launch({
+      executablePath: CHROME,
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    });
     t.after(async () => { await browser.close(); srv.close(); });
 
     const PAGES = ['/index.html', '/seats.html', '/governance.html', '/transparency.html',
