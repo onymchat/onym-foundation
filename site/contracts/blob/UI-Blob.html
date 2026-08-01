@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Blob Transport Boundary — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Blob Transport Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/blob/UI-Blob.html">
+<meta property="og:title" content="Onym UI ↔ Blob Transport Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/blob/UI-Blob.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Media storage</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/blob/UI-Blob.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-blob-transport-boundary">Onym UI ↔ Blob Transport Boundary</h1>
+<p><strong>Architecture draft 0.2 — August 2026</strong></p>
+<blockquote>
+<p>The UI chooses and encrypts the media. Blob transport stores opaque,
+content-addressed bytes. It does not own the media, its key, or the message
+that refers to it.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary between an Onym
+frontend and a large-object courier. It does not require a particular hash,
+encryption algorithm, request protocol, server implementation, authorization
+format, storage engine, or addressing syntax.</p>
+<p>A concrete implementation may use content-addressed HTTP storage, an object
+network, an institutional archive, peer-to-peer transfer, local mesh storage,
+or another mechanism that satisfies the profile's integrity, opacity,
+availability, receipt, and error semantics. The current Blossom implementation
+is specified separately in <a href="../blob/UI-Blob-Blossom.html">UI-Blob-Blossom.md</a>.</p>
+<p>Here <strong>UI</strong> means the frontend application layer, not a screen issuing a
+network request. Views send intent to flows, view-models, repositories, or
+interactors. Those components validate, encode, encrypt, and content-address
+media before invoking the blob port.</p>
+<p>Small encrypted messages and invitations use
+<a href="../message/UI-Message.html">../message/UI-Message.md</a>. Shared-state validation
+uses <a href="../notary/UI-Notary.html">../notary/UI-Notary.md</a>.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the UI, application media protocol, blob adapter, and storage
+operator as independently owned components joined by versioned interfaces.</p>
+<ul>
+<li>The <strong>UI owner</strong> controls media presentation, local preparation, billing
+integration, supported profiles, and release distribution.</li>
+<li>The <strong>application-protocol author</strong> controls attachment descriptors,
+authenticated encryption, key handling, and plaintext-media validation.</li>
+<li>The <strong>blob-adapter author</strong> maps the common Onym port to a concrete storage
+protocol.</li>
+<li>The <strong>blob operator</strong> owns endpoints, capacity, retention, deletion,
+moderation, backups, availability, privacy practices, and its payment model.</li>
+<li>The <strong>user or group</strong> selects providers and replication policy.</li>
+</ul>
+<p>One organization may occupy several roles, but their authorities remain
+separate. A user can change UI without re-encrypting a still-available object.
+A UI can use a compatible third-party provider without importing its SDK. A
+provider can serve several frontends without learning group governance or
+holding decryption keys.</p>
+<p>The boundary has two interfaces:</p>
+<ol>
+<li>the local <strong>UI/application ↔ blob adapter</strong> port, which carries encrypted
+bytes, content references, retention intent, and typed outcomes; and</li>
+<li>the network <strong>blob adapter ↔ storage provider</strong> implementation profile,
+which defines request framing, retrieval, authorization, payment refusal,
+limits, receipts, retention observations, and deletion.</li>
+</ol>
+<p>Neither interface may carry plaintext media, filenames, captions, group
+secrets, seed material, or decryption keys. A key protected inside an
+end-to-end encrypted attachment descriptor travels through the separate
+message boundary as opaque ciphertext, never as provider metadata.</p>
+<h2 id="2-what-blob-transport-does">2. What blob transport does</h2>
+<p>The base blob port can:</p>
+<ol>
+<li>validate and connect to a selected set of provider components;</li>
+<li>upload already encrypted bytes under a declared content reference;</li>
+<li>probe whether a provider currently serves a reference;</li>
+<li>retrieve complete or ranged encrypted bytes;</li>
+<li>replicate the exact same encrypted bytes to another provider;</li>
+<li>request deletion when the selected implementation supports it; and</li>
+<li>report per-provider storage, availability, refusal, and uncertainty.</li>
+</ol>
+<p>It does not encode media, encrypt or decrypt application content, hold keys,
+interpret captions, decide who may view an attachment, authenticate group
+membership, resolve human names, carry chat messages, or authorize notary
+state.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-it-prevents-storage-from-becoming-media-custody">3.1 It prevents storage from becoming media custody</h3>
+<p>The provider retains ciphertext addressed by a digest. It does not receive the
+key, plaintext type, caption, sender identity, recipient list, group name, or
+permission to reconstruct the attachment.</p>
+<h3 id="32-it-prevents-the-ui-from-becoming-a-storage-protocol">3.2 It prevents the UI from becoming a storage protocol</h3>
+<p>Screens and domain flows should not know request paths, signed headers,
+redirect rules, range syntax, server descriptors, or wire-specific errors. A
+narrow port permits a different storage technology without rewriting chat and
+media flows.</p>
+<h3 id="33-it-gives-durable-meaning-to-an-attachment-reference">3.3 It gives durable meaning to an attachment reference</h3>
+<p>A provider locator is mutable and operator-controlled. A collision-resistant
+digest of the exact encrypted stored bytes is stable and independently
+verifiable. A sealed message can refer to the content while treating provider
+locations as replaceable hints.</p>
+<h3 id="34-it-makes-retention-and-deletion-claims-honest">3.4 It makes retention and deletion claims honest</h3>
+<p>Content addressing proves byte integrity, not continued availability or
+erasure. Operators declare retention, backups, mirrors, cache behavior,
+deletion scope, and measurable service levels instead of hiding them behind a
+generic upload-success state.</p>
+<h3 id="35-it-supports-independent-ownership-and-payment">3.5 It supports independent ownership and payment</h3>
+<p>One storage seat may be free, another may charge for retained byte-time or
+egress, and another may be institutionally funded. The UI chooses which signed
+offers it can present. Payment buys the declared storage service; it does not
+buy a decryption key or authority over messages and groups.</p>
+<h3 id="36-it-isolates-failure">3.6 It isolates failure</h3>
+<ul>
+<li>A failing provider can be supplemented by another copy with the same
+content reference.</li>
+<li>Corrupted or malicious bytes are rejected before decryption.</li>
+<li>A broken adapter can be replaced without changing attachment crypto.</li>
+<li>A payment failure does not require a new key or logical attachment.</li>
+<li>Loss or deletion of a blob does not mutate a message or canonical notary
+state.</li>
+</ul>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">UI process
+  |
+  | user intent
+  v
+application media flow
+  |-- validate and encode plaintext locally
+  |-- seal with a fresh application key
+  |-- compute profile-pinned content reference over stored bytes
+  `-- invoke blob port with opaque bytes
+            |
+            v
+      blob adapter
+      map · authorize · bound · verify · normalize
+            |
+            v
+      selected storage provider(s)
+      retain · serve · refuse · delete within declared policy
+</code></pre>
+<p>The adapter is inside the client trust boundary but handles untrusted network
+input, locators, redirects, descriptors, headers, and bytes. Providers are
+outside it. A successful provider response is evidence only of the provider's
+declared action—not future availability, complete deletion, media validity,
+recipient access, or group authorization.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-blob-profile">5.1 Blob Profile</h3>
+<p>A <code>BlobProfile</code> defines portable semantics independently of a wire technology
+or operator:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:blob-profile:opaque-content-addressed-v1&quot;,
+  &quot;interface&quot;: &quot;onym-blob-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;upload&quot;,
+    &quot;probe&quot;,
+    &quot;download&quot;,
+    &quot;delete&quot;,
+    &quot;replicate&quot;
+  ],
+  &quot;contentReferenceSchema&quot;: &quot;&lt;content-addressed-schema&gt;&quot;,
+  &quot;delivery&quot;: &quot;provider-scoped-best-effort-storage&quot;,
+  &quot;receiptSchema&quot;: &quot;per-provider-blob-outcome-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym-blob-errors-v1&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes operation meaning, content-reference semantics, verification,
+receipts, and errors. It does not choose a digest algorithm, endpoint,
+protocol, authorization scheme, price, retention period, replica count, or UI.</p>
+<h3 id="52-blob-implementation-profile">5.2 Blob Implementation Profile</h3>
+<p>A <code>BlobImplementationProfile</code> maps the abstract interface to one storage
+technology:</p>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:blob-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;blobProfileId&quot;: &quot;onym:blob-profile:opaque-content-addressed-v1&quot;,
+  &quot;wireProtocol&quot;: &quot;&lt;protocol-id&gt;&quot;,
+  &quot;digestSuite&quot;: &quot;&lt;digest-and-encoding&gt;&quot;,
+  &quot;wireMapping&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;connectionModel&quot;: &quot;&lt;declared-model&gt;&quot;,
+  &quot;authentication&quot;: [&quot;anonymous&quot;, &quot;provider-scoped-capability&quot;],
+  &quot;paymentRefusal&quot;: &quot;onym-payment-required-v1&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Wire request objects, server descriptors, authorization tokens, sockets, and
+protocol headers stay inside the adapter.</p>
+<h3 id="53-blob-provider-manifest">5.3 Blob Provider Manifest</h3>
+<p>A <code>ServiceManifest</code> binds an implementation profile to an operator:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;blob-provider-id&gt;&quot;,
+  &quot;seat&quot;: &quot;transport.blob&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;blobProfileId&quot;: &quot;onym:blob-profile:opaque-content-addressed-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:blob-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;endpoints&quot;: [
+    {&quot;uri&quot;: &quot;&lt;technology-specific-endpoint&gt;&quot;, &quot;role&quot;: &quot;read-write&quot;}
+  ],
+  &quot;capabilities&quot;: [&quot;upload&quot;, &quot;probe&quot;, &quot;download&quot;, &quot;delete&quot;],
+  &quot;limits&quot;: {
+    &quot;maximumOpaqueBlobBytes&quot;: &quot;&lt;operator-declared-limit&gt;&quot;,
+    &quot;maximumConcurrentOperations&quot;: &quot;&lt;operator-declared-limit&gt;&quot;
+  },
+  &quot;retention&quot;: {
+    &quot;class&quot;: &quot;&lt;best-effort-or-measurable-class&gt;&quot;,
+    &quot;deletion&quot;: &quot;&lt;declared-scope&gt;&quot;
+  },
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;entitlementIssuers&quot;: [&quot;onym:key:&lt;issuer-id&gt;&quot;],
+  &quot;offers&quot;: [&quot;&lt;blob-offer-id&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The UI verifies the signature, profiles, endpoint syntax, capabilities,
+limits, validity, retention, privacy declaration, entitlement issuers, and
+selected offer. Directory presence and a friendly name are insufficient.</p>
+<p>Mutable capacity and health observations remain separate from signed policy.
+They cannot silently replace an operator, endpoint, profile, or offer.</p>
+<h3 id="54-blob-route">5.4 Blob Route</h3>
+<p>A <code>BlobRoute</code> is the user's local storage and retrieval policy:</p>
+<pre><code class="language-json">{
+  &quot;routeVersion&quot;: 1,
+  &quot;routeId&quot;: &quot;&lt;local-random-id&gt;&quot;,
+  &quot;blobProfileId&quot;: &quot;onym:blob-profile:opaque-content-addressed-v1&quot;,
+  &quot;components&quot;: [
+    &quot;onym:component:&lt;blob-a&gt;&quot;,
+    &quot;onym:component:&lt;blob-b&gt;&quot;
+  ],
+  &quot;uploadPolicy&quot;: {&quot;mode&quot;: &quot;replicate&quot;, &quot;minimumStored&quot;: 2},
+  &quot;downloadPolicy&quot;: {&quot;mode&quot;: &quot;first-verified&quot;},
+  &quot;selectedBy&quot;: &quot;user&quot;,
+  &quot;selectedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p>The route is configuration, not identity or group state. The UI preserves the
+selection and warns when a change reduces redundancy, retention, privacy,
+compatibility, or paid coverage.</p>
+<p>An authenticated message may include location hints. A hint permits a fetch
+attempt; it does not add the hinted operator to a permanent route, authorize
+an upload, or imply endorsement.</p>
+<h3 id="55-content-reference">5.5 Content Reference</h3>
+<p>A <code>ContentReference</code> identifies the exact encrypted bytes:</p>
+<pre><code class="language-json">{
+  &quot;referenceVersion&quot;: 1,
+  &quot;algorithm&quot;: &quot;&lt;implementation-profile-digest-id&gt;&quot;,
+  &quot;digest&quot;: &quot;&lt;canonical-digest-value&gt;&quot;,
+  &quot;encryptedByteSize&quot;: 184292
+}
+</code></pre>
+<p>The implementation profile pins algorithm, digest encoding, canonical form,
+and collision-response policy. The digest covers the exact provider-facing
+byte sequence. It does not cover plaintext before encryption, a decoded media
+object, a locator, or mutable metadata.</p>
+<h3 id="56-sealed-blob">5.6 Sealed Blob</h3>
+<p>The application produces a sealed operation before calling the adapter:</p>
+<pre><code class="language-json">{
+  &quot;blobVersion&quot;: 1,
+  &quot;operationId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;contentReference&quot;: {
+    &quot;algorithm&quot;: &quot;&lt;profile-pinned-algorithm&gt;&quot;,
+    &quot;digest&quot;: &quot;&lt;canonical-digest&gt;&quot;,
+    &quot;encryptedByteSize&quot;: 184292
+  },
+  &quot;bytes&quot;: &quot;&lt;opaque-encrypted-bytes&gt;&quot;,
+  &quot;wireMediaType&quot;: &quot;&lt;opaque-wire-type&gt;&quot;,
+  &quot;requestedRetention&quot;: &quot;&lt;declared-class-or-null&gt;&quot;
+}
+</code></pre>
+<p>The adapter recomputes the reference before network use. The encryption key,
+plaintext type, dimensions, duration, filename, caption, and group context are
+not part of this object.</p>
+<h3 id="57-provider-outcomes-and-blob-descriptor">5.7 Provider outcomes and Blob Descriptor</h3>
+<p>After upload, the adapter returns the durable reference and per-provider
+outcomes:</p>
+<pre><code class="language-json">{
+  &quot;operationId&quot;: &quot;&lt;same-random-id&gt;&quot;,
+  &quot;contentReference&quot;: {
+    &quot;algorithm&quot;: &quot;&lt;profile-pinned-algorithm&gt;&quot;,
+    &quot;digest&quot;: &quot;&lt;canonical-digest&gt;&quot;,
+    &quot;encryptedByteSize&quot;: 184292
+  },
+  &quot;outcomes&quot;: [
+    {
+      &quot;componentId&quot;: &quot;onym:component:&lt;blob-a&gt;&quot;,
+      &quot;status&quot;: &quot;stored&quot;,
+      &quot;locator&quot;: &quot;&lt;profile-specific-location-hint&gt;&quot;,
+      &quot;retentionUntil&quot;: &quot;&lt;provider-observation-or-null&gt;&quot;,
+      &quot;evidence&quot;: &quot;&lt;profile-defined-evidence-or-null&gt;&quot;
+    },
+    {
+      &quot;componentId&quot;: &quot;onym:component:&lt;blob-b&gt;&quot;,
+      &quot;status&quot;: &quot;unreachable&quot;,
+      &quot;locator&quot;: null,
+      &quot;retentionUntil&quot;: null,
+      &quot;evidence&quot;: null
+    }
+  ]
+}
+</code></pre>
+<p>Valid outcome classes include:</p>
+<ul>
+<li><code>queued_locally</code>: accepted into a bounded local upload queue;</li>
+<li><code>submitted</code>: the request body was handed to the network implementation;</li>
+<li><code>accepted</code>: the provider explicitly accepted the operation;</li>
+<li><code>stored</code>: the provider confirmed a matching stored object under its policy;</li>
+<li><code>already_stored</code>: the same reference was already available;</li>
+<li><code>rejected</code>: the provider explicitly refused;</li>
+<li><code>unreachable</code>: no meaningful provider response was obtained; and</li>
+<li><code>unknown</code>: the request may have succeeded, but its result is inconclusive.</li>
+</ul>
+<p>A provider locator is a hint, not the content identity. <code>stored</code> is not a
+recipient-delivery state or proof of future retention.</p>
+<h3 id="58-attachment-descriptor">5.8 Attachment Descriptor</h3>
+<p>The application—not the blob adapter—constructs the descriptor placed inside
+the sealed message:</p>
+<pre><code class="language-json">{
+  &quot;attachmentVersion&quot;: 1,
+  &quot;contentReference&quot;: {
+    &quot;algorithm&quot;: &quot;&lt;profile-pinned-algorithm&gt;&quot;,
+    &quot;digest&quot;: &quot;&lt;canonical-digest&gt;&quot;,
+    &quot;encryptedByteSize&quot;: 184292
+  },
+  &quot;plaintextMediaType&quot;: &quot;&lt;sealed-media-type&gt;&quot;,
+  &quot;decryption&quot;: {
+    &quot;suite&quot;: &quot;&lt;application-encryption-suite&gt;&quot;,
+    &quot;key&quot;: &quot;&lt;key-protected-by-the-sealed-message&gt;&quot;
+  },
+  &quot;presentation&quot;: &quot;&lt;sealed-optional-metadata&gt;&quot;,
+  &quot;locations&quot;: [&quot;onym:component:&lt;blob-a&gt;&quot;]
+}
+</code></pre>
+<p>This descriptor is sensitive. Keys and plaintext media metadata remain inside
+the authenticated, end-to-end encrypted message envelope and never become
+storage-provider metadata.</p>
+<h2 id="6-common-blob-surface">6. Common blob surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect</code></td>
+<td>Verified route and scoped access context</td>
+<td>Per-provider readiness</td>
+</tr>
+<tr>
+<td><code>uploadBlob</code></td>
+<td>Sealed blob and selected route</td>
+<td>Verified per-provider outcomes</td>
+</tr>
+<tr>
+<td><code>probeBlob</code></td>
+<td>Reference and provider</td>
+<td>Availability and provider observations</td>
+</tr>
+<tr>
+<td><code>downloadBlob</code></td>
+<td>Reference, selected locations, optional range</td>
+<td>Verified complete bytes or explicitly unverified range</td>
+</tr>
+<tr>
+<td><code>deleteBlob</code></td>
+<td>Reference and provider-scoped authorization</td>
+<td>Narrow provider outcome</td>
+</tr>
+<tr>
+<td><code>replicateBlob</code></td>
+<td>Existing verified bytes and target providers</td>
+<td>New per-provider outcomes</td>
+</tr>
+<tr>
+<td><code>queryOutcome</code></td>
+<td>Operation/reference/provider</td>
+<td>Outcome when supported</td>
+</tr>
+</tbody>
+</table></div><p>The port never returns complete downloaded bytes as usable until their content
+reference is verified. Ranged or streamed bytes remain explicitly
+<code>unverified</code> until the full object is assembled and checked, unless a future
+profile defines a verifiable chunk tree.</p>
+<h2 id="7-uiapplication-obligations">7. UI/application obligations</h2>
+<p>A conforming frontend and application layer must:</p>
+<ol>
+<li>verify the blob and implementation profiles plus every selected manifest;</li>
+<li>preserve route and replication choices across UI and catalog updates;</li>
+<li>display operator, price, quota, retention, deletion scope, egress policy,
+replica count, limits, and privacy exposure before selection or purchase;</li>
+<li>validate and bound plaintext media before encoding;</li>
+<li>encrypt each blob with fresh application key material and authenticated
+encryption before invoking transport;</li>
+<li>compute the content reference over the exact encrypted stored bytes;</li>
+<li>keep plaintext, filenames, captions, group names, decryption keys, seed
+material, notary witnesses, and global identity credentials out of blob
+requests and logs;</li>
+<li>place keys and plaintext metadata only inside a sealed attachment message;</li>
+<li>preserve per-provider outcomes, refusals, and payment requirements;</li>
+<li>retain encrypted outbox bytes until the required storage policy is met;</li>
+<li>decrypt only after complete reference verification, then validate decoded
+media before rendering;</li>
+<li>treat locators, types, redirects, retention dates, and provider
+descriptors as untrusted observations;</li>
+<li>label <code>submitted</code>, <code>stored</code>, <code>replicated</code>, <code>available</code>, <code>downloaded</code>, and
+<code>received</code> accurately;</li>
+<li>retry idempotently by reference and operation ID rather than creating a
+new logical attachment;</li>
+<li>support route export, provider migration, and exact-byte replication; and</li>
+<li>never redirect storage merely to increase frontend commission.</li>
+</ol>
+<p>Provider diagnostics, locator fields, redirects, and filenames are untrusted
+input. They cannot drive unsafe navigation, execution, or payment.</p>
+<h2 id="8-blob-adapter-obligations">8. Blob adapter obligations</h2>
+<p>A conforming adapter must:</p>
+<ol>
+<li>implement its mapping without leaking wire-specific objects through the
+common port;</li>
+<li>accept only opaque encrypted bytes and avoid application-media parsing;</li>
+<li>validate reference syntax, byte count, endpoint identity, and limits;</li>
+<li>recompute the content reference before upload;</li>
+<li>verify every provider response against the expected reference and size;</li>
+<li>verify complete downloads before exposing usable bytes;</li>
+<li>enforce redirect or indirection limits and credential-origin policy;</li>
+<li>expose per-provider outcomes rather than collapse replication failures;</li>
+<li>keep each provider's entitlement, token, and authorization material scoped
+to that provider;</li>
+<li>normalize implementation failures into stable domain errors while
+preserving bounded safe diagnostics;</li>
+<li>bound response bodies, descriptors, metadata, indirection, range assembly,
+queues, timeouts, and retry;</li>
+<li>preserve unknown outcomes instead of converting silence to success;</li>
+<li>avoid logging blobs, contextualized references, credentials, signed
+authorizations, or sensitive descriptor data; and</li>
+<li>remain replaceable without changing attachment encryption or meaning.</li>
+</ol>
+<p>The adapter verifies storage-wire properties. It does not decide who may read
+an attachment; the authenticated application envelope and protected key do.</p>
+<h2 id="9-blob-operator-obligations">9. Blob operator obligations</h2>
+<p>A conforming operator publishes:</p>
+<ul>
+<li>a signed manifest and supported implementation profile;</li>
+<li>endpoint identities and indirection policy;</li>
+<li>supported operations and optional capabilities;</li>
+<li>maximum size, wire types, range/chunk support, concurrency, and rate limits;</li>
+<li>access-control and entitlement-issuer policy;</li>
+<li>minimum, maximum, or best-effort retention semantics;</li>
+<li>deletion scope, backups, mirrors, caches, and garbage-collection policy;</li>
+<li>metadata, network, credential, access-log, and usage-retention policy;</li>
+<li>measurable availability and durability claims;</li>
+<li>seat offers and settlement terms when paid; and</li>
+<li>migration, export, and shutdown notice policy.</li>
+</ul>
+<p>The operator must not claim that a content digest proves plaintext type,
+ownership, legal permission, recipient access, or removal from third-party
+copies.</p>
+<h2 id="10-integrity-availability-replication-and-deletion">10. Integrity, availability, replication, and deletion</h2>
+<p>Content addressing provides integrity, not availability.</p>
+<ul>
+<li>A valid object can disappear under best-effort service.</li>
+<li>The exact ciphertext may exist at several providers under one reference.</li>
+<li>A successful probe or download proves availability only when observed.</li>
+<li>A retention date is a provider statement, not cryptographic proof.</li>
+<li>A provider can serve corrupted bytes; the client rejects them by reference.</li>
+<li>A cache, mirror, backup, recipient, or observer may retain another copy.</li>
+<li>A delete acknowledgement covers only the provider's declared scope.</li>
+<li>A timeout after upload or delete creates an unknown outcome.</li>
+</ul>
+<p>Replication uses the exact same encrypted bytes. Re-encrypting produces a new
+content reference and therefore a new attachment version. Migration copies and
+verifies ciphertext, updates location hints if needed, and never exposes the
+decryption key.</p>
+<p>A receiver tries authenticated descriptor locations, locally selected
+compatible providers, or explicit trusted discovery. It never substitutes a
+different reference because bytes decode to apparently similar media.</p>
+<h2 id="11-access-control-and-payment">11. Access control and payment</h2>
+<p>Provider access is separate from attachment readership and global identity. A
+provider may require a component-scoped key or capability to upload, download,
+probe, list, or delete. That credential proves only the declared service
+access.</p>
+<p>The operator publishes a <code>SeatOffer</code>. A frontend sells it only through a
+compatible signed <code>ChannelOffer</code>; product mapping, validation, platform fees,
+taxes, refunds, and provider settlement remain outside blob framing.</p>
+<pre><code class="language-text">UI/application -&gt; blob adapter: preflight or encrypted-blob operation
+UI/application &lt;- blob adapter: PaymentRequired(component + offer)
+UI -&gt; billing channel: purchase approved product
+UI -&gt; billing broker: purchase evidence + provider-scoped access key
+UI &lt;- billing broker: SeatEntitlement
+UI/broker -&gt; provider control path: register entitlement or obtain capability
+UI/application -&gt; blob adapter: retry exact operation by content reference
+UI/application &lt;- blob adapter: verified per-provider outcome
+</code></pre>
+<p>When possible, payment refusal occurs in a lightweight preflight before a
+large upload or download. A retry preserves the exact encrypted bytes,
+content reference, and logical attachment. Store evidence and global identity
+never enter ordinary storage requests, object paths, or provider logs.</p>
+<p>Payment cannot make a reference mismatch valid, strengthen inner
+authorization, or prove retention. An unpaid object may use another selected
+provider.</p>
+<h2 id="12-errors-and-state-machines">12. Errors and state machines</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">UI/application response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse and explain required adapter</td>
+</tr>
+<tr>
+<td><code>invalid_endpoint</code></td>
+<td>Manifest/configuration</td>
+<td>Refuse; never silently rewrite</td>
+</tr>
+<tr>
+<td><code>invalid_plaintext</code></td>
+<td>Application validation</td>
+<td>Reject before encryption or upload</td>
+</tr>
+<tr>
+<td><code>invalid_reference</code></td>
+<td>Application/adapter</td>
+<td>Reject noncanonical or mismatched reference</td>
+</tr>
+<tr>
+<td><code>payload_too_large</code></td>
+<td>Client/provider</td>
+<td>Transform locally or choose compatible provider</td>
+</tr>
+<tr>
+<td><code>unreachable</code></td>
+<td>Network/provider</td>
+<td>Retry with backoff or another selected provider</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td>Provider</td>
+<td>Complete component-scoped authentication</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>Provider</td>
+<td>Present referenced signed offer when supported</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td>Provider/broker</td>
+<td>Refresh without leaking another credential</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Provider</td>
+<td>Honor retry guidance and preserve outbox bytes</td>
+</tr>
+<tr>
+<td><code>upload_rejected</code></td>
+<td>Provider</td>
+<td>Preserve reason and try allowed alternative</td>
+</tr>
+<tr>
+<td><code>descriptor_mismatch</code></td>
+<td>Adapter</td>
+<td>Fail closed; do not publish attachment descriptor</td>
+</tr>
+<tr>
+<td><code>partial_replication</code></td>
+<td>Route</td>
+<td>Report stored providers and retry missing copies</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Network/provider</td>
+<td>Probe by reference before resubmitting</td>
+</tr>
+<tr>
+<td><code>not_found</code></td>
+<td>Provider</td>
+<td>Try another authenticated location</td>
+</tr>
+<tr>
+<td><code>invalid_indirection</code></td>
+<td>Adapter</td>
+<td>Refuse destination and withhold credentials</td>
+</tr>
+<tr>
+<td><code>digest_mismatch</code></td>
+<td>Adapter</td>
+<td>Discard bytes, flag provider, try another location</td>
+</tr>
+<tr>
+<td><code>retention_expired</code></td>
+<td>Provider</td>
+<td>Re-upload verified bytes or locate another copy</td>
+</tr>
+<tr>
+<td><code>delete_unconfirmed</code></td>
+<td>Provider</td>
+<td>Preserve uncertainty; do not claim erasure</td>
+</tr>
+</tbody>
+</table></div><p>Upload state:</p>
+<pre><code class="language-text">selected
+  -&gt; validated
+  -&gt; encoded
+  -&gt; encrypted
+  -&gt; addressed
+  -&gt; route_validated
+  -&gt; preflight
+  -&gt; auth_required? -&gt; authenticated
+  -&gt; payment_required? -&gt; entitled -&gt; authenticated
+  -&gt; submitted
+  -&gt; response_verified
+  -&gt; partially_replicated | replicated | rejected | unknown
+  -&gt; attachment_descriptor_ready
+</code></pre>
+<p>The application releases the attachment message only under its declared
+policy—for example, after one verified copy or a two-provider target.</p>
+<p>Download state:</p>
+<pre><code class="language-text">sealed_attachment_descriptor
+  -&gt; descriptor_authenticated
+  -&gt; location_selected
+  -&gt; downloading
+  -&gt; size_bounded
+  -&gt; content_reference_verified
+  -&gt; authenticated_decryption
+  -&gt; media_validated
+  -&gt; rendered
+</code></pre>
+<p>Unverified complete bytes never reach a decoder or renderer.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>Only sealed blobs cross the boundary.</strong> Plaintext media, keys, captions,
+filenames, and group secrets never enter provider requests.</li>
+<li><strong>The reference covers stored bytes.</strong> It is recomputed before upload and
+checked after a complete download.</li>
+<li><strong>The key travels separately.</strong> It stays local or inside an authenticated,
+end-to-end encrypted attachment descriptor.</li>
+<li><strong>Wire type does not reveal plaintext type.</strong> The profile uses an opaque
+wire type where the technology permits it.</li>
+<li><strong>A locator is not integrity.</strong> Endpoint security, provider identity,
+indirection, and success codes never replace reference verification.</li>
+<li><strong>Credentials are component-scoped.</strong> One provider never receives
+another's entitlement, token, key, or authorization.</li>
+<li><strong>Billing is separate from content.</strong> Store evidence and global billing
+identifiers never enter content, locators, or ordinary access logs.</li>
+<li><strong>Untrusted input is bounded.</strong> Uploads, downloads, metadata, indirection,
+ranges, decoders, and decompression have explicit limits.</li>
+<li><strong>Route changes are visible.</strong> Defaults, catalogs, payment failure, and
+commission cannot silently move storage.</li>
+<li><strong>Replication has a privacy cost.</strong> More providers expose timing, size,
+reference, and access metadata to more operators.</li>
+<li><strong>Deletion claims are narrow.</strong> No acknowledgement proves removal from
+recipients, observers, mirrors, caches, or undeclared backups.</li>
+<li><strong>Blob state is not group state.</strong> Upload, loss, payment, retention, or
+deletion cannot authorize or roll back a notary transition.</li>
+<li><strong>Unknown is not success.</strong> Lost responses are reconciled by reference
+rather than relabeled as stored or deleted.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>BlobProfile</code> changes when operation, reference, receipt, availability,
+deletion, or error meaning changes.</li>
+<li><code>BlobImplementationProfile</code> changes when digest suite, wire mapping,
+framing, authentication, indirection, or refusal mapping changes.</li>
+<li><code>ServiceManifest</code> changes when endpoints, capabilities, limits, retention,
+offers, entitlement issuers, or operator keys change.</li>
+<li>Attachment-descriptor versions change independently from storage profiles.</li>
+<li>Unknown implementations are never inferred from endpoint syntax.</li>
+<li>Adding a provider location is additive only when the content reference is
+unchanged; re-encryption creates a new reference and attachment version.</li>
+<li>New defaults apply to new selection, not silently to existing routes.</li>
+<li>Cross-platform fixtures cover reference construction, uploads, descriptors,
+downloads, ranges, indirection, authorization, payment refusal, retry,
+replication, deletion uncertainty, and corrupt data.</li>
+<li>Paid and free providers of one implementation remain technically
+compatible; entitlement enforcement is a declared capability.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>The abstract boundary becomes executable through a concrete profile. The
+current implementation is:</p>
+<ul>
+<li><a href="../blob/UI-Blob-Blossom.html">UI-Blob-Blossom.md</a> — Blossom BUD-01/02/07/11/12,
+SHA-256 addressing, HTTPS requests, Nostr authorization, redirects, and
+current mobile/reference-server behavior.</li>
+</ul>
+<p>Future implementations may preserve the common port while using another
+storage technology. They use another implementation profile ID when digest,
+metadata, availability, deletion, or receipt semantics differ.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The UI ↔ blob boundary is successfully separated when:</p>
+<ol>
+<li>a third-party UI can store, retrieve, verify, and migrate encrypted Onym
+attachments using public profiles and tests;</li>
+<li>the official UI can use a compatible third-party provider after manifest
+verification without media-flow changes;</li>
+<li>providers can be replaced or combined without changing identity, group
+state, application encryption, or an existing content reference;</li>
+<li>wire requests, tokens, descriptors, locators, and indirection do not leak
+into view or domain APIs;</li>
+<li>plaintext, decryption keys, and global identity keys never reach a provider;</li>
+<li>every upload result states what each selected provider confirmed;</li>
+<li>no complete downloaded object is decrypted or rendered before reference
+verification;</li>
+<li>payment refusal is distinct from authorization, quota, retention, missing
+data, reference mismatch, and network failure;</li>
+<li>payment does not reveal store evidence or grant message/notary authority;</li>
+<li>corrupt responses, indirection, partial replication, retry, provider loss,
+and deletion uncertainty pass shared fixtures; and</li>
+<li>a second storage technology can implement the abstract suite without
+pretending to be the first.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>Separating UI from blob transport lets people replace who presents media
+without replacing who stores its ciphertext—and replace the storage provider
+without giving it the key, the message, or authority over the group.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/blob/UI-Blob.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

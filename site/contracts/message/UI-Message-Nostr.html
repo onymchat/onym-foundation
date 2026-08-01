@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Message: Nostr Implementation — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Message: Nostr Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/message/UI-Message-Nostr.html">
+<meta property="og:title" content="Onym UI ↔ Message: Nostr Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/message/UI-Message-Nostr.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/message/UI-Message-Nostr.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-message-nostr-implementation">Onym UI ↔ Message: Nostr Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This profile maps the technology-neutral Onym message boundary onto Nostr
+events, WebSocket relays, scoped NIP-42 authentication, and Onym-specific
+topic and inbox conventions.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../message/UI-Message.html">UI-Message.md</a>. The abstract specification remains
+authoritative for UI-facing operations, delivery meaning, receipts, errors,
+ownership, and payment isolation. This document defines the Nostr wire
+mapping and records where the present iOS, Android, and reference-relay code
+does not yet implement the complete boundary.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>implemented behavior</strong>, which exists in the current Onym repositories;</li>
+<li><strong>profile requirements</strong>, which are required for a conforming Nostr adapter
+or relay; and</li>
+<li><strong>gaps</strong>, where current code still needs to converge on the profile.</li>
+</ul>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Nostr mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Courier endpoint</td>
+<td>One Nostr relay reached over <code>wss://</code></td>
+</tr>
+<tr>
+<td>Courier component</td>
+<td>Signed relay <code>ServiceManifest</code> plus operator identity</td>
+</tr>
+<tr>
+<td>Topic address</td>
+<td>Opaque value in a <code>t</code> tag</td>
+</tr>
+<tr>
+<td>Inbox address</td>
+<td>Opaque value in <code>d</code>, <code>t</code>, and Onym compatibility tags</td>
+</tr>
+<tr>
+<td>Wire item</td>
+<td>NIP-01 event carrying base64 opaque bytes in <code>content</code></td>
+</tr>
+<tr>
+<td>Outer integrity</td>
+<td>NIP-01 event ID and BIP-340 Schnorr signature</td>
+</tr>
+<tr>
+<td>Transport message ID</td>
+<td>Nostr event <code>id</code></td>
+</tr>
+<tr>
+<td>Publish</td>
+<td>Client <code>EVENT</code> frame</td>
+</tr>
+<tr>
+<td>Explicit acceptance</td>
+<td>Relay <code>OK</code> with <code>true</code></td>
+</tr>
+<tr>
+<td>Subscription</td>
+<td>Client <code>REQ</code>; relay <code>EVENT</code> and <code>EOSE</code>; client <code>CLOSE</code></td>
+</tr>
+<tr>
+<td>Subscription refusal</td>
+<td>Relay <code>CLOSED</code></td>
+</tr>
+<tr>
+<td>Access authentication</td>
+<td>NIP-42 <code>AUTH</code> using a relay-scoped seat key</td>
+</tr>
+<tr>
+<td>Paid-service refusal</td>
+<td>HTTP 402 before upgrade or Onym <code>payment-required:</code> reason after upgrade</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:message-implementation:nostr-courier-v1
+</code></pre>
+<p>It maps this portable profile:</p>
+<pre><code class="language-text">onym:message-profile:opaque-topic-inbox-v1
+</code></pre>
+<p>The event kinds, tags, legacy receive paths, millisecond tag, payment reason,
+and ephemeral-key policy are Onym conventions. They are not implied by generic
+Nostr support. An adapter claims this implementation profile rather than
+inferring compatibility from a <code>wss://</code> URI.</p>
+<h2 id="2-ownership-mapping">2. Ownership mapping</h2>
+<ul>
+<li>The <strong>application-protocol author</strong> defines and authenticates the encrypted
+bytes placed in event <code>content</code>.</li>
+<li>The <strong>Nostr adapter author</strong> maps the abstract port to events, filters,
+frames, acknowledgements, refusal codes, and reconnect behavior.</li>
+<li>The <strong>relay operator</strong> controls availability, limits, retention, moderation,
+access policy, offers, and settlement terms.</li>
+<li>The <strong>billing broker</strong> validates channel purchases and issues or registers a
+component-scoped entitlement; it does not validate chat messages.</li>
+<li>The <strong>UI publisher</strong> presents relay selection and compatible offers without
+becoming the relay operator or group authority.</li>
+<li>The <strong>user or group</strong> chooses one or more relay components and owns the
+resulting route.</li>
+</ul>
+<p>One party may occupy several seats, but the profile does not merge their
+authority. A relay's outer event checks do not authorize the inner sender, and
+an app-store purchase does not authorize a group action.</p>
+<h2 id="3-physical-topology">3. Physical topology</h2>
+<pre><code class="language-text">UI flow / repository
+  |-- application crypto: authenticate and seal envelope
+  |-- billing coordinator: resolve PaymentRequired
+  `-- MessageTransport / InboxTransport
+            |
+            | opaque bytes + opaque address
+            v
+      Nostr message adapter
+            |
+            | signed event / filter
+            v
+      Nostr relay connection
+            |
+            | WSS: EVENT / REQ / AUTH / CLOSE
+            v
+      independently owned relay
+</code></pre>
+<p>The current clients connect to every selected relay and publish and subscribe
+across all of them. Relay fan-out is an availability policy at the route
+layer. The UI discloses that it also exposes timing, network, routing, and size
+metadata to every selected operator.</p>
+<h2 id="4-relay-declaration">4. Relay declaration</h2>
+<h3 id="41-target-manifest">4.1 Target manifest</h3>
+<p>A conforming relay publishes a signed abstract <code>ServiceManifest</code> whose Nostr
+mapping includes at least:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;relay-id&gt;&quot;,
+  &quot;seat&quot;: &quot;transport.message&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;messageProfileId&quot;: &quot;onym:message-profile:opaque-topic-inbox-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:message-implementation:nostr-courier-v1&quot;,
+  &quot;endpoints&quot;: [
+    {&quot;uri&quot;: &quot;wss://relay.example&quot;, &quot;role&quot;: &quot;read-write&quot;}
+  ],
+  &quot;capabilities&quot;: [&quot;topic&quot;, &quot;inbox&quot;, &quot;nip42&quot;, &quot;payment-required-v1&quot;],
+  &quot;limits&quot;: {
+    &quot;maximumEventBytes&quot;: &quot;&lt;declared-limit&gt;&quot;,
+    &quot;maximumWebSocketFrameBytes&quot;: &quot;&lt;declared-limit&gt;&quot;,
+    &quot;maximumConcurrentSubscriptions&quot;: &quot;&lt;declared-limit&gt;&quot;
+  },
+  &quot;retention&quot;: &quot;&lt;declared-policy&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;entitlementIssuers&quot;: [&quot;onym:key:&lt;issuer-id&gt;&quot;],
+  &quot;offers&quot;: [&quot;&lt;relay-offer-id&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The client validates the manifest before opening its endpoint. TLS
+authenticates the current host; the signed manifest binds that host to the
+selected component, operator, implementation profile, limits, and offers.</p>
+<h3 id="42-current-endpoint-configuration">4.2 Current endpoint configuration</h3>
+<p>Current mobile configuration stores only <code>name</code>, <code>url</code>, and <code>isDefault</code>, plus
+local state recording whether the user changed the seeded list. Onym's relay
+is seeded on first use and every configured relay is selected for fan-out.
+This is discovery and preference state, not the complete manifest above.
+Display names and shipped defaults do not prove operator identity.</p>
+<h2 id="5-nostr-event-envelope">5. Nostr event envelope</h2>
+<p>A wire event has the NIP-01 fields:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;&lt;lowercase-sha256-hex&gt;&quot;,
+  &quot;pubkey&quot;: &quot;&lt;32-byte-x-only-public-key-hex&gt;&quot;,
+  &quot;created_at&quot;: 1785580800,
+  &quot;kind&quot;: 44114,
+  &quot;tags&quot;: [[&quot;t&quot;, &quot;&lt;opaque-topic&gt;&quot;], [&quot;ms&quot;, &quot;1785580800123&quot;]],
+  &quot;content&quot;: &quot;&lt;base64-opaque-envelope&gt;&quot;,
+  &quot;sig&quot;: &quot;&lt;bip340-schnorr-signature-hex&gt;&quot;
+}
+</code></pre>
+<p>The event ID is the lowercase SHA-256 digest of the UTF-8 JSON serialization:</p>
+<pre><code class="language-json">[0,&quot;&lt;pubkey&gt;&quot;,1785580800,44114,[[&quot;t&quot;,&quot;&lt;topic&gt;&quot;],[&quot;ms&quot;,&quot;1785580800123&quot;]],&quot;&lt;content&gt;&quot;]
+</code></pre>
+<p>Array order, tag order, strings, numbers, and escaping are therefore
+consensus-sensitive within this implementation. Cross-platform fixtures pin
+the canonical bytes, ID, and signature.</p>
+<p>For message and inbox events, current clients create a fresh secp256k1 signer
+for every event. Its x-only public key becomes <code>pubkey</code>, and its BIP-340
+signature covers the event ID. This reduces stable sender correlation; it does
+not make relay metadata private and it is not an Onym identity or group
+signature. The encrypted inner envelope independently authenticates its
+sender and meaning.</p>
+<p>Every emitted event also carries:</p>
+<pre><code class="language-json">[&quot;ms&quot;, &quot;&lt;non-negative-Unix-time-in-milliseconds&gt;&quot;]
+</code></pre>
+<p><code>created_at</code> is the same local clock truncated to seconds. Receivers may use a
+valid <code>ms</code> value for display ordering and fall back to <code>created_at * 1000</code>.
+Neither value is trusted application order.</p>
+<h2 id="6-topic-mapping">6. Topic mapping</h2>
+<h3 id="61-publish">6.1 Publish</h3>
+<p>The adapter emits kind <code>44114</code> with a <code>t</code> tag containing the opaque topic and
+standard base64 of the sealed bytes in <code>content</code>:</p>
+<pre><code class="language-json">[
+  &quot;EVENT&quot;,
+  {
+    &quot;kind&quot;: 44114,
+    &quot;tags&quot;: [[&quot;t&quot;, &quot;&lt;opaque-topic&gt;&quot;], [&quot;ms&quot;, &quot;&lt;Unix-time-ms&gt;&quot;]],
+    &quot;content&quot;: &quot;&lt;standard-base64-of-opaque-bytes&gt;&quot;
+  }
+]
+</code></pre>
+<p>The abbreviated object also contains every identity and signature field from
+section 5. New adapters emit only kind <code>44114</code> under this profile.</p>
+<h3 id="62-subscribe-and-catch-up">6.2 Subscribe and catch-up</h3>
+<p>The adapter opens one logical subscription per topic and relay:</p>
+<pre><code class="language-json">[
+  &quot;REQ&quot;,
+  &quot;&lt;unique-subscription-id&gt;&quot;,
+  {
+    &quot;kinds&quot;: [44114, 24114],
+    &quot;#t&quot;: [&quot;&lt;opaque-topic&gt;&quot;],
+    &quot;since&quot;: 1785580500
+  }
+]
+</code></pre>
+<p>Kind <code>24114</code> is a receive-only legacy path. When the caller supplies a <code>since</code>
+instant, current clients subtract 60 seconds, clamped at zero, to tolerate
+clock skew. With no cursor, they request the preceding 300 seconds. These
+values describe the current <code>nostr-courier-v1</code> profile; changing their meaning
+requires a new profile version or an explicitly negotiated cursor policy.</p>
+<p>The relay returns zero or more <code>EVENT</code> frames and then <code>EOSE</code> for the stored
+portion. Live <code>EVENT</code> frames may continue until cancellation. The adapter
+sends <code>CLOSE</code> with the exact subscription ID when the stream ends.</p>
+<h2 id="7-inbox-mapping">7. Inbox mapping</h2>
+<h3 id="71-send">7.1 Send</h3>
+<p>The adapter emits kind <code>34113</code>, a parameterized-replaceable event, with this
+exact application tag set before the common <code>ms</code> tag is appended:</p>
+<pre><code class="language-json">[
+  [&quot;d&quot;, &quot;sep-inbox:&lt;opaque-inbox-id&gt;&quot;],
+  [&quot;t&quot;, &quot;&lt;opaque-inbox-id&gt;&quot;],
+  [&quot;sep_inbox&quot;, &quot;&lt;opaque-inbox-id&gt;&quot;],
+  [&quot;sep_version&quot;, &quot;1&quot;]
+]
+</code></pre>
+<p><code>content</code> is standard base64 of the sealed bytes. <code>d</code> is the canonical
+parameterized-replaceable address. The other tags maintain compatibility with
+existing Onym and legacy filtering. Because replacement is keyed by kind,
+publisher pubkey, and <code>d</code>, the fresh per-event publisher key prevents a new
+sender event from replacing another sender's inbox event.</p>
+<h3 id="72-subscribe">7.2 Subscribe</h3>
+<p>An inbox subscription carries these three filters in one <code>REQ</code>:</p>
+<pre><code class="language-json">[
+  &quot;REQ&quot;,
+  &quot;&lt;unique-subscription-id&gt;&quot;,
+  {&quot;kinds&quot;: [34113], &quot;#d&quot;: [&quot;sep-inbox:&lt;opaque-inbox-id&gt;&quot;]},
+  {&quot;kinds&quot;: [34113], &quot;#t&quot;: [&quot;&lt;opaque-inbox-id&gt;&quot;]},
+  {&quot;kinds&quot;: [24113], &quot;#t&quot;: [&quot;&lt;opaque-inbox-id&gt;&quot;]}
+]
+</code></pre>
+<p>The first filter is canonical, the second is a same-kind compatibility path,
+and kind <code>24113</code> is receive-only legacy compatibility. One multi-filter <code>REQ</code>
+consumes one relay subscription slot and lets a conforming relay suppress an
+event that matches more than one filter.</p>
+<p>Subscription IDs are at most 64 characters, unique for each subscription
+generation, and contain no raw inbox value. A suitable form is a fixed prefix,
+a truncated hash of the inbox, and a monotonic local generation. This prevents
+an old stream's delayed <code>CLOSE</code> from terminating its replacement and avoids
+placing a stable raw address in another frame field.</p>
+<h2 id="8-framing-and-connection-lifecycle">8. Framing and connection lifecycle</h2>
+<p>The adapter uses valid Nostr arrays:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Direction</th>
+<th scope="col">Frame</th>
+<th scope="col">Meaning in this profile</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client → relay</td>
+<td><code>[&quot;EVENT&quot;, &lt;event&gt;]</code></td>
+<td>Submit one topic or inbox event</td>
+</tr>
+<tr>
+<td>Client → relay</td>
+<td><code>[&quot;REQ&quot;, &lt;id&gt;, &lt;filter&gt;...]</code></td>
+<td>Open a bounded subscription</td>
+</tr>
+<tr>
+<td>Client → relay</td>
+<td><code>[&quot;CLOSE&quot;, &lt;id&gt;]</code></td>
+<td>Close the named subscription</td>
+</tr>
+<tr>
+<td>Client → relay</td>
+<td><code>[&quot;AUTH&quot;, &lt;event&gt;]</code></td>
+<td>Answer a NIP-42 challenge</td>
+</tr>
+<tr>
+<td>Relay → client</td>
+<td><code>[&quot;EVENT&quot;, &lt;id&gt;, &lt;event&gt;]</code></td>
+<td>Deliver a matching event</td>
+</tr>
+<tr>
+<td>Relay → client</td>
+<td><code>[&quot;EOSE&quot;, &lt;id&gt;]</code></td>
+<td>Mark the stored/live boundary</td>
+</tr>
+<tr>
+<td>Relay → client</td>
+<td><code>[&quot;OK&quot;, &lt;event-id&gt;, &lt;bool&gt;, &lt;reason&gt;]</code></td>
+<td>Accept or reject an event</td>
+</tr>
+<tr>
+<td>Relay → client</td>
+<td><code>[&quot;CLOSED&quot;, &lt;id&gt;, &lt;reason&gt;]</code></td>
+<td>Refuse or end a subscription</td>
+</tr>
+<tr>
+<td>Relay → client</td>
+<td><code>[&quot;NOTICE&quot;, &lt;message&gt;]</code></td>
+<td>Unstructured diagnostic</td>
+</tr>
+<tr>
+<td>Relay → client</td>
+<td><code>[&quot;AUTH&quot;, &lt;challenge&gt;]</code></td>
+<td>Request NIP-42 authentication</td>
+</tr>
+</tbody>
+</table></div><p>Unknown or malformed frames are ignored or quarantined within bounded work.
+<code>NOTICE</code> is diagnostic text, never a stable domain error or trusted payment
+link. <code>OK</code> and <code>CLOSED</code> reasons are parsed only through recognized prefixes;
+the original bounded text may be retained as safe diagnostic context.</p>
+<p>For every endpoint, a conforming connection:</p>
+<ol>
+<li>establishes TLS and a WebSocket to the manifest-bound <code>wss://</code> origin;</li>
+<li>applies connection and inbound-frame limits;</li>
+<li>authenticates when challenged;</li>
+<li>replays active subscriptions after reconnect;</li>
+<li>uses exponential backoff with jitter and a declared ceiling;</li>
+<li>prevents stale and current receive loops from sharing ownership;</li>
+<li>gives each resubscription a new ID;</li>
+<li>keeps explicit disconnect as sticky intent across delayed reconnect work;</li>
+<li>closes remote subscriptions on cancellation; and</li>
+<li>reports each relay independently.</li>
+</ol>
+<p>Current iOS probes liveness every 30 seconds with an impossible <code>REQ</code> and
+expects a response because its WebSocket implementation cannot safely rely on
+a ping callback; it closes the probe immediately. Android uses OkHttp ping
+frames every 30 seconds. Both use reconnect delays from one second up to 120
+seconds. These are client choices, not portable message semantics.</p>
+<h2 id="9-validation-and-inbound-delivery">9. Validation and inbound delivery</h2>
+<p>Before producing an abstract inbound value, the adapter:</p>
+<ol>
+<li>bounds the frame and decoded JSON structure;</li>
+<li>validates the frame type and subscription ID;</li>
+<li>parses required event fields with exact types and sizes;</li>
+<li>recomputes and compares the canonical event ID;</li>
+<li>verifies the BIP-340 signature against <code>pubkey</code>;</li>
+<li>requires an allowed kind for the subscription;</li>
+<li>requires the exact requested <code>t</code> or <code>d</code> address relation;</li>
+<li>enforces manifest event and decoded-payload limits;</li>
+<li>strictly decodes base64;</li>
+<li>suppresses duplicate event IDs; and</li>
+<li>passes only the address, opaque bytes, event ID, relay origin, and
+observation to the abstract layer.</li>
+</ol>
+<p>The application then verifies and decrypts the inner envelope, enforces group
+or inbox authorization, and deduplicates by authenticated logical message ID.
+Relay filtering is an optimization: a malicious relay can send an event that
+does not match the requested filter, so the client repeats the match check.</p>
+<h2 id="10-acceptance-and-receipts">10. Acceptance and receipts</h2>
+<p>Explicit relay acceptance is:</p>
+<pre><code class="language-json">[&quot;OK&quot;, &quot;&lt;event-id&gt;&quot;, true, &quot;&quot;]
+</code></pre>
+<p><code>OK true</code> means only that this relay accepted the event under its declared
+service. It is not proof of durable retention, recipient delivery, inner
+sender authenticity, group authorization, or global publication.</p>
+<p>An <code>OK false</code> is <code>rejected</code> with a typed prefix mapping when recognized. A
+network failure before a response is <code>unreachable</code>. A timeout after a send is
+<code>unknown</code>, because the relay may have accepted the event before the response
+was lost. Silence is never upgraded to <code>accepted</code>.</p>
+<p>For fan-out, the adapter returns abstract per-courier outcomes. The same event
+ID may be submitted to every relay in one attempt. A logical retry may need a
+fresh outer event because time or authorization context changed, while
+preserving the inner <code>logicalMessageId</code> for deduplication.</p>
+<h2 id="11-relay-authentication">11. Relay authentication</h2>
+<p>When access control is required, the relay uses NIP-42:</p>
+<pre><code class="language-text">relay -&gt; client: [&quot;AUTH&quot;, &quot;&lt;challenge&gt;&quot;]
+client -&gt; relay: [&quot;AUTH&quot;, &lt;kind-22242-auth-event&gt;]
+relay -&gt; client: [&quot;OK&quot;, &quot;&lt;auth-event-id&gt;&quot;, true, &quot;&quot;]
+</code></pre>
+<p>The authorization event has kind <code>22242</code>, empty <code>content</code>, a timestamp close
+to the challenge, and applicable tags including:</p>
+<pre><code class="language-json">[
+  [&quot;relay&quot;, &quot;wss://relay.example&quot;],
+  [&quot;challenge&quot;, &quot;&lt;exact-relay-challenge&gt;&quot;]
+]
+</code></pre>
+<p>It is signed by a key scoped to this relay component and seat. It is neither
+the global Onym identity key nor the fresh outer key used for ordinary message
+events. The relay validates signature, kind, timestamp, challenge, and
+normalized relay URL, then binds the authenticated subject to the connection.</p>
+<p>Because ordinary Onym events deliberately use ephemeral outer keys, a
+compatible relay authorizes connection operations for the authenticated seat
+and does not require each ordinary event <code>pubkey</code> to equal the NIP-42 access
+key. A generic relay configured to require equality is not compatible.</p>
+<p>If purchase registration is required, a billing-broker webhook or versioned
+relay control endpoint binds the entitlement subject to the relay-scoped
+access key. The client never adds proprietary fields to <code>AUTH</code> and never sends
+an App Store or Play receipt to the relay.</p>
+<h2 id="12-payment-required-mapping">12. Payment-required mapping</h2>
+<p>Payment may be refused at two phases:</p>
+<ol>
+<li><strong>Before WebSocket upgrade.</strong> HTTPS may return <code>402 Payment Required</code> with
+a canonical <code>PaymentRequired</code> document or signed reference.</li>
+<li><strong>After WebSocket upgrade.</strong> The relay remains inside valid Nostr framing.
+It rejects a write with <code>OK false</code> or a subscription with <code>CLOSED</code>.</li>
+</ol>
+<pre><code class="language-json">[&quot;OK&quot;, &quot;&lt;event-id&gt;&quot;, false, &quot;payment-required: &lt;opaque-offer-reference&gt;&quot;]
+[&quot;CLOSED&quot;, &quot;&lt;subscription-id&gt;&quot;, &quot;payment-required: &lt;opaque-offer-reference&gt;&quot;]
+</code></pre>
+<p><code>payment-required:</code> is an Onym extension, not a standardized NIP-01 or NIP-42
+prefix. Reasons map as follows:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Prefix</th>
+<th scope="col">Domain result</th>
+<th scope="col">Next action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth-required:</code></td>
+<td><code>auth_required</code></td>
+<td>Answer NIP-42 challenge</td>
+</tr>
+<tr>
+<td><code>restricted:</code></td>
+<td><code>invalid_entitlement</code> or <code>unauthorized</code></td>
+<td>Refresh entitlement or explain policy</td>
+</tr>
+<tr>
+<td><code>payment-required:</code></td>
+<td><code>payment_required</code></td>
+<td>Resolve referenced signed offer</td>
+</tr>
+<tr>
+<td>unknown</td>
+<td>generic rejection</td>
+<td>Preserve bounded diagnostic text</td>
+</tr>
+</tbody>
+</table></div><p>The adapter returns <code>PaymentRequired(componentId, offerReference, operation)</code>
+to the UI billing coordinator. It does not invoke StoreKit or Play Billing,
+select a product, validate a purchase, calculate taxes or commissions, or
+declare settlement complete.</p>
+<pre><code class="language-text">application -&gt; adapter: publish or subscribe
+application &lt;- adapter: PaymentRequired(relay + offer reference)
+UI -&gt; billing channel: purchase approved ChannelOffer product
+UI -&gt; billing broker: purchase evidence + relay-scoped access public key
+UI &lt;- billing broker: SeatEntitlement
+billing broker -&gt; relay control plane: entitlement registration
+relay -&gt; client: NIP-42 challenge
+client -&gt; relay: NIP-42 proof with relay-scoped key
+application -&gt; adapter: retry original logical operation
+application &lt;- adapter: per-relay outcome
+</code></pre>
+<p>The retry preserves the sealed envelope and logical message ID. Platform fees,
+the UI owner's declared commission, taxes, refunds, and settlement to the
+relay operator remain economic-plane records outside Nostr message events.</p>
+<h2 id="13-delivery-retention-and-limits">13. Delivery, retention, and limits</h2>
+<p>This profile provides best-effort, at-least-once delivery. Fan-out,
+compatibility filters, reconnect, and catch-up can produce duplicates. A relay
+can delay, drop, replay, expire, or selectively serve ciphertext. <code>EOSE</code> marks
+one relay's stored/live boundary, not globally complete history. The adapter
+deduplicates event IDs; the application deduplicates authenticated logical IDs.</p>
+<p>Limits are operator declarations, not universal Nostr constants. A client
+computes the complete UTF-8 JSON event size after base64 expansion and event
+overhead, rather than comparing only the opaque payload length.</p>
+<p>The current <code>strfry</code> reference deployment is configured with:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Limit</th>
+<th style="text-align:right" scope="col">Current value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maximum event size</td>
+<td style="text-align:right">65,536 bytes</td>
+</tr>
+<tr>
+<td>Maximum WebSocket payload</td>
+<td style="text-align:right">131,072 bytes</td>
+</tr>
+<tr>
+<td>Maximum concurrent subscriptions per connection</td>
+<td style="text-align:right">20</td>
+</tr>
+<tr>
+<td>Relay automatic ping interval</td>
+<td style="text-align:right">55 seconds</td>
+</tr>
+</tbody>
+</table></div><p>Current iOS and Android parsers reject inbound relay frames above 1,048,576
+bytes. That defensive ceiling is larger than the reference relay's limit and
+is not a promise that a relay will accept such an event. The target manifest
+allows rejection before signing or network work. Queues, pending <code>OK</code> waiters,
+tags, subscriptions, reconnect tasks, and diagnostics also require bounds.</p>
+<h2 id="14-error-mapping">14. Error mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract error</th>
+<th scope="col">Nostr source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest lacks the profile or capability</td>
+</tr>
+<tr>
+<td><code>invalid_endpoint</code></td>
+<td>Invalid origin, manifest mismatch, or TLS failure</td>
+</tr>
+<tr>
+<td><code>not_connected</code></td>
+<td>No selected connection available</td>
+</tr>
+<tr>
+<td><code>unreachable</code></td>
+<td>DNS, TLS, WebSocket, send, or connection timeout</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td><code>AUTH</code> challenge or <code>auth-required:</code> refusal</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>HTTP 402 or Onym <code>payment-required:</code> refusal</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td><code>restricted:</code> after attempted seat authentication</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Profile-mapped rate-limit refusal</td>
+</tr>
+<tr>
+<td><code>payload_too_large</code></td>
+<td>Local manifest limit or relay rejection</td>
+</tr>
+<tr>
+<td><code>publish_rejected</code></td>
+<td><code>OK false</code> without a specific mapping</td>
+</tr>
+<tr>
+<td><code>subscription_rejected</code></td>
+<td><code>CLOSED</code> without a specific mapping</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Submitted event without conclusive <code>OK</code></td>
+</tr>
+<tr>
+<td><code>invalid_frame</code></td>
+<td>Malformed, excessive, or unexpected event/filter relation</td>
+</tr>
+<tr>
+<td><code>invalid_outer_integrity</code></td>
+<td>Event-ID or Schnorr verification failure</td>
+</tr>
+<tr>
+<td><code>retention_gap</code></td>
+<td>Catch-up cursor cannot be completely served</td>
+</tr>
+</tbody>
+</table></div><p>Free-form <code>NOTICE</code>, <code>OK</code>, and <code>CLOSED</code> strings stay diagnostics. They cannot
+become executable links, product identifiers, or authorization decisions
+without resolving a signed, profile-bound object.</p>
+<h2 id="15-current-implementation-mapping">15. Current implementation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Boundary role</th>
+<th scope="col">Current implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Common message port</td>
+<td><code>Transport.swift</code> in <code>onym-ios</code>; <code>Transport.kt</code> in <code>onym-android</code></td>
+</tr>
+<tr>
+<td>Topic adapter</td>
+<td><code>NostrMessageTransport</code> in both clients</td>
+</tr>
+<tr>
+<td>Inbox adapter</td>
+<td><code>NostrInboxTransport</code> in both clients</td>
+</tr>
+<tr>
+<td>Connection and framing</td>
+<td><code>NostrRelayConnection</code> and <code>NostrEvent</code> in both clients</td>
+</tr>
+<tr>
+<td>Outer signing</td>
+<td><code>OnymNostrSigner</code> and <code>NostrEphemeralSignerProvider</code></td>
+</tr>
+<tr>
+<td>Relay selection</td>
+<td><code>NostrRelaysRepository</code> and platform selection stores</td>
+</tr>
+<tr>
+<td>Reference relay</td>
+<td><code>strfry</code> behind Caddy in <code>onym-infra</code></td>
+</tr>
+</tbody>
+</table></div><p>Implemented today on both platforms:</p>
+<ul>
+<li>topic kind <code>44114</code> emission and kinds <code>44114</code>/<code>24114</code> receipt;</li>
+<li>inbox kind <code>34113</code>, its four application tags, and kind <code>24113</code> fallback;</li>
+<li>base64 payloads, the <code>ms</code> tag, canonical event IDs, and ephemeral signing;</li>
+<li>multi-relay connection and fan-out;</li>
+<li>bounded inbound frames, reconnect backoff, heartbeat, subscription replay,
+and event-ID checking; and</li>
+<li>mirrored event and filter-construction tests.</li>
+</ul>
+<h2 id="16-known-gaps">16. Known gaps</h2>
+<p>Current code is not yet a complete conforming implementation:</p>
+<ol>
+<li>the receipt exposes only <code>messageId</code> and aggregate <code>acceptedBy</code>, not
+per-relay accepted, rejected, unreachable, and unknown outcomes;</li>
+<li>topic publish counts a local WebSocket send path rather than <code>OK true</code>;
+Android can count its best-effort call even when no socket sends;</li>
+<li>inbox publish treats five seconds without <code>OK</code> as success rather than
+<code>outcome_unknown</code>;</li>
+<li><code>OK</code> reasons are discarded, and <code>AUTH</code> and <code>CLOSED</code> are ignored, so
+authentication and payment refusal cannot reach the UI;</li>
+<li>clients recompute event IDs but do not consistently perform full Schnorr
+verification or independently validate kind/address match;</li>
+<li>Android inbox subscriptions use three separate <code>REQ</code> frames with raw
+inbox-based IDs, while iOS uses one multi-filter <code>REQ</code>, hashed IDs, and
+generation-safe cancellation;</li>
+<li>Android reconnect work lacks iOS's sticky <code>desiredConnected</code> guard, so a
+delayed failure can reconnect after explicit disconnect;</li>
+<li>topic catch-up uses time windows rather than a portable cursor, and inbox
+catch-up has no explicit cursor;</li>
+<li>relay configuration does not bind operator, limits, retention, privacy,
+offers, or entitlement issuers;</li>
+<li>payload limits are not derived from a verified manifest before event
+construction;</li>
+<li><code>PaymentRequired</code>, NIP-42 seat authentication, <code>SeatEntitlement</code>, renewal,
+revocation, quota accounting, and broker registration are not implemented;
+and</li>
+<li>conformance relies on mirrored app tests rather than one fixture suite for
+third-party clients and relays.</li>
+</ol>
+<p>These gaps are interoperability and security work, not alternate wire
+semantics that third parties should copy.</p>
+<h2 id="17-conformance-tests">17. Conformance tests</h2>
+<p>A shared fixture suite covers:</p>
+<ol>
+<li>exact topic and inbox event bytes, IDs, and signatures;</li>
+<li>base64 vectors including empty, maximum, and malformed payloads;</li>
+<li><code>ms</code> parsing and <code>created_at</code> fallback;</li>
+<li>topic catch-up boundary and 60-second slack;</li>
+<li>all inbox filters in one <code>REQ</code> and receive-only legacy kinds;</li>
+<li>event-ID, signature, kind, tag, address, and size rejection;</li>
+<li><code>EVENT</code>, <code>EOSE</code>, <code>OK</code>, <code>CLOSED</code>, <code>NOTICE</code>, and <code>AUTH</code> parsing;</li>
+<li>NIP-42 challenge binding, origin scoping, expiry, and key isolation;</li>
+<li>pre-upgrade 402 and post-upgrade payment refusal mapping;</li>
+<li>acceptance, rejection, timeout-after-send, and partial fan-out;</li>
+<li>reconnect, replay, unique generations, cancellation, and sticky disconnect;</li>
+<li>cross-relay event and inner logical-message deduplication; and</li>
+<li>manifest signature, limit, offer, origin, and expiry validation.</li>
+</ol>
+<h2 id="18-acceptance-criteria">18. Acceptance criteria</h2>
+<p>This Nostr profile satisfies the abstract boundary when:</p>
+<ol>
+<li>a third-party adapter can implement it without inspecting mobile code;</li>
+<li>a third-party relay can serve paid or free access without becoming an Onym
+identity or group authority;</li>
+<li>events, keys, tags, filters, frames, and refusal strings remain behind the
+abstract message port;</li>
+<li>every relay outcome records exactly what its response proved;</li>
+<li>authentication uses a relay-scoped seat key without sacrificing
+per-message ephemeral outer keys;</li>
+<li>payment remains valid Nostr framing and never carries store evidence;</li>
+<li>hostile relay frames cannot bypass outer and inner validation or exhaust
+unbounded client resources;</li>
+<li>reconnect, catch-up, duplicates, compatibility filters, and partial fan-out
+pass shared fixtures; and</li>
+<li>replacing Nostr does not alter abstract operations or the encrypted Onym
+envelope.</li>
+</ol>
+<h2 id="references">References</h2>
+<ol>
+<li>Abstract Onym message boundary: <a href="../message/UI-Message.html">UI-Message.md</a></li>
+<li>Onym iOS client: <a href="https://github.com/onymchat/onym-ios">https://github.com/onymchat/onym-ios</a></li>
+<li>Onym Android client: <a href="https://github.com/onymchat/onym-android">https://github.com/onymchat/onym-android</a></li>
+<li>Onym infrastructure: <a href="https://github.com/onymchat/onym-infra">https://github.com/onymchat/onym-infra</a></li>
+<li>Nostr NIP-01, “Basic protocol flow description”:
+<a href="https://github.com/nostr-protocol/nips/blob/master/01.md">https://github.com/nostr-protocol/nips/blob/master/01.md</a></li>
+<li>Nostr NIP-42, “Authentication of clients to relays”:
+<a href="https://github.com/nostr-protocol/nips/blob/master/42.md">https://github.com/nostr-protocol/nips/blob/master/42.md</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/message/UI-Message-Nostr.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Recovery Trustee: Cloud Custody Implementation — Onym Foundation</title>
+<meta name="description" content="Onym Recovery Trustee: Cloud Custody Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/recovery/Recovery-Trustee-Cloud.html">
+<meta property="og:title" content="Onym Recovery Trustee: Cloud Custody Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/recovery/Recovery-Trustee-Cloud.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/recovery/Recovery-Trustee-Cloud.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-recovery-trustee-cloud-custody-implementation">Onym Recovery Trustee: Cloud Custody Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This is the simple “store recovery on our servers” profile. It improves
+availability, but the selected provider remains capable of recovery and is
+therefore a custodian.</p>
+</blockquote>
+<p>This document maps the abstract
+<a href="../recovery/Recovery-Trustee.html">Recovery Trustee seat</a> to a single hosted provider. The
+client encrypts a canonical recovery artifact. The provider stores that
+ciphertext and a server-wrapped recovery-unlock key, then releases the unlock
+key to a fresh recovery destination after the enrolled policy is satisfied.</p>
+<p>The profile is deliberately explicit about trust: the provider operates the
+unwrap service and can technically recover the protected artifact. Encryption
+at rest limits disk, backup, and database exposure; it does not make the
+provider non-custodial. Multiple replicas, regions, or hardware security
+modules under the same operator remain one trustee.</p>
+<p>This is a protocol profile, not a claim that any third-party product or vendor
+uses, endorses, or conforms to it.</p>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Cloud custody mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Implementation profile</td>
+<td><code>onym:recovery-implementation:cloud-custody-v1</code></td>
+</tr>
+<tr>
+<td>Custody class</td>
+<td>Single-provider custodial, 1-of-1 cryptographic authority</td>
+</tr>
+<tr>
+<td>Trustee</td>
+<td>One signed cloud service component</td>
+</tr>
+<tr>
+<td>Recovery contribution</td>
+<td>Recovery-unlock key protected by provider-controlled wrapping</td>
+</tr>
+<tr>
+<td>Protected object</td>
+<td>AEAD-encrypted canonical <code>RecoveryArtifact</code></td>
+</tr>
+<tr>
+<td>Recovery destination</td>
+<td>Fresh HPKE encryption key and Ed25519 proof key generated on the recovering device</td>
+</tr>
+<tr>
+<td>Candidate authorization</td>
+<td>Pre-enrolled factors, cooldown, notification, and veto policy</td>
+</tr>
+<tr>
+<td>Provider evidence</td>
+<td>Signed enrollment, lifecycle, release, and deletion receipts</td>
+</tr>
+<tr>
+<td>Availability boundary</td>
+<td>Provider service, backups, key service, and policy operations</td>
+</tr>
+<tr>
+<td>Recovery modes</td>
+<td>Secret restoration; authority migration when the identity profile supports it</td>
+</tr>
+</tbody>
+</table></div><p>The profile maps:</p>
+<pre><code class="language-text">onym:recovery-profile:trustee-v1
+    -&gt; onym:recovery-implementation:cloud-custody-v1
+</code></pre>
+<p>A provider must use the profile identifier. A generic cloud-backup claim,
+encrypted database, or support-driven account reset is not sufficient.</p>
+<h2 id="2-trust-statement-shown-before-enrollment">2. Trust statement shown before enrollment</h2>
+<p>A conforming UI displays the equivalent of:</p>
+<blockquote>
+<p>This provider can technically recover your protected identity material. If
+its systems, staff controls, recovery process, or legal environment fail, an
+attacker or the provider may take over the identity. If the provider loses
+its stored key or refuses service, recovery may fail. Choose this for
+convenience, not threshold independence.</p>
+</blockquote>
+<p>The holder acknowledges this statement separately from pricing and terms. A
+UI must not hide it behind “advanced,” call the service self-custody, or count
+the holder's login factors as independent cryptographic trustees.</p>
+<h2 id="3-ownership-and-authority">3. Ownership and authority</h2>
+<ul>
+<li>The <strong>holder</strong> owns the identity and authorizes the initial enrollment.</li>
+<li>The <strong>vault</strong> creates the artifact and performs restore or migration locally.</li>
+<li>The <strong>cloud operator</strong> owns the service, custody controls, recovery policy,
+jurisdiction, retention, support, and availability claims.</li>
+<li>The <strong>key-service operator</strong>, if subcontracted, protects the server wrapping
+key but does not create a second trustee when controlled through the same
+cloud service.</li>
+<li>The <strong>billing channel</strong> proves payment for the service only. It receives no
+artifact, unlock key, recovery factor, or release decision.</li>
+<li>The <strong>UI publisher</strong> presents the offer and may receive a disclosed split;
+it cannot initiate or approve recovery unless separately enrolled as a
+factor under the policy.</li>
+</ul>
+<p>The provider's power is bounded operationally and contractually, not removed
+cryptographically. Hardware-backed keys, separation of duties, audit logs,
+and dual staff approval can reduce misuse, but the profile remains 1-of-1.</p>
+<h2 id="4-cryptographic-construction">4. Cryptographic construction</h2>
+<h3 id="41-required-suites">4.1 Required suites</h3>
+<p>The v1 client-side format uses:</p>
+<ul>
+<li>a 256-bit recovery-unlock key (<code>RUK</code>) from a cryptographically secure random
+source;</li>
+<li>AES-256-GCM for the protected recovery artifact, with a fresh 96-bit nonce;</li>
+<li>SHA-256 for profile object and ciphertext digests;</li>
+<li>RFC 9180 HPKE Base mode for transit to the provider and to the recovery
+destination, using DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, and AES-256-GCM;
+and</li>
+<li>Ed25519 for the fresh session proof and signed enrollment/trustee objects.</li>
+</ul>
+<p>All canonical encodings, byte order, HPKE <code>info</code>, AEAD associated data, and
+test vectors must be published before the profile is marked operational. An
+algorithm or encoding change requires a new implementation-profile version.</p>
+<h3 id="42-artifact-encryption">4.2 Artifact encryption</h3>
+<p>The healthy vault constructs the canonical plaintext artifact defined by the
+abstract contract, then computes:</p>
+<pre><code class="language-text">identityBindingCommitment = SHA-256(canonical(
+  &quot;onym-recovery-identity-binding-v1&quot;,
+  identityBindingSalt,
+  identitySubject,
+  descriptorDigest
+))
+
+AAD = canonical(
+  implementationProfileId,
+  enrollmentId,
+  enrollmentSequence,
+  policyDigest,
+  identityBindingCommitment,
+  recoveryMode,
+  artifactId
+)
+
+artifactCiphertext = AES-256-GCM-Seal(
+  key = RUK,
+  nonce = fresh 96-bit nonce,
+  plaintext = canonical RecoveryArtifact,
+  associatedData = AAD
+)
+</code></pre>
+<p>The client places the ciphertext, nonce, every AAD field, and a digest over the
+canonical header and ciphertext into the abstract <code>ProtectedRecoveryArtifact</code>.
+It sends <code>RUK</code> only inside HPKE ciphertext sealed to the provider enrollment
+key, with the same enrollment and policy bindings in HPKE <code>info</code>.</p>
+<p>The mnemonic, seed, root key, migration authority, plaintext artifact, and
+<code>RUK</code> never appear in an HTTP field, support form, log, analytics event, push
+notification, or billing record.</p>
+<h3 id="43-server-wrapping">4.3 Server wrapping</h3>
+<p>The provider opens the enrollment HPKE ciphertext in its controlled key
+service and immediately wraps <code>RUK</code> under a non-exportable provider key. The
+artifact/key record contains at least the complete protected-artifact header
+and these custody fields:</p>
+<pre><code class="language-json">{
+  &quot;protectedArtifactVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:cloud-custody-v1&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;sha256&gt;&quot;,
+  &quot;identityBindingCommitment&quot;: &quot;&lt;opaque-commitment-from-policy&gt;&quot;,
+  &quot;recoveryMode&quot;: &quot;secret-restoration&quot;,
+  &quot;artifactId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;sha256&gt;&quot;,
+  &quot;artifactCiphertext&quot;: &quot;&lt;aes-gcm-ciphertext&gt;&quot;,
+  &quot;artifactNonce&quot;: &quot;&lt;96-bit-nonce&gt;&quot;,
+  &quot;wrappedRuk&quot;: &quot;&lt;provider-key-service-ciphertext&gt;&quot;,
+  &quot;wrappingKeyVersion&quot;: &quot;&lt;provider-key-version&gt;&quot;,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;createdAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p>The server wrapping scheme must provide confidentiality and integrity, bind
+the full enrollment context, and support auditable key rotation. The provider
+declares its KMS/HSM boundary, administrative access model, backups, region,
+subprocessors, and restore tests in its service policy.</p>
+<p>Provider wrapping is allowed to differ operationally across providers because
+it is behind the contract boundary. It cannot weaken the wire and artifact
+suites or change who has custody.</p>
+<h2 id="5-enrollment">5. Enrollment</h2>
+<h3 id="51-preconditions">5.1 Preconditions</h3>
+<p>Enrollment occurs only from an unlocked healthy vault after explicit holder
+confirmation. The client verifies:</p>
+<ol>
+<li>the abstract and cloud implementation profiles;</li>
+<li>the current signed provider manifest and enrollment HPKE key;</li>
+<li>the selected seat offer, term, lapse, export, and deletion policy;</li>
+<li>the exact candidate factors, cooldown, notifications, and veto; and</li>
+<li>that the identity descriptor and recovery mode are the values shown to the
+holder.</li>
+</ol>
+<p>The cloud account credential must not be only the Onym key being recovered.
+The holder enrolls independent recovery access such as a passkey available on
+another device, an offline saved recovery code, and/or pre-verified recovery
+contacts under the provider policy. A provider may require stronger proof for
+high-value profiles.</p>
+<h3 id="52-request">5.2 Request</h3>
+<pre><code class="language-json">{
+  &quot;requestVersion&quot;: 1,
+  &quot;requestId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;operation&quot;: &quot;enroll&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:cloud-custody-v1&quot;,
+  &quot;enrollment&quot;: &quot;&lt;holder-signed-RecoveryEnrollment-without-receipt&gt;&quot;,
+  &quot;artifactCiphertext&quot;: &quot;&lt;aes-256-gcm-ciphertext&gt;&quot;,
+  &quot;artifactNonce&quot;: &quot;&lt;nonce&gt;&quot;,
+  &quot;sealedRuk&quot;: &quot;&lt;hpke-ciphertext-to-provider-enrollment-key&gt;&quot;,
+  &quot;factorBindings&quot;: [&quot;&lt;provider-specific-encrypted-bindings&gt;&quot;],
+  &quot;holderAuthorization&quot;: &quot;&lt;healthy-vault-authorization-from-recovery-scoped-key&gt;&quot;
+}
+</code></pre>
+<p>The provider verifies every digest and signature before unwrapping <code>sealedRuk</code>.
+It writes the artifact and wrapped key durably, verifies read-back, activates
+the enrolled factors and notifications, then returns a signed receipt. A
+receipt produced before durable write is nonconforming.</p>
+<h3 id="53-activation-test">5.3 Activation test</h3>
+<p>The client verifies the receipt and performs a non-secret recovery-readiness
+check that proves the current wrapping key can access the stored key record
+without releasing <code>RUK</code>. The provider signs the artifact digest, policy digest,
+key version, replica state, and test time.</p>
+<p>This proves only that the provider reports a readable record at that moment.
+It is not proof against insider recovery or future data loss.</p>
+<h2 id="6-candidate-authorization-policy">6. Candidate authorization policy</h2>
+<p>The provider publishes its supported factor classes. A selected policy must
+state the exact combination required. Examples include:</p>
+<ul>
+<li>phishing-resistant passkey on a second or syncable device plus an offline
+saved recovery code;</li>
+<li>two recovery codes delivered through independently enrolled contact
+methods, with a mandatory cooldown;</li>
+<li>one surviving bound authenticator plus one independent recovery contact;
+or</li>
+<li>repeated identity proofing only when equivalent proofing was performed at
+enrollment and the privacy/legal consequences were disclosed.</li>
+</ul>
+<p>Manual recovery codes and email/SMS delivery are not labelled
+phishing-resistant. Support questions, public profile data, device identifiers,
+knowledge of an identity name, a purchase receipt, or control of the lost
+identity key alone cannot replace the selected policy.</p>
+<p>Every policy also declares:</p>
+<ul>
+<li>attempt throttling and lockout behavior;</li>
+<li>cooldown before release;</li>
+<li>notification to at least two enrolled channels where available;</li>
+<li>holder/designee veto before the deadline;</li>
+<li>factor-change delay and notification;</li>
+<li>session lifetime and one-time use; and</li>
+<li>exceptional refusal rules required by law or incident response.</li>
+</ul>
+<p>These controls follow the current NIST account-recovery principles of
+prearranged methods, throttling, binding new authenticators, and independent
+notification, but this pseudonymous key-recovery profile does not claim NIST
+identity-assurance certification.</p>
+<h2 id="7-recovery-flow">7. Recovery flow</h2>
+<h3 id="71-bootstrap">7.1 Bootstrap</h3>
+<p>On a fresh device, the candidate first presents an opaque provider-account
+locator and the profile's initial pre-enrolled factor over an authenticated
+protected channel. The provider resolves only the highest active enrollment
+sequence and returns a signed abstract <code>RecoveryBootstrap</code> containing the
+complete stored <code>ProtectedRecoveryArtifact</code>, its digest, current policy digest,
+and non-secret session requirements. It does not release <code>RUK</code>, satisfy the
+remaining factors, or start the cooldown merely by returning bootstrap data.</p>
+<p>Lookup failures are rate-limited and indistinguishable to an unauthorized
+caller, so the endpoint cannot enumerate enrollments. The provider account,
+offline recovery code, or other lookup method cannot depend solely on the
+Onym key being recovered. A candidate that cannot satisfy any declared lookup
+path cannot discover the private enrollment from this provider.</p>
+<h3 id="72-begin">7.2 Begin</h3>
+<p>The new vault generates an ephemeral HPKE destination key pair and a fresh
+Ed25519 session-proof key pair. It signs the canonical <code>RecoverySession</code> with
+the proof key, binding the HPKE key without pretending to authenticate the old
+identity. The candidate presents only policy-permitted factor evidence over an
+authenticated protected channel.</p>
+<p>The provider returns:</p>
+<pre><code class="language-json">{
+  &quot;sessionId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;status&quot;: &quot;cooling_down&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;destinationKeysDigest&quot;: &quot;&lt;sha256-of-hpke-and-proof-keys&gt;&quot;,
+  &quot;cooldownEndsAt&quot;: &quot;2026-08-03T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2026-08-08T00:00:00Z&quot;,
+  &quot;notificationsDispatched&quot;: [&quot;&lt;channel-class-only&gt;&quot;],
+  &quot;remainingAttempts&quot;: 2,
+  &quot;signature&quot;: &quot;&lt;provider-signature&gt;&quot;
+}
+</code></pre>
+<p>The provider sends notifications independently of the candidate's current
+session. Notification payloads contain no secret, factor value, or automatic
+approval link.</p>
+<h3 id="73-veto-and-delay">7.3 Veto and delay</h3>
+<p>During cooldown, the enrolled holder or designee can cancel through the
+declared veto method. Updating notification destinations or factors cannot
+shorten a session already in progress. Provider staff cannot bypass the delay
+without invoking a separately declared emergency policy whose use is logged
+and independently reviewed.</p>
+<h3 id="74-release">7.4 Release</h3>
+<p>After successful factors, cooldown, no veto, and final policy evaluation, the
+provider unwraps <code>RUK</code> inside its key service and immediately seals it to the
+session destination:</p>
+<pre><code class="language-text">info = canonical(
+  &quot;onym-cloud-recovery-release-v1&quot;,
+  sessionId,
+  enrollmentId,
+  enrollmentSequence,
+  policyDigest,
+  artifactId,
+  artifactDigest,
+  destinationKeysDigest,
+  expiresAt
+)
+
+sealedContribution = HPKE-Seal(
+  destinationPublicKey,
+  info,
+  RUK
+)
+</code></pre>
+<p>The provider returns the abstract <code>TrusteeContribution</code>, protected artifact,
+and signed release receipt. It does not return <code>RUK</code> in plaintext and does not
+decrypt the artifact in an application server or support console.</p>
+<h3 id="75-local-completion">7.5 Local completion</h3>
+<p>The recovering vault:</p>
+<ol>
+<li>verifies provider manifest, session, sequence, policy digest, artifact ID
+and digest, destination binding, signatures, and receipt;</li>
+<li>opens the HPKE contribution using the ephemeral destination private key;</li>
+<li>reconstructs the exact enrolled AAD from the signed protected-artifact
+header and opens the artifact with AES-256-GCM;</li>
+<li>verifies the recovered identity subject and known descriptor fingerprint;</li>
+<li>imports or migrates under a holder-facing ceremony;</li>
+<li>binds fresh local authenticators; and</li>
+<li>destroys the ephemeral HPKE key, session-proof key, and <code>RUK</code> from memory
+on a best-effort basis.</li>
+</ol>
+<p>The client then rotates the recovery enrollment. In secret-restoration mode it
+also warns that any previous copy of the root secret remains usable.</p>
+<h2 id="8-operation-mapping">8. Operation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract operation</th>
+<th scope="col">Cloud endpoint behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enroll</code></td>
+<td>Store protected artifact and provider-wrapped <code>RUK</code>; bind factors</td>
+</tr>
+<tr>
+<td><code>read-enrollment</code></td>
+<td>Return signed status, sequence, expiry, readiness, and policy digests</td>
+</tr>
+<tr>
+<td><code>bootstrap-recovery</code></td>
+<td>Resolve the current private enrollment after initial account/factor authorization</td>
+</tr>
+<tr>
+<td><code>begin-recovery</code></td>
+<td>Verify candidate factors; create delayed destination-bound session</td>
+</tr>
+<tr>
+<td><code>contribute-recovery</code></td>
+<td>Provider releases HPKE-sealed <code>RUK</code> after policy satisfaction</td>
+</tr>
+<tr>
+<td><code>read-recovery</code></td>
+<td>Return non-secret session and notification state</td>
+</tr>
+<tr>
+<td><code>cancel-recovery</code></td>
+<td>Record veto/candidate cancellation and prevent release</td>
+</tr>
+<tr>
+<td><code>finalize-recovery</code></td>
+<td>Record client confirmation; never receive recovered plaintext</td>
+</tr>
+<tr>
+<td><code>rotate-enrollment</code></td>
+<td>Create new artifact/<code>RUK</code>/sequence, then revoke the old record</td>
+</tr>
+<tr>
+<td><code>revoke-enrollment</code></td>
+<td>Block all new and pending releases for the sequence</td>
+</tr>
+<tr>
+<td><code>export-enrollment</code></td>
+<td>Rewrap <code>RUK</code> only to a holder-approved fresh export destination</td>
+</tr>
+<tr>
+<td><code>close-enrollment</code></td>
+<td>Revoke, schedule deletion, and issue a retention-aware receipt</td>
+</tr>
+</tbody>
+</table></div><p>All calls are idempotent by request ID and require protected transport. Read
+endpoints avoid confirming whether an enrollment exists to an unauthenticated
+caller.</p>
+<h2 id="9-rotation-export-lapse-and-deletion">9. Rotation, export, lapse, and deletion</h2>
+<h3 id="91-rotation">9.1 Rotation</h3>
+<p>Rotation creates a fresh <code>RUK</code>, artifact nonce, artifact ciphertext,
+enrollment sequence, provider wrapping, and receipts. The provider activates
+the new sequence only after durable verification, then revokes pending
+sessions and the old sequence. Rewrapping the same <code>RUK</code> is wrapping-key
+maintenance, not holder recovery rotation.</p>
+<h3 id="92-export">9.2 Export</h3>
+<p>Export is itself a high-risk recovery release. The healthy holder authorizes a
+fresh destination key with the active identity and satisfies the offer's
+declared export factors. The provider rewraps <code>RUK</code> to that destination and
+returns the protected artifact and receipts.</p>
+<p>The provider is technically capable of refusing export. The UI and directory
+must retain this fact in the provider's risk description even when contracts
+promise portability.</p>
+<h3 id="93-service-lapse">9.3 Service lapse</h3>
+<p>The seat offer specifies:</p>
+<ul>
+<li>renewal deadline and grace period;</li>
+<li>whether new recoveries are blocked during grace;</li>
+<li>how long holder-authorized export remains available;</li>
+<li>when factor and artifact records become read-only, revoked, or deleted;</li>
+<li>whether payment can restore a lapsed record; and</li>
+<li>the final date after which recovery is impossible.</li>
+</ul>
+<p>The service cannot invent an emergency ransom fee after enrollment. A UI
+warns through independent channels before a recoverable enrollment becomes
+irrecoverable.</p>
+<h3 id="94-deletion">9.4 Deletion</h3>
+<p>Closure first revokes release authority, then deletes online records and
+schedules removal under the published backup-retention window. The receipt
+lists categories, active deletion time, maximum backup expiry, and legal holds
+known to the operator.</p>
+<p>This is an auditable operator statement, not cryptographic proof of erasure.
+The holder should rotate the identity or recovery authority if surviving
+copies would remain dangerous.</p>
+<h2 id="10-provider-controls">10. Provider controls</h2>
+<p>A conforming provider documents and tests:</p>
+<ol>
+<li>separation between application, factor-verification, release, and billing
+systems;</li>
+<li>non-exportable wrapping keys, key versioning, dual-control administration,
+and emergency access review;</li>
+<li>encrypted, authenticated backups and periodic restore drills;</li>
+<li>least-privilege operator access and tamper-evident lifecycle logs;</li>
+<li>protected-channel authentication and session-bound factor presentation;</li>
+<li>code and configuration change approval for recovery policy;</li>
+<li>incident detection, holder notification, key rotation, and compromise
+response;</li>
+<li>regional, jurisdictional, subcontractor, and compelled-disclosure risks;</li>
+<li>capacity and disaster recovery for rare correlated recovery events; and</li>
+<li>independent security assessment appropriate to the custody claim.</li>
+</ol>
+<p>An audit report increases evidence about controls; it does not change the
+1-of-1 authority model.</p>
+<h2 id="11-privacy-and-metadata">11. Privacy and metadata</h2>
+<p>The provider can observe the account/enrollment relationship, payment state,
+network metadata, factors it verifies, notification destinations, recovery
+time, destination public key, and outcome. Because it controls unwrapping, it
+can also decrypt the artifact and learn its identity content if it violates or
+is compelled beyond the intended service path. It must minimize and segregate
+routine metadata, but the cryptographic profile cannot prevent that custodial
+power.</p>
+<p>The provider must not:</p>
+<ul>
+<li>place the Onym identity subject in billing or analytics when an opaque
+account reference is sufficient;</li>
+<li>send factor values, artifact locators, or session authorization in
+notifications;</li>
+<li>use recovery events to enrich advertising, credit, social, or identity
+profiles;</li>
+<li>disclose enrollment existence to directories or other seats; or</li>
+<li>join this seat's scoped identity to messages, names, banking addresses, or
+charity activity without separate holder action and a lawful purpose.</li>
+</ul>
+<p>Provider terms state retention for factor records, network logs, receipts,
+support data, security logs, and backups separately. “We delete your backup”
+is not a complete retention policy.</p>
+<h2 id="12-payment">12. Payment</h2>
+<p>A cloud provider may offer a one-time backup term, subscription, institution-
+funded custody, paid recovery, or capped hybrid. The signed offer names:</p>
+<ul>
+<li>included storage and readiness checks;</li>
+<li>maximum artifact size and retention;</li>
+<li>recovery and export fees known at enrollment;</li>
+<li>grace and deletion rules;</li>
+<li>refunds and service credits;</li>
+<li>billing channel and taxes; and</li>
+<li>disclosed UI, directory, broker, or contributor splits.</li>
+</ul>
+<p>Payment success changes entitlement state; it does not release <code>RUK</code>. The
+billing broker cannot call the release path and the recovery service does not
+receive an app-store receipt containing more identity information than needed
+to validate its scoped entitlement.</p>
+<h2 id="13-threat-summary">13. Threat summary</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Failure</th>
+<th scope="col">Consequence</th>
+<th scope="col">Mitigation or honest limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider/key-service compromise</td>
+<td>Attacker may recover every reachable enrolled identity</td>
+<td>Isolation, non-exportable keys, dual control, audit, incident response; custody risk remains</td>
+</tr>
+<tr>
+<td>Weak account recovery</td>
+<td>Attacker satisfies provider policy</td>
+<td>Pre-enrolled independent factors, throttling, cooldown, notification, veto</td>
+</tr>
+<tr>
+<td>Provider disappearance</td>
+<td>Holder cannot obtain <code>RUK</code></td>
+<td>Replication helps operator availability; holder needs another recovery profile for operator independence</td>
+</tr>
+<tr>
+<td>Database-only theft</td>
+<td>Artifact and wrapped <code>RUK</code> exposed</td>
+<td>AEAD, provider wrapping, context binding, rate-limited key service</td>
+</tr>
+<tr>
+<td>Malicious support employee</td>
+<td>Attempts policy bypass or release</td>
+<td>No discretionary bypass, dual approval, tamper-evident logs, independent review</td>
+</tr>
+<tr>
+<td>Old-record rollback</td>
+<td>Recovery returns stale or compromised material</td>
+<td>Client-pinned enrollment sequence and artifact/policy digests</td>
+</tr>
+<tr>
+<td>Backup survives deletion</td>
+<td>Prior material may remain recoverable</td>
+<td>Disclosed retention, deletion schedule, identity/recovery rotation</td>
+</tr>
+<tr>
+<td>Same root was previously stolen</td>
+<td>Recovery succeeds but attacker still controls a copy</td>
+<td>Migrate authority and downstream relationships where possible</td>
+</tr>
+</tbody>
+</table></div><h2 id="14-conformance-fixtures">14. Conformance fixtures</h2>
+<p>In addition to the abstract suite, this profile requires fixtures for:</p>
+<ol>
+<li>canonical AAD and SHA-256 digests;</li>
+<li>authenticated bootstrap of the current sequence and complete protected-
+artifact header, plus non-enumerating lookup refusal;</li>
+<li>AES-256-GCM artifact encryption and corruption refusal;</li>
+<li>provider-enrollment and recovery-destination HPKE vectors;</li>
+<li>wrong profile, sequence, policy, identity, artifact, and destination
+bindings;</li>
+<li>server wrapping-key rotation without changing enrollment semantics;</li>
+<li>factor throttling, cooldown, multi-channel notification, and veto;</li>
+<li>idempotent release and inability to release after cancellation or expiry;</li>
+<li>fresh holder recovery rotation and old-record refusal;</li>
+<li>export to a fresh destination; and</li>
+<li>lapse, closure, backup-retention, and deletion receipts.</li>
+</ol>
+<p>Test logs are scanned for artifacts, mnemonics, root keys, <code>RUK</code>, candidate
+factors, destination private keys, and unredacted notification destinations.</p>
+<h2 id="15-status">15. Status</h2>
+<p>This is a proposed implementation profile. It is not a deployed Onym custody
+service and is not safe to market until its canonical fixtures, clients,
+provider operations, legal terms, independent security assessment, and live
+recovery/rotation drills are complete.</p>
+<h2 id="references">References</h2>
+<ol>
+<li>NIST SP 800-63B-4, account recovery, authenticator binding, and independent
+notification: <a href="https://pages.nist.gov/800-63-4/sp800-63b.html">https://pages.nist.gov/800-63-4/sp800-63b.html</a></li>
+<li>IETF RFC 9180, “Hybrid Public Key Encryption”:
+<a href="https://www.rfc-editor.org/rfc/rfc9180">https://www.rfc-editor.org/rfc/rfc9180</a></li>
+<li>NIST SP 800-38D, “Recommendation for Block Cipher Modes of Operation:
+Galois/Counter Mode (GCM) and GMAC”:
+<a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">https://csrc.nist.gov/pubs/sp/800/38/d/final</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/recovery/Recovery-Trustee-Cloud.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Lead Generation Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Lead Generation Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/lead/Lead-Generation.html">
+<meta property="og:title" content="Onym Lead Generation Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/lead/Lead-Generation.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Distribution (lead generation)</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/lead/Lead-Generation.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-lead-generation-contract-boundary">Onym Lead Generation Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>A lead generator is paid for declared, measurable distribution. Onym may
+measure aggregate interest, but it does not identify which viewer installed
+the app or attach a promoter to a user.</p>
+</blockquote>
+<p>This document defines the technology-neutral contract between an Onym campaign
+sponsor and an independent lead generator. It does not require a particular
+social network, advertising platform, view counter, landing-page stack,
+payment rail, escrow, or settlement currency.</p>
+<p>Anyone may propose or fulfill a lead-generation campaign. Payment requires a
+sponsor-authorized order with a finite budget; permissionless participation is
+not permission to spend another party's money or use the Onym name
+misleadingly.</p>
+<p>A concrete implementation may use a public broadcast channel, newsletter,
+website, event, podcast, or another distribution surface that supplies the
+declared aggregate evidence. The first Telegram implementation is specified in
+<a href="../lead/Lead-Generation-Telegram.html">Lead-Generation-Telegram.md</a>.</p>
+<p>The optional next stage is defined by
+<a href="../acquisition/Acquisition.html">../acquisition/Acquisition.md</a>. An independent
+acquisition provider may operate the landing page and use one store cohort
+shared by the whole order. That cohort terminates at the store boundary and is
+never delivered into the installed app.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym separates lead generation from user identity and install attribution.</p>
+<ul>
+<li>The <strong>campaign sponsor</strong> funds a campaign and defines the approved creative,
+audience constraints, measurement window, evidence, rate, cap, and terms.</li>
+<li>The <strong>lead generator</strong> owns or lawfully controls a distribution surface and
+publishes the approved placement.</li>
+<li>The <strong>distribution adapter</strong> maps a channel's aggregate evidence into the
+common contract.</li>
+<li>The <strong>view-evidence provider</strong> observes channel counters and signs bounded
+snapshots when the channel does not provide portable signed evidence.</li>
+<li>The <strong>landing operator</strong>, which may be an independently owned acquisition
+provider, serves an order-scoped tracker-free page and reports aggregate
+arrivals and hot-intent actions.</li>
+<li>The <strong>settlement provider or escrow</strong>, when used, holds campaign funds and
+pays verified statements without learning prospective-user identities.</li>
+<li>The <strong>prospective user</strong> may view, visit, continue to an app store, or leave
+without becoming an attributed record.</li>
+</ul>
+<p>One party may occupy several roles, but their authorities and evidence remain
+separate. A sponsor cannot claim an install occurred from a view. A lead
+generator cannot claim a view identifies a person. A landing operator cannot
+turn campaign measurement into cross-site or in-app tracking.</p>
+<p>The Telegram reference offer pays directly for eligible aggregate post views.
+Landing conversion measures efficiency but does not change that payout basis.</p>
+<h2 id="2-what-the-contract-does">2. What the contract does</h2>
+<p>The contract surface can:</p>
+<ol>
+<li>publish a signed, budget-capped campaign offer;</li>
+<li>let any lead generator submit a signed placement offer;</li>
+<li>bind sponsor and generator through an accepted campaign order;</li>
+<li>verify that approved creative appeared on the agreed distribution surface;</li>
+<li>receive aggregate cold-exposure evidence over a fixed window;</li>
+<li>receive aggregate landing-arrival and hot-intent counts;</li>
+<li>calculate order-level and campaign-level efficiency without tracking a
+person;</li>
+<li>calculate direct payment from the agreed billable metric;</li>
+<li>issue signed settlement statements and prevent duplicate settlement; and</li>
+<li>preserve disputes, uncertainty, fraud limits, and audit evidence.</li>
+</ol>
+<p>It does not identify viewers, detect an installation on a device, connect an
+app user to a campaign, create a user referral graph, grant identity or group
+authority, or promise that an exposure causes adoption.</p>
+<h2 id="3-why-payout-is-not-install-attribution">3. Why payout is not install attribution</h2>
+<p>Install attribution normally creates a join key across at least three places:
+an advertisement or post, a landing or store visit, and the installed app.
+That key can become a durable record of who responded to which message.</p>
+<p>Onym does not place that join key in the app. In particular, the contract does
+not require:</p>
+<ul>
+<li>per-viewer referral identifiers;</li>
+<li>advertising identifiers or device fingerprints;</li>
+<li>cookies, local-storage identifiers, tracking pixels, or analytics SDKs;</li>
+<li>deferred deep links or campaign tokens delivered into the app;</li>
+<li>clipboard-based attribution;</li>
+<li>contact uploads, account matching, or store-receipt correlation; or</li>
+<li>an app callback naming the campaign that acquired a user.</li>
+</ul>
+<p>The landing page uses one opaque order-scoped route shared by every viewer of
+that placement. It can count aggregate arrivals and anonymous intent actions
+for that order, then send the visitor either to a generic store location or to
+an acquisition-contract link carrying one cohort value shared by the whole
+order. The cohort may be visible to the store but is never delivered into the
+app. This measures each generator's funnel without creating person-level
+attribution.</p>
+<p>The economic consequence is deliberate: no lead generator receives a
+per-install royalty or a cut of a user's later activity. A declared delivery
+metric—such as eligible channel views—funds the work. Aggregate conversion is
+diagnostic evidence for campaign quality, not surveillance-based commission.</p>
+<h2 id="4-funnel-semantics">4. Funnel semantics</h2>
+<p>This contract uses three distinct aggregate stages:</p>
+<ul>
+<li><strong>cold exposure:</strong> an implementation-defined eligible view or impression of
+the campaign placement;</li>
+<li><strong>landing arrival:</strong> a request to the shared order landing route that
+passes the campaign's coarse validity rules; and</li>
+<li><strong>hot lead:</strong> one anonymous, short-lived landing capability redeemed through
+an explicit intent action, such as selecting “Continue to install.”</li>
+</ul>
+<p>A hot lead is an aggregate expression of interest. It is not a unique human,
+verified install, account creation, retained user, or purchaser.</p>
+<p>For one measurement window:</p>
+<pre><code class="language-text">coldToLandingRate = eligibleLandingArrivals / eligibleColdExposures
+coldToHotRate     = eligibleHotLeads / eligibleColdExposures
+landingToHotRate  = eligibleHotLeads / eligibleLandingArrivals
+costPerHotLead    = settledCampaignAmount / eligibleHotLeads
+</code></pre>
+<p>Division by zero yields <code>undefined</code>, not zero or infinity. Counts and rates
+carry their window, policy version, evidence sources, and confidence limits.
+They must not be combined across incompatible definitions.</p>
+<p>The base contract never calls these values unique-person conversion rates.
+Repeated views, shared devices, bots, reloads, forwarded content, and platform
+counter behavior can affect them.</p>
+<h2 id="5-logical-topology">5. Logical topology</h2>
+<pre><code class="language-text">campaign sponsor
+  |-- signed campaign offer + finite budget
+  v
+lead generator
+  |-- approved placement
+  v
+distribution surface
+  |                        no user identifier crosses this line
+  | aggregate cold views  ------------------------------------+
+  v                                                            |
+shared order landing route                                     |
+  |-- aggregate arrival counter                                |
+  |-- anonymous one-time intent capability                     |
+  `-- generic or shared-cohort app-store link                  |
+                                                               v
+                                                   measurement statement
+                                                               |
+                                                               v
+                                                direct capped settlement
+
+installed Onym app receives no campaign or lead-generator identifier
+</code></pre>
+<p>The sponsor can compare aggregate delivery and intent without learning which
+person moved between stages. The lead generator receives settlement evidence,
+not a list of visitors or installs.</p>
+<p>The landing host and network intermediaries necessarily observe connection
+metadata while serving a request. The privacy guarantee is that campaign
+measurement does not retain, export, or join that metadata to create a visitor
+record; any exceptional short-lived security logging is separately declared.</p>
+<h2 id="6-contract-objects">6. Contract objects</h2>
+<h3 id="61-lead-generation-profile">6.1 Lead Generation Profile</h3>
+<p>A <code>LeadGenerationProfile</code> defines portable campaign semantics:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:lead-profile:aggregate-funnel-v1&quot;,
+  &quot;interface&quot;: &quot;onym-lead-v1&quot;,
+  &quot;stages&quot;: [&quot;cold-exposure&quot;, &quot;landing-arrival&quot;, &quot;hot-lead&quot;],
+  &quot;privacy&quot;: &quot;aggregate-no-install-attribution-v1&quot;,
+  &quot;evidenceSchema&quot;: &quot;onym-lead-evidence-v1&quot;,
+  &quot;settlementSchema&quot;: &quot;onym-lead-settlement-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym-lead-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>It fixes stage meanings, aggregation, privacy, evidence, calculation, and
+settlement behavior. It does not choose a distribution network, oracle,
+landing host, price, currency, audience, or creative.</p>
+<h3 id="62-lead-implementation-profile">6.2 Lead Implementation Profile</h3>
+<p>A <code>LeadImplementationProfile</code> maps the abstract contract to one distribution
+technology:</p>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:lead-implementation:&lt;channel&gt;-v1&quot;,
+  &quot;leadProfileId&quot;: &quot;onym:lead-profile:aggregate-funnel-v1&quot;,
+  &quot;placementMapping&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;coldEvidence&quot;: &quot;&lt;aggregate-counter-profile&gt;&quot;,
+  &quot;landingMeasurement&quot;: &quot;onym:tracker-free-landing-v1&quot;,
+  &quot;proofModel&quot;: &quot;&lt;platform-signed-or-declared-oracle-model&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Channel posts, account handles, platform APIs, screenshots, and oracle
+credentials remain inside the implementation adapter.</p>
+<h3 id="63-campaign-offer">6.3 Campaign Offer</h3>
+<p>A sponsor publishes a finite <code>LeadCampaignOffer</code>:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;sponsor&quot;: &quot;onym:key:&lt;sponsor-id&gt;&quot;,
+  &quot;leadProfileId&quot;: &quot;onym:lead-profile:aggregate-funnel-v1&quot;,
+  &quot;allowedImplementations&quot;: [&quot;onym:lead-implementation:&lt;channel&gt;-v1&quot;],
+  &quot;creative&quot;: {
+    &quot;bundleHash&quot;: &quot;&lt;content-addressed-approved-creative&gt;&quot;,
+    &quot;landingBase&quot;: &quot;https://example.org/c/&lt;campaign-id&gt;&quot;,
+    &quot;disclosures&quot;: [&quot;sponsored-placement&quot;]
+  },
+  &quot;eligibility&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;,
+    &quot;allowedLanguages&quot;: [&quot;en&quot;],
+    &quot;allowedRegions&quot;: [&quot;&lt;campaign-policy&gt;&quot;],
+    &quot;prohibitedContexts&quot;: [&quot;&lt;brand-safety-policy&gt;&quot;]
+  },
+  &quot;settlement&quot;: {
+    &quot;billableMetric&quot;: &quot;eligible-cold-exposure&quot;,
+    &quot;rate&quot;: {&quot;minorUnits&quot;: 500, &quot;per&quot;: 1000},
+    &quot;currency&quot;: &quot;&lt;declared-currency-or-asset&gt;&quot;,
+    &quot;maximumBillableExposures&quot;: 100000,
+    &quot;maximumAmount&quot;: 50000,
+    &quot;paymentRail&quot;: &quot;&lt;direct-payment-profile&gt;&quot;,
+    &quot;escrow&quot;: &quot;&lt;optional-escrow-component&gt;&quot;
+  },
+  &quot;evidencePolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;landingPolicy&quot;: &quot;onym:tracker-free-landing-v1&quot;,
+  &quot;validUntil&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;sponsor-signature&gt;&quot;
+}
+</code></pre>
+<p>All arithmetic uses integer minor units and the declared rounding rule. The
+maximum amount is authoritative if rate and counter caps could otherwise
+exceed it. An offer is not a promise to pay unaccepted placements.</p>
+<h3 id="64-placement-offer-and-campaign-order">6.4 Placement Offer and Campaign Order</h3>
+<p>Any lead generator may submit:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;placementOfferId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;generator&quot;: &quot;onym:key:&lt;generator-id&gt;&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:lead-implementation:&lt;channel&gt;-v1&quot;,
+  &quot;surface&quot;: &quot;&lt;implementation-specific-public-reference&gt;&quot;,
+  &quot;channelControlEvidence&quot;: &quot;&lt;profile-defined-evidence&gt;&quot;,
+  &quot;estimatedCapacity&quot;: 25000,
+  &quot;payoutCoordinates&quot;: &quot;&lt;payment-rail-specific-reference&gt;&quot;,
+  &quot;validUntil&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;generator-signature&gt;&quot;
+}
+</code></pre>
+<p>The sponsor accepts it by issuing a <code>CampaignOrder</code> that binds:</p>
+<ul>
+<li>campaign and placement-offer IDs;</li>
+<li>sponsor and generator keys;</li>
+<li>exact implementation profile;</li>
+<li>approved surface and creative hash;</li>
+<li>opaque order-scoped landing route;</li>
+<li>start, end, snapshot, and settlement times;</li>
+<li>baseline, cap, rate, currency, and rounding;</li>
+<li>authorized evidence providers and signature threshold;</li>
+<li>content-edit, deletion, outage, and fraud rules;</li>
+<li>dispute window and governing settlement terms; and</li>
+<li>sponsor and generator signatures.</li>
+</ul>
+<p>Acceptance may be automatic under a signed policy or explicit. Either way,
+the budget is reserved before eligible delivery begins. A generator who posts
+without an accepted order may still promote Onym but has no payment claim.</p>
+<h3 id="65-placement-receipt">6.5 Placement Receipt</h3>
+<p>The implementation adapter produces:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;placementReference&quot;: &quot;&lt;channel-and-item-reference&gt;&quot;,
+  &quot;creativeHash&quot;: &quot;&lt;observed-approved-creative-hash&gt;&quot;,
+  &quot;publishedAt&quot;: &quot;2026-08-01T00:05:00Z&quot;,
+  &quot;observedBy&quot;: [&quot;onym:key:&lt;evidence-provider&gt;&quot;],
+  &quot;evidence&quot;: &quot;&lt;profile-defined-placement-evidence&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;evidence-signature&gt;&quot;
+}
+</code></pre>
+<p>It proves only what the implementation profile and observer can establish. It
+does not prove a person noticed, understood, or acted on the placement.</p>
+<h3 id="66-cold-exposure-snapshot">6.6 Cold Exposure Snapshot</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;placementReference&quot;: &quot;&lt;channel-and-item-reference&gt;&quot;,
+  &quot;counter&quot;: 18342,
+  &quot;counterUnit&quot;: &quot;&lt;profile-defined-view-unit&gt;&quot;,
+  &quot;counterSemantics&quot;: &quot;&lt;content-addressed-definition&gt;&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-08T00:00:00Z&quot;,
+  &quot;source&quot;: &quot;&lt;implementation-source&gt;&quot;,
+  &quot;observer&quot;: &quot;onym:key:&lt;evidence-provider&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;observer-signature&gt;&quot;
+}
+</code></pre>
+<p>Snapshots are monotonic observations, not a list of viewers. When the
+platform does not sign counts, the observer signature proves who reported a
+value, not that the platform's counter is fraud-free.</p>
+<h3 id="67-landing-aggregate">6.7 Landing Aggregate</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;eligibleLandingArrivals&quot;: 1240,
+  &quot;eligibleHotLeads&quot;: 418,
+  &quot;hotLeadAction&quot;: &quot;continue-to-install-v1&quot;,
+  &quot;countingPolicy&quot;: &quot;onym:tracker-free-landing-v1&quot;,
+  &quot;rawEventRetention&quot;: &quot;ephemeral-unlinked-capabilities-only&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;landing-operator&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;landing-operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The aggregate contains no network address, user agent, cookie, capability,
+store transaction, or app identity. Counts below a declared privacy threshold
+may be suppressed or combined into a larger time bucket.</p>
+<h3 id="68-efficiency-report">6.8 Efficiency Report</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;eligibleColdExposures&quot;: 18000,
+  &quot;eligibleLandingArrivals&quot;: 1240,
+  &quot;eligibleHotLeads&quot;: 418,
+  &quot;rates&quot;: {
+    &quot;coldToLanding&quot;: &quot;0.068888&quot;,
+    &quot;coldToHot&quot;: &quot;0.023222&quot;,
+    &quot;landingToHot&quot;: &quot;0.337096&quot;
+  },
+  &quot;settledAmount&quot;: {&quot;minorUnits&quot;: 9000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;costPerHotLead&quot;: &quot;21.531100&quot;,
+  &quot;notInstallAttribution&quot;: true,
+  &quot;evidence&quot;: [&quot;&lt;snapshot-hashes&gt;&quot;, &quot;&lt;landing-aggregate-hash&gt;&quot;],
+  &quot;signature&quot;: &quot;&lt;report-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Rates use a canonical decimal representation and declared precision. The
+report is comparable only with reports using compatible stage definitions and
+windows.</p>
+<h3 id="69-settlement-statement">6.9 Settlement Statement</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;statementId&quot;: &quot;&lt;nonreusable-id&gt;&quot;,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;baselineCounter&quot;: 342,
+  &quot;settledThroughCounter&quot;: 18342,
+  &quot;cumulativeBillableExposures&quot;: 18000,
+  &quot;newBillableExposures&quot;: 18000,
+  &quot;rate&quot;: {&quot;minorUnits&quot;: 500, &quot;per&quot;: 1000},
+  &quot;cumulativeGrossAmount&quot;: {&quot;minorUnits&quot;: 9000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;previouslySettledGrossAmount&quot;: {&quot;minorUnits&quot;: 0, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;newGrossAmount&quot;: {&quot;minorUnits&quot;: 9000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;adjustments&quot;: [],
+  &quot;payableAmount&quot;: {&quot;minorUnits&quot;: 9000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;evidence&quot;: [&quot;&lt;placement-and-counter-snapshot-hashes&gt;&quot;],
+  &quot;payee&quot;: &quot;onym:key:&lt;generator-id&gt;&quot;,
+  &quot;sponsorSignature&quot;: &quot;&lt;signature&gt;&quot;,
+  &quot;generatorSignature&quot;: &quot;&lt;signature-or-dispute&gt;&quot;
+}
+</code></pre>
+<p><code>statementId</code>, order state, and <code>settledThroughCounter</code> prevent the same views
+from being paid twice.</p>
+<h2 id="7-common-contract-surface">7. Common contract surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>publishCampaign</code></td>
+<td>Signed offer and reserved budget</td>
+<td>Campaign reference</td>
+</tr>
+<tr>
+<td><code>offerPlacement</code></td>
+<td>Generator, surface, capacity, control evidence</td>
+<td>Placement offer</td>
+</tr>
+<tr>
+<td><code>acceptPlacement</code></td>
+<td>Offer plus final terms</td>
+<td>Mutually bound order</td>
+</tr>
+<tr>
+<td><code>recordPlacement</code></td>
+<td>Observed content and channel evidence</td>
+<td>Placement receipt</td>
+</tr>
+<tr>
+<td><code>snapshotColdExposure</code></td>
+<td>Order and placement</td>
+<td>Signed aggregate counter</td>
+</tr>
+<tr>
+<td><code>snapshotLanding</code></td>
+<td>Order and window</td>
+<td>Signed arrival/hot aggregate</td>
+</tr>
+<tr>
+<td><code>calculateEfficiency</code></td>
+<td>Compatible snapshots</td>
+<td>Aggregate funnel report</td>
+</tr>
+<tr>
+<td><code>calculateSettlement</code></td>
+<td>Order, baseline, latest counter, prior settlements</td>
+<td>Capped statement</td>
+</tr>
+<tr>
+<td><code>settle</code></td>
+<td>Accepted statement</td>
+<td>Payment reference</td>
+</tr>
+<tr>
+<td><code>dispute</code></td>
+<td>Statement and bounded evidence</td>
+<td>Open dispute state</td>
+</tr>
+<tr>
+<td><code>closeCampaign</code></td>
+<td>End condition and final reconciliation</td>
+<td>Closed budget and audit record</td>
+</tr>
+</tbody>
+</table></div><p>The common surface has no operation for <code>attributeInstall</code>, <code>identifyViewer</code>,
+or <code>attachCampaignToUser</code>.</p>
+<h2 id="8-tracker-free-landing-profile">8. Tracker-free landing profile</h2>
+<p>One shared route identifies the campaign order, not the visitor:</p>
+<pre><code class="language-text">https://&lt;landing-origin&gt;/c/&lt;campaign-id&gt;/&lt;opaque-order-route-id&gt;
+</code></pre>
+<p>The landing operator:</p>
+<ol>
+<li>validates the campaign order and time window;</li>
+<li>increments only aggregate order/time-bucket arrival state;</li>
+<li>issues an unlinkable random page capability held only in page memory or a
+form, never durable browser storage;</li>
+<li>counts at most one declared hot action for that capability;</li>
+<li>deletes or irreversibly marks the capability immediately after redemption
+and expires unused capabilities quickly;</li>
+<li>does not bind capabilities to network addresses, user agents, accounts, or
+fingerprints;</li>
+<li>uses no third-party analytics, advertising pixels, cookies, local storage,
+or cross-site resources capable of correlation;</li>
+<li>sends only aggregate signed buckets into measurement;</li>
+<li>strips unexpected parameters and applies a strict referrer policy; and</li>
+<li>sends the visitor to either a generic store URL or a conforming acquisition
+URL whose order-shared cohort terminates at the store and never enters the
+app.</li>
+</ol>
+<p>The one-time capability limits accidental repeat actions within one page load.
+It does not prove a unique human and cannot fully prevent scripted reloads.
+Aggregate anomaly controls may reject obviously invalid traffic, but must not
+quietly reintroduce fingerprinting.</p>
+<p>Operational network logs are disabled or reduced to nonidentifying counters.
+If short-lived security logs are unavoidable, their fields, access, maximum
+retention, and deletion are declared and they never enter campaign reports.</p>
+<h2 id="9-payment-and-calculation">9. Payment and calculation</h2>
+<p>The implementation profile declares the billable counter. For a cumulative
+counter:</p>
+<pre><code class="language-text">cumulativeEligible = max(0, observedCounter - baselineCounter)
+cumulativeBillable = min(cumulativeEligible, maximumBillableExposures)
+newBillable         = max(0, cumulativeBillable - previouslySettledExposures)
+cumulativeGross     = floor(cumulativeBillable * rateMinorUnits / rateUnit)
+newGross            = max(0, cumulativeGross - previouslySettledGross)
+payableMinorUnits   = min(max(0, newGross + signedAdjustments),
+                          remainingCampaignBudget)
+</code></pre>
+<p>Every intermediate uses checked integers. Calculating the cumulative gross
+before subtracting prior settlement makes rounding independent of milestone
+size. Negative counters, overflow, counter resets, evidence outside the window,
+and incompatible snapshots move the statement to dispute rather than guessing.</p>
+<p>Payment is direct campaign consideration from sponsor or escrow to generator.
+It is not an in-app purchase by the prospective user, a perpetual royalty, an
+install bounty, or a share of future user transactions. The order declares the
+rail, fees, taxes, withholding, currency conversion, finality, refund, and
+dispute terms.</p>
+<p>Pre-funded escrow is preferred for permissionless generators because it limits
+sponsor nonpayment and ensures accepted orders cannot exceed budget. The
+escrow learns campaign, generator, amount, and evidence references; it does not
+learn prospective-user data.</p>
+<h2 id="10-sponsor-obligations">10. Sponsor obligations</h2>
+<p>A conforming sponsor must:</p>
+<ol>
+<li>publish truthful, lawful creative and required sponsorship disclosures;</li>
+<li>state eligibility, measurement, edit, fraud, payment, and dispute rules
+before accepting a placement;</li>
+<li>reserve a finite budget and never invite unlimited uncompensated delivery;</li>
+<li>accept or reject offers without claiming direct-use permission is revoked;</li>
+<li>use aggregate funnel measurements without requesting user attribution;</li>
+<li>calculate settlement deterministically from pinned evidence;</li>
+<li>pay accepted statements on the declared schedule;</li>
+<li>avoid changing a campaign definition after delivery begins; and</li>
+<li>not rank generators using secret tracking or undisclosed downstream data.</li>
+</ol>
+<h2 id="11-lead-generator-obligations">11. Lead-generator obligations</h2>
+<p>A conforming generator must:</p>
+<ol>
+<li>control or have permission to use the declared surface;</li>
+<li>obtain an accepted order before claiming payment;</li>
+<li>publish only approved creative, link, and disclosures;</li>
+<li>preserve the placement for the agreed window;</li>
+<li>report edits, deletion, moderation, or platform restrictions;</li>
+<li>not purchase, automate, or fabricate billable views;</li>
+<li>not generate fake landing actions to improve efficiency reports;</li>
+<li>not use dark patterns, impersonation, malware, spam, or misleading install
+claims;</li>
+<li>not add viewer-level referral or tracking parameters; and</li>
+<li>accept that views are the paid service while installs remain unknown.</li>
+</ol>
+<h2 id="12-measurement-provider-obligations">12. Measurement-provider obligations</h2>
+<p>An evidence or landing provider must:</p>
+<ul>
+<li>publish a signed manifest, implementation profile, methods, keys, and
+retention policy;</li>
+<li>observe only the fields needed for aggregate evidence;</li>
+<li>use canonical counters, timestamps, placement references, and content hashes;</li>
+<li>never call a measurement method in a mode that fabricates a billable view;</li>
+<li>distinguish platform evidence from its own signature and inference;</li>
+<li>sign every snapshot and make corrections append-only;</li>
+<li>prevent replay and double settlement;</li>
+<li>disclose outage, counter reset, API drift, and uncertainty;</li>
+<li>expose no individual events in reports; and</li>
+<li>remain replaceable by another conforming observer.</li>
+</ul>
+<p>Multiple observers can reduce one oracle's ability to lie, but they may still
+depend on the same distribution platform and do not create independent ground
+truth about unique humans.</p>
+<h2 id="13-errors-and-state-machines">13. Errors and state machines</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Sponsor/generator</td>
+<td>Refuse incompatible placement</td>
+</tr>
+<tr>
+<td><code>offer_expired</code></td>
+<td>Offer</td>
+<td>Do not accept or deliver</td>
+</tr>
+<tr>
+<td><code>budget_unavailable</code></td>
+<td>Sponsor/escrow</td>
+<td>Do not activate order</td>
+</tr>
+<tr>
+<td><code>surface_unverified</code></td>
+<td>Adapter/oracle</td>
+<td>Reject until control is established</td>
+</tr>
+<tr>
+<td><code>creative_mismatch</code></td>
+<td>Placement</td>
+<td>Pause eligibility and open dispute</td>
+</tr>
+<tr>
+<td><code>placement_missing</code></td>
+<td>Channel</td>
+<td>Stop accrual; preserve last evidence</td>
+</tr>
+<tr>
+<td><code>counter_unavailable</code></td>
+<td>Platform/oracle</td>
+<td>Keep outcome pending, not zero</td>
+</tr>
+<tr>
+<td><code>counter_regressed</code></td>
+<td>Platform/oracle</td>
+<td>Freeze settlement and reconcile</td>
+</tr>
+<tr>
+<td><code>evidence_conflict</code></td>
+<td>Multiple observers</td>
+<td>Apply threshold/dispute policy</td>
+</tr>
+<tr>
+<td><code>window_mismatch</code></td>
+<td>Evidence</td>
+<td>Exclude incompatible observation</td>
+</tr>
+<tr>
+<td><code>traffic_suspected</code></td>
+<td>Aggregate fraud checks</td>
+<td>Quarantine disputed increment</td>
+</tr>
+<tr>
+<td><code>landing_unavailable</code></td>
+<td>Landing operator</td>
+<td>Mark efficiency incomplete; view payout follows order</td>
+</tr>
+<tr>
+<td><code>privacy_violation</code></td>
+<td>Any component</td>
+<td>Stop campaign and preserve minimal audit evidence</td>
+</tr>
+<tr>
+<td><code>settlement_duplicate</code></td>
+<td>Settlement</td>
+<td>Reject replayed statement</td>
+</tr>
+<tr>
+<td><code>payment_failed</code></td>
+<td>Payment rail</td>
+<td>Preserve payable liability and retry</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Network/provider</td>
+<td>Reconcile before another settlement</td>
+</tr>
+</tbody>
+</table></div><p>Campaign state:</p>
+<pre><code class="language-text">draft
+  -&gt; offered
+  -&gt; placement_proposed
+  -&gt; accepted_and_funded
+  -&gt; placement_verified
+  -&gt; active
+  -&gt; measuring
+  -&gt; final_snapshot
+  -&gt; statement_proposed
+  -&gt; accepted | disputed
+  -&gt; settled
+  -&gt; closed
+</code></pre>
+<p>Privacy or creative violations can move any active state to <code>suspended</code>.
+Suspension stops new accrual but does not erase prior evidence or automatically
+forfeit valid earned payment.</p>
+<h2 id="14-security-privacy-and-economic-invariants">14. Security, privacy, and economic invariants</h2>
+<ol>
+<li><strong>No install attribution.</strong> The app never receives a campaign, placement,
+generator, or per-viewer token.</li>
+<li><strong>No user-level funnel.</strong> Only order/time-bucket aggregates cross the
+measurement boundary.</li>
+<li><strong>Hot means intent, not install.</strong> Reports use the declared action name and
+never relabel it as a unique user or installation.</li>
+<li><strong>Payment follows the order.</strong> Efficiency cannot silently replace the
+agreed billable view metric.</li>
+<li><strong>No infinite liability.</strong> Every order has a view cap, amount cap, window,
+and reserved budget.</li>
+<li><strong>Anyone may offer; sponsors choose spend.</strong> Open participation does not
+force acceptance or endorsement.</li>
+<li><strong>Evidence is scoped.</strong> Snapshots bind campaign, order, surface, placement,
+counter definition, window, observer, and time.</li>
+<li><strong>Counters are not people.</strong> Platform views and landing actions may be
+duplicated or manipulated and are described honestly.</li>
+<li><strong>Settlement is idempotent.</strong> A counter increment is payable at most once.</li>
+<li><strong>Creative is pinned.</strong> Material edits require a new approval or stop
+eligibility.</li>
+<li><strong>Direct payment grants no protocol authority.</strong> A paid generator gains no
+identity, message, notary, registry, or governance power.</li>
+<li><strong>Diagnostics cannot become surveillance.</strong> Fraud control uses aggregate,
+declared evidence and cannot quietly add fingerprinting.</li>
+</ol>
+<h2 id="15-versioning-and-conformance">15. Versioning and conformance</h2>
+<ul>
+<li><code>LeadGenerationProfile</code> changes when stage, privacy, evidence, efficiency,
+settlement, or error meaning changes.</li>
+<li><code>LeadImplementationProfile</code> changes when placement identity, counter,
+oracle, or channel behavior changes.</li>
+<li>Offers and orders pin exact profile versions, creative, landing policy, and
+evidence rules.</li>
+<li>New defaults do not alter active or historical orders.</li>
+<li>Evidence corrections are signed append-only objects that reference what
+they supersede.</li>
+<li>Cross-implementation fixtures cover canonical objects, signatures,
+arithmetic, caps, counter regression, duplicate settlement, missing data,
+landing aggregation, privacy failure, and disputes.</li>
+<li>A directory may curate generator offers; direct signed offers remain valid
+independently of directory inclusion.</li>
+</ul>
+<h2 id="16-concrete-implementation-profiles">16. Concrete implementation profiles</h2>
+<p>The first implementation is:</p>
+<ul>
+<li><a href="../lead/Lead-Generation-Telegram.html">Lead-Generation-Telegram.md</a> — Telegram
+channel placements, MTProto view snapshots, tracker-free order landing
+routes, view-based direct settlement, and aggregate funnel efficiency.</li>
+</ul>
+<p>Future implementations may define another eligible exposure counter while
+preserving the no-install-attribution boundary.</p>
+<p>Aggregate hot-lead-to-store-acquisition measurement belongs to the separate
+<a href="../acquisition/Acquisition.html">Onym Acquisition Contract Boundary</a>, not to a
+lead generator's view-settlement calculation.</p>
+<h2 id="17-acceptance-criteria">17. Acceptance criteria</h2>
+<p>The lead-generation boundary is successfully separated when:</p>
+<ol>
+<li>anyone can publish a conforming placement offer and fulfill an accepted,
+funded order;</li>
+<li>the sponsor can verify aggregate delivery and calculate a capped direct
+payment from public profiles;</li>
+<li>the sponsor can measure aggregate cold-to-hot efficiency through the
+landing page;</li>
+<li>no prospective-user identifier crosses from placement through landing into
+the installed app;</li>
+<li>no report or UI calls a view, landing action, or hot lead a verified install;</li>
+<li>the lead generator receives no list of viewers, visitors, app users, or
+downstream activity;</li>
+<li>payment remains correct when landing measurement is unavailable;</li>
+<li>evidence conflict, counter manipulation, cap exhaustion, replay, and
+payment failure have explicit states;</li>
+<li>a third-party observer and settlement implementation can reproduce the
+canonical calculation; and</li>
+<li>another distribution technology can implement the abstract suite without
+importing Telegram objects.</li>
+</ol>
+<h2 id="18-justification-in-one-sentence">18. Justification in one sentence</h2>
+<blockquote>
+<p>Onym can pay anyone who measurably introduces the app to an audience and
+compare aggregate campaign efficiency without constructing a record of who
+installed it, who referred them, or what they later did.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/lead/Lead-Generation.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

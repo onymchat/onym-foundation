@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Bank Boundary — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Bank Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/bank/UI-Bank.html">
+<meta property="og:title" content="Onym UI ↔ Bank Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/bank/UI-Bank.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Banking &amp; payments</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/85bc43ce476748faf679849666f9334868e74fc8/bank/UI-Bank.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-bank-boundary">Onym UI ↔ Bank Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>The identity signs. The bank serves accounts, payments, and records. It does
+not become the identity, and a non-custodial bank never becomes the money.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary between an Onym
+frontend, the holder's identity vault, and a <strong>bank seat</strong>: a financial
+application provider offering accounts, balances, payments, statements, and
+optionally regulated services against a user-controlled identity. It does not
+require a particular ledger, asset, banking license model, custody
+arrangement, or payment network.</p>
+<p>A concrete implementation may use a public ledger, a private core-banking
+system, an e-money provider, or a hybrid, provided it satisfies the profile's
+custody-disclosure, authorization, intent-binding, receipt, and privacy
+semantics. The current Stellar implementation is specified separately in
+<a href="../bank/UI-Bank-Stellar.html">UI-Bank-Stellar.md</a>.</p>
+<p>Here <strong>UI</strong> means the frontend application layer, not a screen calling a
+payment API. Views send intent to flows, view-models, repositories, or
+interactors. Those components obtain authorization through the identity
+vault's capability port
+(<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a>) before invoking
+the bank port.</p>
+<p>Onym is not itself a bank. This boundary makes a provider's financial role
+visible and replaceable; it does not confer a license, guarantee deposits, or
+transfer the provider's legal duties to the protocol (whitepaper §10.2).</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the account holder, identity vault, bank provider, ledger or
+payment network, and UI publisher as independently owned components joined by
+versioned interfaces.</p>
+<ul>
+<li>The <strong>account holder</strong> owns the identity whose keys authorize payments. In
+non-custodial classes they also own the funds at the ledger layer; in
+custodial classes they own a claim against the provider.</li>
+<li>The <strong>identity vault</strong> holds the keys and executes typed capabilities:
+<code>sign-transaction</code>, <code>prove-address-control</code>, and
+<code>derive-context-address</code>. It never surrenders the root secret to a bank
+(whitepaper §5.4). These names are the normative capability vocabulary from
+<a href="../identity/UI-Identity.html">UI-Identity.md</a>.</li>
+<li>The <strong>bank provider</strong> owns its product: account services, records, quotes,
+compliance program, support, and—in custodial classes—custody itself, with
+every legal duty that entails.</li>
+<li>The <strong>ledger or payment network</strong> settles what valid, authorized
+operations submit. It is infrastructure the provider uses, not a party
+that acquires the identity.</li>
+<li>The <strong>bank adapter author</strong> maps the common bank port onto one concrete
+ledger or provider API.</li>
+<li>The <strong>UI publisher</strong> presents accounts, quotes, and consent flows without
+becoming the custodian or the compliance authority.</li>
+</ul>
+<p>One organization may occupy several roles, but their authorities remain
+separate. A holder can replace the UI without moving funds, replace a
+non-custodial provider without the provider's permission, and exit a
+custodial provider through its declared withdrawal process rather than its
+goodwill.</p>
+<p>The boundary has two interfaces:</p>
+<ol>
+<li>the local <strong>UI/application ↔ bank adapter</strong> port, which carries accounts,
+intents, quotes, authorizations, outcomes, and statements as typed
+objects; and</li>
+<li>the network <strong>bank adapter ↔ provider/ledger</strong> implementation profile,
+which defines wire formats, submission, confirmation, and record access.</li>
+</ol>
+<p>Neither interface may expose the mnemonic, seed, derived private keys, vault
+capability internals, or signing material beyond the specific signed
+artifacts this contract defines.</p>
+<h2 id="2-what-the-bank-seat-does">2. What the bank seat does</h2>
+<p>A conforming bank seat can:</p>
+<ol>
+<li>present one or more <strong>accounts</strong> bound to holder-controlled or
+provider-held addresses, each with a declared custody class;</li>
+<li>produce <strong>receiving addresses</strong> or payment coordinates for the holder,
+fresh per context through <code>derive-context-address</code> where the identity
+profile supports it;</li>
+<li>quote a <strong>payment</strong>: amount, asset, fees, rate, expiry, and the exact
+operation that will be submitted;</li>
+<li>obtain <strong>authorization</strong> exclusively through the vault's
+<code>sign-transaction</code> displayed-intent capability;</li>
+<li>submit authorized operations and report typed <strong>outcomes</strong> with
+settlement evidence;</li>
+<li>serve <strong>balances and statements</strong> with declared freshness and evidence
+basis; and</li>
+<li>display <strong>counterparty claims</strong>—qualified names and credentials from
+association registries—without conflating them with addresses.</li>
+</ol>
+<p>It does not generate or store identity keys, request recovery material,
+approve its own payment intents, rewrite displayed intent after consent,
+resolve human names by itself, or acquire authority over the holder's
+messaging, groups, or other seats.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-both-systems-speak-bip-39-that-must-not-merge-them">3.1 Both systems speak BIP-39; that must not merge them</h3>
+<p>A wallet or bank built on seed phrases is one careless integration away from
+asking for the user's mnemonic &quot;to link accounts.&quot; The boundary forbids the
+question: a bank receives signatures, proofs, and addresses from the vault's
+capability port, and nothing else. Using the same root standard is a
+convenience of derivation, never a license to share the root
+(whitepaper §10.2).</p>
+<h3 id="32-custody-must-be-a-visible-class-not-a-vibe">3.2 Custody must be a visible class, not a vibe</h3>
+<p>The difference between &quot;your keys authorize every movement&quot; and &quot;we owe you
+a balance&quot; is the difference between infrastructure and a regulated
+counterparty. Providers must declare a custody class per account, clients
+must display it, and no marketing layer may present a custodial claim as
+holder-controlled funds.</p>
+<h3 id="33-the-ui-must-not-become-a-ledger-implementation">3.3 The UI must not become a ledger implementation</h3>
+<p>Chat flows and screens should not know transaction envelopes, sequence
+rules, fee markets, or confirmation heuristics. A narrow port lets one
+frontend serve different ledgers and providers, and lets a provider change
+its backend without rewriting every client.</p>
+<h3 id="34-regulated-duties-need-a-named-bearer">3.4 Regulated duties need a named bearer</h3>
+<p>Licensing, deposit protection, sanctions screening, tax reporting, consumer
+protection, and complaint handling belong to the provider that performs
+them, in its stated jurisdictions. The protocol's job is to make that party
+and its declarations visible—never to launder its obligations through the
+Onym name (whitepaper §10.2).</p>
+<h3 id="35-it-bounds-failure">3.5 It bounds failure</h3>
+<p>A failed provider, frozen API, or discontinued app must strand as little as
+its custody class implies: a non-custodial account remains spendable with
+the holder's keys through any conforming adapter; a custodial account
+degrades to the provider's declared insolvency and withdrawal terms rather
+than to silence.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">┌──────────────────────────────────────────────────────────────────────┐
+│ UI process                                                           │
+│                                                                      │
+│ View / Composable                                                    │
+│        │ user intent                                                 │
+│        v                                                             │
+│ Flow / ViewModel                                                     │
+│        │ application command                                         │
+│        v                                                             │
+│ Repository / Interactor                                              │
+│        ├────────&gt; Identity vault: sign-transaction,                  │
+│        │          prove-address-control, derive-context-address      │
+│        └────────&gt; Bank port: accounts · quotes · authorized ops ·    │
+│                   outcomes · statements                              │
+└──────────────────────────────┬───────────────────────────────────────┘
+                               │ implementation-neutral operation
+                               v
+                    ┌────────────────────────┐
+                    │ Bank adapter           │
+                    │ map · encode · verify  │
+                    │ submit · normalize     │
+                    └───────────┬────────────┘
+                                │ implementation profile
+                                v
+              ┌─────────────────┴──────────────────┐
+              │ Bank provider / ledger network     │
+              │ accounts · settlement · records ·  │
+              │ compliance (custodial classes)     │
+              └────────────────────────────────────┘
+</code></pre>
+<p>The vault is the only component that touches keys; the adapter is inside the
+client trust boundary but handles untrusted network data; the provider and
+ledger are outside it. A provider response is evidence of that provider's
+statement—not proof of settlement finality, counterparty honesty, or legal
+solvency—unless the implementation profile defines stronger evidence.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-bank-profile">5.1 Bank Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:bank-profile:account-payment-v1&quot;,
+  &quot;interface&quot;: &quot;onym-bank-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;list-accounts&quot;,
+    &quot;derive-receiving-address&quot;,
+    &quot;quote-payment&quot;,
+    &quot;authorize-payment&quot;,
+    &quot;submit-payment&quot;,
+    &quot;query-outcome&quot;,
+    &quot;balance&quot;,
+    &quot;statement&quot;,
+    &quot;close-or-withdraw&quot;
+  ],
+  &quot;custodyClasses&quot;: [&quot;non-custodial&quot;, &quot;custodial&quot;, &quot;escrow&quot;],
+  &quot;intentBinding&quot;: &quot;vault-displayed-intent-v1&quot;,
+  &quot;outcomeSchema&quot;: &quot;onym-bank-outcomes-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym-bank-errors-v1&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes operation semantics, custody-class meaning, authorization
+binding, and outcome meaning. It does not select a ledger, asset, provider,
+or price.</p>
+<h3 id="52-bank-implementation-profile">5.2 Bank Implementation Profile</h3>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:bank-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;bankProfileId&quot;: &quot;onym:bank-profile:account-payment-v1&quot;,
+  &quot;settlementLayer&quot;: &quot;&lt;ledger-network-or-core-system-id&gt;&quot;,
+  &quot;addressModel&quot;: &quot;&lt;address-derivation-and-encoding-rule&gt;&quot;,
+  &quot;operationEncoding&quot;: &quot;&lt;canonical-transaction-format&gt;&quot;,
+  &quot;intentDecoding&quot;: &quot;&lt;rule-mapping-operations-to-human-readable-display&gt;&quot;,
+  &quot;finality&quot;: &quot;&lt;declared-settlement-and-reorg-model&gt;&quot;,
+  &quot;feeModel&quot;: &quot;&lt;network-and-provider-fee-declaration&gt;&quot;,
+  &quot;recordAccess&quot;: &quot;&lt;balance-and-history-evidence-basis&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Transaction envelopes, sequence rules, and network primitives stay inside
+the adapter. <code>intentDecoding</code> is normative: it defines how a raw operation
+becomes the human-readable display the vault will show and bind, so a
+provider cannot craft an operation the profile renders misleadingly.</p>
+<h3 id="53-bank-service-manifest">5.3 Bank Service Manifest</h3>
+<p>A provider claims the seat with a signed manifest:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;bank-id&gt;&quot;,
+  &quot;seat&quot;: &quot;application.bank&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;provider-id&gt;&quot;,
+  &quot;bankProfileId&quot;: &quot;onym:bank-profile:account-payment-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:bank-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;custodyClass&quot;: &quot;non-custodial&quot;,
+  &quot;assets&quot;: [&quot;&lt;supported-asset-descriptors&gt;&quot;],
+  &quot;endpoints&quot;: [{&quot;uri&quot;: &quot;&lt;service-endpoint&gt;&quot;, &quot;role&quot;: &quot;read-write&quot;}],
+  &quot;regulatory&quot;: {
+    &quot;status&quot;: &quot;&lt;licensed-registered-exempt-or-unregulated&gt;&quot;,
+    &quot;jurisdictions&quot;: [&quot;&lt;where-it-may-serve&gt;&quot;],
+    &quot;disclosures&quot;: &quot;&lt;hash-or-url-of-legal-disclosures&gt;&quot;,
+    &quot;protection&quot;: &quot;&lt;deposit-or-safeguarding-scheme-or-none&gt;&quot;
+  },
+  &quot;kycPolicy&quot;: &quot;&lt;hash-or-url-or-none&gt;&quot;,
+  &quot;feeSchedule&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;withdrawalPolicy&quot;: &quot;&lt;custodial-exit-terms-or-not-applicable&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;offers&quot;: [&quot;&lt;seat-offer-ids&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;provider-signature&gt;&quot;
+}
+</code></pre>
+<p><code>regulatory.status</code> is the provider's own signed claim, verifiable only
+against the named jurisdiction's registers—the manifest makes the claim
+auditable and lying expensive, it does not make it true. <code>unregulated</code> is a
+valid, honest value that clients display as such.</p>
+<h3 id="54-account">5.4 Account</h3>
+<pre><code class="language-json">{
+  &quot;accountVersion&quot;: 1,
+  &quot;accountId&quot;: &quot;&lt;provider-or-local-account-id&gt;&quot;,
+  &quot;componentId&quot;: &quot;onym:component:&lt;bank-id&gt;&quot;,
+  &quot;custodyClass&quot;: &quot;non-custodial&quot;,
+  &quot;address&quot;: &quot;&lt;ledger-address-or-provider-account-coordinates&gt;&quot;,
+  &quot;controlProof&quot;: &quot;&lt;vault-proof-of-address-control-or-null-for-custodial&gt;&quot;,
+  &quot;assets&quot;: [&quot;&lt;asset-descriptors&gt;&quot;],
+  &quot;context&quot;: &quot;onym:context:&lt;derivation-domain-or-seat&gt;&quot;,
+  &quot;openedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p>A non-custodial account carries a control proof produced by the vault; a
+custodial account is the provider's liability and carries its terms instead.
+The <code>context</code> ties the account to an identity derivation context so distinct
+financial relationships need not share an address (whitepaper §5.3).</p>
+<h3 id="55-payment-intent-and-quote">5.5 Payment Intent and Quote</h3>
+<p>The UI constructs an intent; the provider answers with a binding quote:</p>
+<pre><code class="language-json">{
+  &quot;intentVersion&quot;: 1,
+  &quot;intentId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;accountId&quot;: &quot;&lt;paying-account&gt;&quot;,
+  &quot;destination&quot;: &quot;&lt;address-or-payment-coordinates&gt;&quot;,
+  &quot;counterpartyClaims&quot;: [&quot;&lt;optional-registry-claims-displayed&gt;&quot;],
+  &quot;amount&quot;: {&quot;value&quot;: &quot;25.00&quot;, &quot;asset&quot;: &quot;&lt;asset-descriptor&gt;&quot;},
+  &quot;purpose&quot;: &quot;&lt;optional-user-visible-reference&gt;&quot;,
+  &quot;quote&quot;: {
+    &quot;quoteRevision&quot;: 1,
+    &quot;networkFee&quot;: {&quot;value&quot;: &quot;0.00001&quot;, &quot;asset&quot;: &quot;&lt;asset&gt;&quot;},
+    &quot;providerFee&quot;: {&quot;value&quot;: &quot;0.10&quot;, &quot;asset&quot;: &quot;&lt;asset&gt;&quot;},
+    &quot;rate&quot;: &quot;&lt;conversion-rate-or-null&gt;&quot;,
+    &quot;operation&quot;: &quot;&lt;canonical-encoded-operation&gt;&quot;,
+    &quot;expiresAt&quot;: &quot;2026-08-01T00:05:00Z&quot;,
+    &quot;quoteSignature&quot;: &quot;&lt;provider-signature&gt;&quot;
+  }
+}
+</code></pre>
+<p>The quoted <code>operation</code> is the exact bytes that will be submitted. The vault
+displays it through the implementation profile's <code>intentDecoding</code> and binds
+its signature to those bytes: what the holder saw is what settles, and an
+expired quote authorizes nothing.</p>
+<h3 id="56-payment-authorization-and-outcome">5.6 Payment Authorization and Outcome</h3>
+<pre><code class="language-json">{
+  &quot;authorizationVersion&quot;: 1,
+  &quot;intentId&quot;: &quot;&lt;same-id&gt;&quot;,
+  &quot;quoteRevision&quot;: 1,
+  &quot;operationHash&quot;: &quot;&lt;hash-of-quoted-operation&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;vault-produced-signature&gt;&quot;,
+  &quot;authorizedAt&quot;: &quot;2026-08-01T00:00:03Z&quot;
+}
+</code></pre>
+<pre><code class="language-json">{
+  &quot;intentId&quot;: &quot;&lt;same-id&gt;&quot;,
+  &quot;status&quot;: &quot;settled&quot;,
+  &quot;settlement&quot;: {
+    &quot;reference&quot;: &quot;&lt;ledger-transaction-id-or-provider-record-id&gt;&quot;,
+    &quot;evidence&quot;: &quot;&lt;profile-defined-settlement-proof&gt;&quot;,
+    &quot;finality&quot;: &quot;&lt;declared-finality-class&gt;&quot;,
+    &quot;settledAt&quot;: &quot;2026-08-01T00:00:09Z&quot;
+  }
+}
+</code></pre>
+<p>Valid outcome classes are <code>quoted</code>, <code>authorized</code>, <code>revision_required</code>,
+<code>submitted</code>, <code>pending</code>, <code>settled</code>, <code>failed</code>, <code>expired</code>, and <code>unknown</code>.
+<code>quoteRevision</code> increases whenever canonical operation bytes change; an
+authorization covers exactly one revision. <code>unknown</code> is a first-class state:
+an adapter that cannot determine a submitted payment's fate queries
+<code>query-outcome</code> before any resubmission, and idempotency keys make retries safe.
+A provider acknowledgement is not settlement unless the profile's evidence
+says so.</p>
+<h3 id="57-balance-and-statement">5.7 Balance and Statement</h3>
+<pre><code class="language-json">{
+  &quot;accountId&quot;: &quot;&lt;account&gt;&quot;,
+  &quot;balances&quot;: [{&quot;asset&quot;: &quot;&lt;asset-descriptor&gt;&quot;, &quot;amount&quot;: &quot;125.40&quot;}],
+  &quot;basis&quot;: &quot;ledger-observed | provider-attested&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;provider-signature-when-attested&gt;&quot;
+}
+</code></pre>
+<p>Statements are ordered, signed (when provider-attested), and exportable in a
+documented format. <code>basis</code> keeps the epistemics honest: a ledger-observed
+balance is verifiable; a provider-attested balance is a counterparty's
+statement of its own liability.</p>
+<h2 id="6-common-bank-surface">6. Common bank surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>list-accounts</code></td>
+<td>Verified manifest, holder session</td>
+<td>Accounts with custody class and control proofs</td>
+</tr>
+<tr>
+<td><code>derive-receiving-address</code></td>
+<td>Account, context</td>
+<td>Fresh coordinates via vault <code>derive-context-address</code></td>
+</tr>
+<tr>
+<td><code>quote-payment</code></td>
+<td>Draft intent</td>
+<td>Signed quote with exact operation and expiry</td>
+</tr>
+<tr>
+<td><code>authorize-payment</code></td>
+<td>Quote</td>
+<td>Vault consent flow, then <code>PaymentAuthorization</code></td>
+</tr>
+<tr>
+<td><code>submit-payment</code></td>
+<td>Authorization</td>
+<td>Typed outcome progression</td>
+</tr>
+<tr>
+<td><code>query-outcome</code></td>
+<td>Intent or settlement reference</td>
+<td>Current outcome with evidence</td>
+</tr>
+<tr>
+<td><code>balance</code></td>
+<td>Account</td>
+<td>Balances with declared basis and freshness</td>
+</tr>
+<tr>
+<td><code>statement</code></td>
+<td>Account, range</td>
+<td>Ordered, exportable, signed-when-attested records</td>
+</tr>
+<tr>
+<td><code>close-or-withdraw</code></td>
+<td>Account, per custody class</td>
+<td>Non-custodial: local removal; custodial: declared exit process</td>
+</tr>
+</tbody>
+</table></div><p><code>authorize-payment</code> is the only step that touches keys, and it happens
+inside the vault, not the bank port. No bank operation can invoke a vault
+capability directly; the UI mediates every request through the capability
+port with its own consent rules.</p>
+<h2 id="7-uiapplication-obligations">7. UI/application obligations</h2>
+<p>A conforming frontend and application layer must:</p>
+<ol>
+<li>verify the bank profile, implementation profile, and provider manifest—
+including custody class and regulatory self-declaration—before showing an
+account;</li>
+<li>display custody class, provider identity, regulatory status, protection
+scheme (or its absence), and fee schedule where the holder decides, not
+in fine print behind the decision;</li>
+<li>construct intents locally and treat provider quotes as offers: amount,
+fees, rate, destination, and expiry render before any signature request;</li>
+<li>pass only the quoted canonical operation to the vault, and submit only
+what the vault signed—no post-consent mutation, batching, or &quot;equivalent&quot;
+substitution. If a provider proposes revised operation bytes, invalidate
+the prior authorization, issue a new quote revision, display every change,
+and request fresh authorization before submission;</li>
+<li>render counterparty registry claims per the association-naming rules and
+never derive a destination from a display name alone;</li>
+<li>request fresh receiving addresses per context where the identity profile
+supports it, and warn before reusing an address across contexts;</li>
+<li>keep balances, history, addresses, and account existence out of logs,
+analytics, crash reports, and store metadata;</li>
+<li>label <code>pending</code>, <code>settled</code>, and provider attestations by their evidence
+basis, and never present <code>submitted</code> as final;</li>
+<li>use idempotent intent identity across retries so a network failure cannot
+double-pay;</li>
+<li>surface statement export and—custody class permitting—complete exit
+paths as ordinary features, not support tickets;</li>
+<li>keep billing for the bank's own seat offers separate from payment
+flows: a subscription lapse degrades service per the offer, never fund
+access beyond it; and</li>
+<li>treat any provider request for mnemonics, seeds, private keys, vault
+internals, or unrelated-context proofs as a protocol violation to
+surface, not a feature to accommodate.</li>
+</ol>
+<p>Provider names, quote fields, memo text, and statement entries are untrusted
+input. They must not execute code, spoof consent UI, or masquerade as vault
+prompts.</p>
+<h2 id="8-bank-adapter-obligations">8. Bank adapter obligations</h2>
+<p>A conforming adapter must:</p>
+<ol>
+<li>implement its mapping without leaking ledger or provider wire types
+through the common port;</li>
+<li>encode operations canonically so the bytes the vault displays are the
+bytes submitted, and verify quote signatures and expiry before offering
+them for authorization;</li>
+<li>decode operations for display exactly per the implementation profile's
+<code>intentDecoding</code>, refusing operations it cannot render faithfully;</li>
+<li>bind submissions to authorizations: no unsigned, silently re-signed, or
+modified operation ever leaves the adapter. A provider-proposed revision
+returns to quote, display, and fresh authorization as new canonical bytes;</li>
+<li>track outcome state per intent with idempotency keys, and resolve
+<code>unknown</code> by query before resubmission;</li>
+<li>validate inbound records—balances, statements, settlement evidence—
+against the profile's evidence rules before surfacing them as facts;</li>
+<li>enforce bounded queues, timeouts, retry backoff, and response-size limits
+against hostile or failing endpoints;</li>
+<li>isolate provider credentials and session tokens per component, never
+reusing them across providers or leaking them into logs;</li>
+<li>normalize provider refusals into stable domain errors, preserving
+compliance-hold and rate-limit semantics distinctly; and</li>
+<li>remain replaceable: for non-custodial accounts, another conforming
+adapter with the same vault must be able to spend the same funds.</li>
+</ol>
+<h2 id="9-provider-obligations">9. Provider obligations</h2>
+<p>A conforming provider must:</p>
+<ol>
+<li>publish and honor its manifest: custody class, assets, fees, regulatory
+self-declaration, KYC policy, withdrawal terms, and privacy profile;</li>
+<li>quote payments as exact operations with expiry, and settle exactly what
+was authorized, fail the intent, or propose a new quote revision requiring
+full re-display and fresh authorization—no silent repricing or rerouting;</li>
+<li>accept authorization only in the profile's signed form; a provider that
+asks the holder to &quot;confirm&quot; out-of-band is outside the contract;</li>
+<li>serve settlement evidence, balances, and statements per the declared
+evidence basis, and support statement export;</li>
+<li>run its compliance program—KYC, sanctions, reporting, holds—under its
+published policy, attributing every hold or refusal to that policy in
+machine-readable form rather than disguising it as technical failure;</li>
+<li>keep custodial funds segregated and withdrawable per its declared terms,
+and never rehypothecate a <code>non-custodial</code> label;</li>
+<li>request from the identity only what its declared services require:
+proofs of control, context-scoped addresses, and displayed-intent
+signatures—never root material or cross-context linkage;</li>
+<li>bound data retention to its published policy and keep holder financial
+data out of any advertising or cross-seat correlation;</li>
+<li>price through seat offers and (when store-sold) channel offers, with
+service fees distinct from network fees in every quote; and</li>
+<li>declare wind-down behavior: notice period, statement availability, and
+the exit path for each custody class.</li>
+</ol>
+<h2 id="10-custody-classes">10. Custody classes</h2>
+<p>Every account carries exactly one declared class; clients render it always.</p>
+<ul>
+<li><strong><code>non-custodial</code>.</strong> The holder's vault keys are necessary for every
+outgoing movement. The provider offers construction, submission, records,
+and interface services around funds it cannot move. Provider failure
+leaves funds spendable through any conforming adapter. The provider's
+regulatory surface is typically narrower but not necessarily empty.</li>
+<li><strong><code>custodial</code>.</strong> The provider controls the settlement-layer assets and
+owes the holder a balance. Authorization signatures instruct the provider;
+they do not move ledger funds directly. Everything then depends on the
+provider's solvency, license, protection scheme, and withdrawal terms—
+which is why the manifest must declare them and clients must show them.</li>
+<li><strong><code>escrow</code>.</strong> Bounded two-key or threshold arrangements—payment channels,
+conditional escrow, recovery co-signing—where declared movements need
+multiple parties. The manifest names the parties, the conditions, and the
+unilateral exit path if one exists; without a declared exit analysis, an
+escrow account is presented with the custodial warnings.</li>
+</ul>
+<p>A provider may operate accounts of different classes. What it may not do is
+blur them: the class is per account, machine-readable, and load-bearing in
+every display and every failure analysis.</p>
+<h2 id="11-payment-at-the-bank-boundary">11. Payment at the bank boundary</h2>
+<p>The bank seat has two money flows the contract keeps distinct:</p>
+<ol>
+<li><strong>The holder's payments</strong> — the subject matter of §5.5–§5.6, priced by
+the quoted network and provider fees.</li>
+<li><strong>The provider's service offers</strong> — subscriptions, premium tiers, or
+per-service fees for the seat itself, sold as <code>SeatOffer</code>s and through
+frontend <code>ChannelOffer</code>s like any other seat (whitepaper §16–17).</li>
+</ol>
+<p>Store-billing evidence and entitlement state never enter payment
+operations, addresses, memos, or statements. A lapsed premium tier degrades
+premium features per the offer; it cannot hold funds hostage, and no
+frontend commission may bias which provider's quote the UI presents as
+best.</p>
+<h2 id="12-errors-and-state-machine">12. Errors and state machine</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">UI/application response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse; explain required adapter</td>
+</tr>
+<tr>
+<td><code>custody_undeclared</code></td>
+<td>Manifest</td>
+<td>Refuse the account entirely</td>
+</tr>
+<tr>
+<td><code>quote_expired</code></td>
+<td>Provider/time</td>
+<td>Re-quote; never sign stale operations</td>
+</tr>
+<tr>
+<td><code>quote_mismatch</code></td>
+<td>Adapter verification</td>
+<td>Drop provider quote; possible manipulation</td>
+</tr>
+<tr>
+<td><code>consent_denied</code></td>
+<td>Vault/holder</td>
+<td>Accept; the intent dies unsigned</td>
+</tr>
+<tr>
+<td><code>insufficient_funds</code></td>
+<td>Provider/ledger</td>
+<td>Report against declared balance basis</td>
+</tr>
+<tr>
+<td><code>available_balance_restricted</code></td>
+<td>Provider/settlement rule</td>
+<td>Show the named hold, reserve, collateral, or minimum-balance rule and resulting spendable amount</td>
+</tr>
+<tr>
+<td><code>operation_conflict</code></td>
+<td>Provider/settlement concurrency</td>
+<td>Re-read current state and re-quote; never resubmit stale authorized bytes blindly</td>
+</tr>
+<tr>
+<td><code>authorization_revision_required</code></td>
+<td>Provider/compliance</td>
+<td>Treat revised bytes as a new quote; compare, re-display, and obtain fresh authorization</td>
+</tr>
+<tr>
+<td><code>compliance_hold</code></td>
+<td>Provider policy</td>
+<td>Show the policy basis and the provider's process</td>
+</tr>
+<tr>
+<td><code>destination_invalid</code></td>
+<td>Adapter/provider</td>
+<td>Refuse before authorization, not after</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Provider</td>
+<td>Back off with idempotent intent identity</td>
+</tr>
+<tr>
+<td><code>submission_failed</code></td>
+<td>Network/ledger</td>
+<td>Retry the same authorized bytes or fail the intent</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Network/provider</td>
+<td>Query before any resubmission</td>
+</tr>
+<tr>
+<td><code>settlement_reorged</code></td>
+<td>Ledger</td>
+<td>Follow the profile's finality rules; re-evaluate receipts</td>
+</tr>
+<tr>
+<td><code>withdrawal_refused</code></td>
+<td>Custodial provider</td>
+<td>Surface declared terms; escalate as a legal matter, not a bug</td>
+</tr>
+</tbody>
+</table></div><p>Payment lifecycle:</p>
+<pre><code class="language-text">draft -&gt; quoted -&gt; displayed -&gt; authorized
+displayed -&gt; consent_denied
+authorized -&gt; revision_required -&gt; quoted (new revision)
+authorized -&gt; submitted -&gt; pending -&gt; settled | failed | unknown
+settled -&gt; receipt (evidence per profile)
+</code></pre>
+<p>Only profile-defined settlement evidence produces <code>settled</code>. Failure or
+expiry at any stage before <code>submitted</code> is free; after <code>submitted</code>, the
+adapter's idempotency and outcome queries decide, never a blind retry.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>The root never banks.</strong> Mnemonics, seeds, and private keys never reach
+a provider, adapter, quote, memo, or statement; the vault capability port
+is the only key surface (whitepaper §10.2).</li>
+<li><strong>What was displayed is what settles.</strong> Signatures bind to the exact
+quoted operation through canonical encoding and profile-defined intent
+decoding. Provider revisions are new operations requiring fresh display
+and authorization, never mutations of an accepted signature.</li>
+<li><strong>Custody class is always visible.</strong> Non-custodial, custodial, and
+escrow are machine-readable, per account, and rendered at every decision
+point.</li>
+<li><strong>A provider statement is a statement.</strong> Balances and receipts carry
+their evidence basis; attestation by a counterparty is never displayed
+as ledger fact.</li>
+<li><strong>Contexts do not correlate.</strong> Accounts bind to identity contexts;
+fresh receiving addresses are the default; linking two financial
+contexts is the holder's explicit act.</li>
+<li><strong>Compliance is attributed.</strong> Holds and refusals cite the provider's
+published policy machine-readably; they are never disguised as network
+errors—and the reverse deception is equally nonconforming.</li>
+<li><strong>Names annotate, keys authorize.</strong> Registry claims about a counterparty
+inform the holder; only addresses and signed operations move value.</li>
+<li><strong>Retries cannot double-pay.</strong> Intent identity, idempotent submission,
+and <code>unknown</code>-before-resubmit are mandatory, not quality goals.</li>
+<li><strong>Service billing cannot touch funds.</strong> Seat entitlements, store
+evidence, and commissions stay out of operations, addresses, and
+statements, and cannot gate fund access.</li>
+<li><strong>Exit is a declared path.</strong> Non-custodial: any conforming adapter.
+Custodial: published withdrawal and wind-down terms. Undeclared exit is
+a nonconforming account.</li>
+<li><strong>Financial data is not exhaust.</strong> No cross-seat correlation, ad reuse,
+or analytics leakage of balances, flows, or account existence.</li>
+<li><strong>The protocol confers no trust.</strong> A conforming manifest proves
+conformance claims, not solvency, licensure, or honesty; those remain
+the provider's, verified in the provider's jurisdiction.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>BankProfile</code> changes when operation, custody-class, authorization, or
+outcome meaning changes.</li>
+<li><code>BankImplementationProfile</code> changes when settlement layer, address model,
+operation encoding, intent decoding, finality, or fee model changes.</li>
+<li><code>ServiceManifest</code> changes when custody class, assets, endpoints,
+regulatory declarations, fees, or operator keys change—custody-class
+changes on an existing account are migrations requiring fresh holder
+consent, never silent updates.</li>
+<li>Asset descriptors are versioned and canonical; an adapter never infers an
+asset from a display symbol.</li>
+<li>Cross-platform fixtures cover: canonical operation encoding and intent
+decoding (including adversarial operations that must refuse to render);
+quote verification, revision, and expiry; authorization binding including
+fresh consent after provider revision; idempotent retry, operation-conflict,
+and <code>unknown</code> resolution; settlement evidence and reorg handling;
+custody-class display decisions; compliance-hold attribution; statement
+export round-trips; and context isolation of addresses.</li>
+<li>A provider, an adapter, and a vault from three different authors must
+interoperate using only published profiles and fixtures.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>The abstract boundary becomes executable only through a concrete profile.
+The current implementation target is:</p>
+<ul>
+<li><a href="../bank/UI-Bank-Stellar.html">UI-Bank-Stellar.md</a> — the Stellar ledger, reusing
+the identity's derived Ed25519/Stellar account from the BIP-39 profile,
+with Stellar transaction envelopes, trustlines, the fee-paying
+transaction relayer, and anchor-based custodial ramps.</li>
+</ul>
+<p>Future profiles may target other ledgers or conventional core-banking
+providers while preserving the common port. They must use another
+implementation profile ID when settlement, encoding, finality, or custody
+semantics differ.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The UI ↔ bank boundary is successfully separated when:</p>
+<ol>
+<li>a third-party bank provider can serve accounts and payments to Onym
+identities using only published profiles and the capability port;</li>
+<li>no provider, adapter, or flow can obtain root material, and every
+payment settles exactly the bytes the holder saw and signed;</li>
+<li>custody class is machine-readable everywhere and a custodial liability
+is never rendered as holder-controlled funds;</li>
+<li>a non-custodial provider's disappearance leaves funds spendable through
+another conforming adapter with the same vault;</li>
+<li>compliance holds, fees, rates, and regulatory status are attributed,
+displayed, and never disguised;</li>
+<li>two of the holder's financial contexts cannot be correlated by
+providers through addresses or proofs the boundary issued;</li>
+<li>retries, timeouts, and unknown outcomes cannot double-pay;</li>
+<li>statements export completely enough to reconstruct account history
+without the provider's continued cooperation;</li>
+<li>seat billing failures degrade service features only, never fund access;
+and</li>
+<li>a second settlement technology can implement the abstract suite without
+pretending to be the first.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>Separating the UI, the identity vault, and the bank lets a person hold
+money against keys no bank ever sees, see exactly what every payment will
+do before signing it, and replace the bank—custodial or not—without
+replacing who they are.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/worktree-bank-boundary/bank/UI-Bank.md">latest version on worktree-bank-boundary →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

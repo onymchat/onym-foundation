@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Sponsor Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Sponsor Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/sponsor/Sponsor.html">
+<meta property="og:title" content="Onym Sponsor Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/sponsor/Sponsor.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Sponsorship</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/sponsor/Sponsor.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-sponsor-contract-boundary">Onym Sponsor Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>A sponsor may fund a foundation, receive transparent recognition on that
+foundation's resources, and participate in a bounded governance class. A
+contribution buys no user, protocol privilege, or exemption from a
+director's duty to the foundation.</p>
+</blockquote>
+<p>This document defines a technology-neutral contract for foundations that want
+open sponsorship, endowment contributions, public recognition, and a sponsor
+path into foundation governance. It is not tied to the Onym Foundation, a
+jurisdiction, legal form, custody provider, investment strategy, currency,
+identity system, website, or voting technology.</p>
+<p>The initial proposed implementation is
+<a href="../sponsor/Sponsor-Onym.html">Sponsor-Onym.md</a>. Any other foundation may publish a
+different conforming implementation profile with its own purposes, resource
+inventory, contribution thresholds, recognition classes, board composition,
+endowment policy, and applicable law.</p>
+<p>This specification is not articles of incorporation, bylaws, a trust deed, a
+tax opinion, or an offer of an investment. A protocol record cannot create a
+legal directorship unless the foundation's governing documents and applicable
+law give that record effect.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Sponsorship is an open support seat, not ownership of Onym or of a foundation.</p>
+<ul>
+<li>Anyone may submit a contribution or sponsorship application under a
+foundation's published eligibility policy.</li>
+<li>The foundation may accept, reject, return, or condition a contribution under
+its lawful gift-acceptance and risk policies.</li>
+<li>An accepted sponsor may receive signed status and recognition on resources
+the foundation actually controls.</li>
+<li>A qualifying sponsor may join a sponsor electorate, stand for a reserved
+board class, and vote in its selection process when the implementation
+permits it.</li>
+<li>A sponsor director participates in endowment and budget decisions as one
+fiduciary member of the board. The director does not control “their money”
+after an irrevocable contribution.</li>
+<li>Contribution size may establish eligibility or a recognition tier, but it
+does not weight a seated director's vote unless a foundation explicitly
+publishes a different, legally valid profile.</li>
+<li>No sponsorship grants authority over identities, messages, transports,
+notaries, association registries, applications, independent providers, or
+protocol conformance.</li>
+</ul>
+<p>Open participation means anyone can make an offer or build another foundation
+from the protocol. It does not require one foundation to accept every source
+of funds, display unlawful material, create unlimited board seats, or violate
+its charitable purpose and legal duties.</p>
+<h2 id="2-roles-and-assets">2. Roles and assets</h2>
+<ul>
+<li>The <strong>foundation</strong> is the legal or organizational body receiving funds,
+controlling named resources, and adopting a sponsor implementation profile.</li>
+<li>The <strong>sponsor</strong> contributes money, assets, or an accepted in-kind resource
+and may request recognition or governance eligibility.</li>
+<li>The <strong>foundation board</strong> is the body legally responsible for strategy,
+oversight, investment, and spending within the foundation's purpose.</li>
+<li>The <strong>sponsor council</strong> is the open or threshold-qualified electorate for
+sponsor-class nominations, elections, consultation, and proposals.</li>
+<li>A <strong>sponsor director</strong> is a legal board member selected through the sponsor
+class but owing the same duties as every other director.</li>
+<li>The <strong>treasurer or endowment custodian</strong> receives, values, segregates,
+invests, and disburses assets under approved policy.</li>
+<li>The <strong>recognition publisher</strong> controls a website, application surface,
+report, event, or other resource on which sponsor status may be displayed.</li>
+<li>The <strong>governance recorder</strong> signs proposals, conflicts, votes, resolutions,
+appointments, and spending reports. It is evidence, not a substitute for
+the foundation's legal records.</li>
+<li>The <strong>auditor or reviewer</strong>, where appointed, reconciles receipts, custody,
+spending, restrictions, and public statements.</li>
+</ul>
+<p>Foundation-controlled assets are distinct:</p>
+<ul>
+<li><strong>operating funds</strong> may be spent under the current budget;</li>
+<li><strong>board-designated reserves or quasi-endowment</strong> may be released by the
+board under its own policy;</li>
+<li><strong>term-restricted funds</strong> are restricted until a date or condition;</li>
+<li><strong>purpose-restricted funds</strong> may be used only for an accepted purpose; and</li>
+<li><strong>permanent endowment</strong> is managed and appropriated subject to the gift
+instrument, governing documents, applicable law, and prudent policy.</li>
+</ul>
+<p>Calling every contribution an “endowment” would be misleading. The receipt and
+public report must name the actual fund class.</p>
+<h2 id="3-recognition-is-bounded">3. Recognition is bounded</h2>
+<p>A sponsor may earn public recognition only on resources listed in the
+foundation's signed <code>RecognitionInventory</code>. Examples include:</p>
+<ul>
+<li>the foundation website's sponsor page;</li>
+<li>annual reports and audited statements;</li>
+<li>foundation-hosted events and grant reports;</li>
+<li>foundation-owned documentation, newsletters, and public dashboards; or</li>
+<li>a specifically declared acknowledgement area in foundation-published apps.</li>
+</ul>
+<p>Recognition never implies control over:</p>
+<ul>
+<li>an independently published Onym client or website;</li>
+<li>a user's identity, UI, service route, or local state;</li>
+<li>a provider's relay, blob server, notary, registry, or application;</li>
+<li>a permissionless protocol implementation;</li>
+<li>technical conformance or security-audit results;</li>
+<li>directory inclusion or ranking;</li>
+<li>a grant, procurement award, or regulatory endorsement; or</li>
+<li>continued recognition after the credential's declared term.</li>
+</ul>
+<p>Every placement is visibly labelled as sponsorship or acknowledgement. It
+shows the recognized name or pseudonym, tier, foundation, period, and policy
+link. It cannot masquerade as a user recommendation or protocol requirement.</p>
+<h2 id="4-contribution-and-benefit-semantics">4. Contribution and benefit semantics</h2>
+<p>Before payment, the sponsor receives a signed disclosure describing:</p>
+<ul>
+<li>receiving legal entity and jurisdiction;</li>
+<li>charitable or organizational purpose;</li>
+<li>accepted asset, valuation, payment rail, and custody destination;</li>
+<li>fund class and any accepted restriction;</li>
+<li>whether the contribution is irrevocable;</li>
+<li>recognition benefit and its good-faith value where relevant;</li>
+<li>sponsor-council or board eligibility, but not a guaranteed result unless the
+governing documents lawfully guarantee it;</li>
+<li>identity, sanctions, source-of-funds, tax, and reporting requirements;</li>
+<li>refund, rejection, reversal, and failed-payment behavior; and</li>
+<li>authoritative legal documents and order of precedence.</li>
+</ul>
+<p>A contribution is not a purchase of securities, equity, revenue share, token,
+network ownership, or financial return. No document may promise appreciation,
+yield, repayment, or profits from the efforts of the foundation unless a
+separate lawful instrument explicitly exists outside this sponsor profile.</p>
+<p>Recognition, event admission, membership benefits, or other consideration can
+affect whether a payment is legally or taxfully treated as a donation. A
+receipt records the benefit; it does not promise deductibility. Sponsors obtain
+their own advice in the relevant jurisdiction.</p>
+<h2 id="5-board-participation">5. Board participation</h2>
+<h3 id="51-finite-board-open-path">5.1 Finite board, open path</h3>
+<p>A legal board is finite. A conforming foundation therefore publishes:</p>
+<ul>
+<li>number and class of board seats;</li>
+<li>maximum sponsor-director proportion;</li>
+<li>qualification threshold and lookback period;</li>
+<li>nomination, due-diligence, election, appointment, and acceptance steps;</li>
+<li>voter eligibility and voting rule;</li>
+<li>term, staggering, renewal, and consecutive-term limit;</li>
+<li>affiliate aggregation and one-seat-per-control-group rule;</li>
+<li>vacancy, suspension, resignation, and removal procedure;</li>
+<li>independence, skill, residency, and diversity constraints where lawful;</li>
+<li>conflict, confidentiality, compensation, and expense policies; and</li>
+<li>legal filing or registration required before a term begins.</li>
+</ul>
+<p>Every qualified sponsor can join the published selection process. Qualification
+does not create an unlimited or permanent seat. If qualified candidates exceed
+available seats, the sponsor electorate chooses among them under the pinned
+rule.</p>
+<h3 id="52-fiduciary-independence">5.2 Fiduciary independence</h3>
+<p>A sponsor director is not an instructed delegate of the sponsor that nominated
+or employed them. Once seated, the director must act in the foundation's best
+interests and purpose under the governing documents and applicable law.</p>
+<p>The director:</p>
+<ol>
+<li>signs a duty, confidentiality, and conflict acknowledgement;</li>
+<li>discloses financial, employment, family, governance, grant, and vendor
+relationships at appointment, annually, and when a matter arises;</li>
+<li>does not receive contribution-weighted board voting power;</li>
+<li>leaves discussion and voting when a conflict cannot be safely managed;</li>
+<li>cannot direct a grant, procurement, compensation, or benefit to themselves
+or an affiliate;</li>
+<li>preserves confidential information without hiding the public basis of a
+spending decision; and</li>
+<li>may be removed under the same lawful duty and misconduct standards as
+another director.</li>
+</ol>
+<p>Sponsor-class selection explains how the director reached the board; it does
+not lower the director's duties.</p>
+<h3 id="53-influence-over-spending">5.3 Influence over spending</h3>
+<p>A sponsor director may:</p>
+<ul>
+<li>introduce or co-sponsor a spending proposal;</li>
+<li>question staff, advisers, grantees, and investment providers;</li>
+<li>request information available to all directors;</li>
+<li>participate in deliberation when unconflicted;</li>
+<li>cast one recorded vote on budgets, grants, investment, and endowment
+appropriations; and</li>
+<li>publish a permitted explanation or dissent after the decision.</li>
+</ul>
+<p>No donor retains a private veto over unrestricted funds after acceptance.
+Restrictions in an accepted gift instrument bind the foundation through the
+fund restriction, not through continuing private control by the donor.</p>
+<h2 id="6-contract-objects">6. Contract objects</h2>
+<h3 id="61-foundation-profile">6.1 Foundation Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:sponsor-profile:foundation-v1&quot;,
+  &quot;interface&quot;: &quot;onym-sponsor-v1&quot;,
+  &quot;foundation&quot;: &quot;onym:key:&lt;foundation-id&gt;&quot;,
+  &quot;legalEntity&quot;: &quot;&lt;registered-name-and-number-or-proposed-status&gt;&quot;,
+  &quot;jurisdiction&quot;: &quot;&lt;declared&gt;&quot;,
+  &quot;purpose&quot;: &quot;&lt;content-addressed-purpose&gt;&quot;,
+  &quot;governingDocuments&quot;: [&quot;&lt;content-addressed-document&gt;&quot;],
+  &quot;resourceInventory&quot;: &quot;&lt;recognition-inventory-hash&gt;&quot;,
+  &quot;giftAcceptancePolicy&quot;: &quot;&lt;policy-hash&gt;&quot;,
+  &quot;endowmentPolicy&quot;: &quot;&lt;policy-hash&gt;&quot;,
+  &quot;boardPolicy&quot;: &quot;&lt;policy-hash&gt;&quot;,
+  &quot;conflictPolicy&quot;: &quot;&lt;policy-hash&gt;&quot;,
+  &quot;disclosurePolicy&quot;: &quot;&lt;policy-hash&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;foundation-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="62-foundation-implementation-profile">6.2 Foundation Implementation Profile</h3>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:sponsor-implementation:&lt;foundation&gt;-v1&quot;,
+  &quot;sponsorProfileId&quot;: &quot;onym:sponsor-profile:foundation-v1&quot;,
+  &quot;recognitionClasses&quot;: &quot;&lt;versioned-classes&gt;&quot;,
+  &quot;contributionRails&quot;: [&quot;&lt;rail-profile&gt;&quot;],
+  &quot;fundClasses&quot;: [&quot;operating&quot;, &quot;board-designated&quot;, &quot;term-restricted&quot;, &quot;purpose-restricted&quot;, &quot;permanent-endowment&quot;],
+  &quot;boardClasses&quot;: &quot;&lt;seat-and-election-policy&gt;&quot;,
+  &quot;spendingRule&quot;: &quot;&lt;appropriation-and-vote-policy&gt;&quot;,
+  &quot;legalPrecedence&quot;: &quot;governing-documents-and-applicable-law&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;foundation-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="63-sponsor-offer">6.3 Sponsor Offer</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;offerId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:sponsor-implementation:&lt;foundation&gt;-v1&quot;,
+  &quot;foundation&quot;: &quot;onym:key:&lt;foundation-id&gt;&quot;,
+  &quot;recognitionTier&quot;: &quot;&lt;tier&gt;&quot;,
+  &quot;recognitionTerm&quot;: &quot;P1Y&quot;,
+  &quot;eligibleResources&quot;: [&quot;&lt;resource-id&gt;&quot;],
+  &quot;minimumContribution&quot;: {&quot;minorUnits&quot;: 100000, &quot;currency&quot;: &quot;&lt;reference-currency&gt;&quot;},
+  &quot;acceptedFundClasses&quot;: [&quot;operating&quot;, &quot;permanent-endowment&quot;],
+  &quot;boardEligibility&quot;: {
+    &quot;included&quot;: false,
+    &quot;policy&quot;: &quot;&lt;board-policy-hash&gt;&quot;
+  },
+  &quot;benefitValue&quot;: {&quot;minorUnits&quot;: 0, &quot;currency&quot;: &quot;&lt;reference-currency&gt;&quot;},
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;foundation-signature&gt;&quot;
+}
+</code></pre>
+<p>The values are illustrative. Each implementation publishes its real amounts
+and currencies. A sponsor offer cannot amend the foundation's legal documents.</p>
+<h3 id="64-contribution-pledge">6.4 Contribution Pledge</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;pledgeId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;offerId&quot;: &quot;&lt;offer-id&gt;&quot;,
+  &quot;sponsor&quot;: &quot;onym:key:&lt;sponsor-id&gt;&quot;,
+  &quot;publicName&quot;: &quot;&lt;requested-name-or-pseudonym&gt;&quot;,
+  &quot;amount&quot;: {&quot;minorUnits&quot;: 500000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;asset&quot;: &quot;&lt;asset-and-network&gt;&quot;,
+  &quot;fundClass&quot;: &quot;permanent-endowment&quot;,
+  &quot;requestedRestriction&quot;: &quot;&lt;none-or-purpose-and-expiry&gt;&quot;,
+  &quot;recognitionRequested&quot;: true,
+  &quot;privacy&quot;: &quot;public-name-private-payment-coordinate&quot;,
+  &quot;eligibilityEvidence&quot;: [&quot;&lt;required-compliance-evidence&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-08-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;sponsor-signature&gt;&quot;
+}
+</code></pre>
+<p>A requested restriction is not binding until the foundation explicitly
+accepts it. Silence, receipt of an incompatible transfer, or a memo field does
+not amend the gift instrument.</p>
+<h3 id="65-contribution-acceptance-and-receipt">6.5 Contribution Acceptance and Receipt</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;receiptId&quot;: &quot;&lt;nonreusable-id&gt;&quot;,
+  &quot;pledgeId&quot;: &quot;&lt;pledge-id&gt;&quot;,
+  &quot;foundation&quot;: &quot;onym:key:&lt;foundation-id&gt;&quot;,
+  &quot;sponsor&quot;: &quot;onym:key:&lt;sponsor-id&gt;&quot;,
+  &quot;received&quot;: {&quot;amount&quot;: &quot;&lt;exact-asset-units&gt;&quot;, &quot;asset&quot;: &quot;&lt;asset-and-network&gt;&quot;},
+  &quot;referenceValue&quot;: {&quot;minorUnits&quot;: 500000, &quot;currency&quot;: &quot;&lt;reference-currency&gt;&quot;},
+  &quot;valuationMethod&quot;: &quot;&lt;source-time-and-policy&gt;&quot;,
+  &quot;receivedAt&quot;: &quot;2026-08-15T00:00:00Z&quot;,
+  &quot;fundClass&quot;: &quot;permanent-endowment&quot;,
+  &quot;acceptedRestriction&quot;: &quot;&lt;none-or-exact-restriction-hash&gt;&quot;,
+  &quot;irrevocable&quot;: true,
+  &quot;recognizedBenefit&quot;: &quot;&lt;tier-term-and-estimated-value&gt;&quot;,
+  &quot;taxDeductibilityPromised&quot;: false,
+  &quot;paymentEvidence&quot;: &quot;&lt;private-or-redacted-reference&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;foundation-signature&gt;&quot;
+}
+</code></pre>
+<p>The receipt never exposes a private bank account, full payment credential, or
+unnecessary source-of-funds document. Statutory receipts and private records
+may contain more data and remain under the foundation's retention policy.</p>
+<h3 id="66-sponsor-status-credential">6.6 Sponsor Status Credential</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;credentialId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;foundation&quot;: &quot;onym:key:&lt;foundation-id&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:key:&lt;sponsor-id&gt;&quot;,
+  &quot;status&quot;: &quot;&lt;recognition-tier&gt;&quot;,
+  &quot;scope&quot;: [&quot;recognition&quot;, &quot;sponsor-council&quot;],
+  &quot;validFrom&quot;: &quot;2026-08-15T00:00:00Z&quot;,
+  &quot;validUntil&quot;: &quot;2027-08-15T00:00:00Z&quot;,
+  &quot;sourceReceipts&quot;: [&quot;&lt;receipt-hash&gt;&quot;],
+  &quot;policyVersion&quot;: &quot;&lt;policy-hash&gt;&quot;,
+  &quot;revocationEndpoint&quot;: &quot;&lt;status-endpoint&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;foundation-signature&gt;&quot;
+}
+</code></pre>
+<p>The credential is nontransferable. It proves foundation-issued status, not
+control of the foundation or truth of the sponsor's marketing claims.</p>
+<h3 id="67-recognition-placement">6.7 Recognition Placement</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;placementId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;credentialId&quot;: &quot;&lt;sponsor-status-credential&gt;&quot;,
+  &quot;resourceId&quot;: &quot;&lt;foundation-controlled-resource&gt;&quot;,
+  &quot;label&quot;: &quot;Sponsor&quot;,
+  &quot;displayName&quot;: &quot;&lt;approved-name&gt;&quot;,
+  &quot;creativeHash&quot;: &quot;&lt;approved-logo-or-text-hash&gt;&quot;,
+  &quot;startsAt&quot;: &quot;2026-08-15T00:00:00Z&quot;,
+  &quot;endsAt&quot;: &quot;2027-08-15T00:00:00Z&quot;,
+  &quot;publisher&quot;: &quot;onym:key:&lt;recognition-publisher&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="68-board-candidacy-and-appointment">6.8 Board Candidacy and Appointment</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;candidacyId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;foundation&quot;: &quot;onym:key:&lt;foundation-id&gt;&quot;,
+  &quot;candidate&quot;: &quot;onym:key:&lt;candidate-id&gt;&quot;,
+  &quot;sponsorControlGroup&quot;: &quot;&lt;declared-affiliate-group&gt;&quot;,
+  &quot;boardClass&quot;: &quot;sponsor-director&quot;,
+  &quot;eligibilityReceipts&quot;: [&quot;&lt;receipt-hashes&gt;&quot;],
+  &quot;qualificationStatement&quot;: &quot;&lt;content-addressed-statement&gt;&quot;,
+  &quot;conflictDisclosure&quot;: &quot;&lt;public-summary-and-private-register-reference&gt;&quot;,
+  &quot;consentsToDuties&quot;: true,
+  &quot;term&quot;: {&quot;startsAt&quot;: &quot;&lt;date&gt;&quot;, &quot;endsAt&quot;: &quot;&lt;date&gt;&quot;},
+  &quot;signature&quot;: &quot;&lt;candidate-signature&gt;&quot;
+}
+</code></pre>
+<p>After the pinned election and legal appointment steps, the foundation issues:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;appointmentId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;candidacyId&quot;: &quot;&lt;candidacy-id&gt;&quot;,
+  &quot;resolutionId&quot;: &quot;&lt;board-or-member-resolution&gt;&quot;,
+  &quot;electionEvidence&quot;: &quot;&lt;canonical-result-hash&gt;&quot;,
+  &quot;legalEffectiveAt&quot;: &quot;&lt;date-or-null-until-complete&gt;&quot;,
+  &quot;termEndsAt&quot;: &quot;&lt;date&gt;&quot;,
+  &quot;status&quot;: &quot;effective&quot;,
+  &quot;signature&quot;: &quot;&lt;foundation-signature&gt;&quot;
+}
+</code></pre>
+<p>A result remains <code>pending_legal_effect</code> until every appointment step required
+by the governing documents and law is complete.</p>
+<h3 id="69-spending-proposal-and-resolution">6.9 Spending Proposal and Resolution</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;proposalId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;foundation&quot;: &quot;onym:key:&lt;foundation-id&gt;&quot;,
+  &quot;proposer&quot;: &quot;onym:key:&lt;director-or-authorized-party&gt;&quot;,
+  &quot;purpose&quot;: &quot;&lt;public-purpose-and-deliverables&gt;&quot;,
+  &quot;requested&quot;: {&quot;minorUnits&quot;: 2500000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;fundSource&quot;: &quot;&lt;operating-or-endowment-fund-id&gt;&quot;,
+  &quot;restrictionCompatibility&quot;: &quot;&lt;analysis-hash&gt;&quot;,
+  &quot;recipient&quot;: &quot;&lt;proposed-grantee-or-vendor&gt;&quot;,
+  &quot;conflicts&quot;: [&quot;&lt;declared-conflict-references&gt;&quot;],
+  &quot;publicCommentEndsAt&quot;: &quot;&lt;date&gt;&quot;,
+  &quot;voteOpensAt&quot;: &quot;&lt;date&gt;&quot;,
+  &quot;supportingMaterial&quot;: &quot;&lt;content-addressed-bundle&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;proposer-signature&gt;&quot;
+}
+</code></pre>
+<p>The final <code>SpendingResolution</code> records eligible directors, recusals, quorum,
+votes, governing rule, amount, fund, milestones, dissent, and signatures. A
+public vote record may identify directors while private legal advice and
+protected personal data remain access controlled.</p>
+<h2 id="7-common-contract-surface">7. Common contract surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>publishFoundationProfile</code></td>
+<td>Purpose, entity, policies, resources</td>
+<td>Signed implementation profile</td>
+</tr>
+<tr>
+<td><code>publishSponsorOffer</code></td>
+<td>Tier, contribution, benefits, term</td>
+<td>Signed offer</td>
+</tr>
+<tr>
+<td><code>pledgeContribution</code></td>
+<td>Sponsor, asset, fund class, restriction</td>
+<td>Pending pledge</td>
+</tr>
+<tr>
+<td><code>acceptContribution</code></td>
+<td>Due diligence and compatible terms</td>
+<td>Acceptance instructions</td>
+</tr>
+<tr>
+<td><code>recordContribution</code></td>
+<td>Final payment/custody evidence</td>
+<td>Receipt and fund entry</td>
+</tr>
+<tr>
+<td><code>issueSponsorStatus</code></td>
+<td>Receipt and policy</td>
+<td>Revocable status credential</td>
+</tr>
+<tr>
+<td><code>publishRecognition</code></td>
+<td>Credential and approved creative</td>
+<td>Bounded acknowledgement</td>
+</tr>
+<tr>
+<td><code>joinSponsorCouncil</code></td>
+<td>Valid qualifying status</td>
+<td>Council membership</td>
+</tr>
+<tr>
+<td><code>nominateSponsorDirector</code></td>
+<td>Candidate and eligibility</td>
+<td>Pending candidacy</td>
+</tr>
+<tr>
+<td><code>recordSponsorElection</code></td>
+<td>Eligible voters and ballots</td>
+<td>Canonical result</td>
+</tr>
+<tr>
+<td><code>recordBoardAppointment</code></td>
+<td>Result plus legal steps</td>
+<td>Effective or pending appointment</td>
+</tr>
+<tr>
+<td><code>proposeSpending</code></td>
+<td>Purpose, amount, fund, conflicts</td>
+<td>Public proposal</td>
+</tr>
+<tr>
+<td><code>recordConflict</code></td>
+<td>Director and matter</td>
+<td>Recusal/management record</td>
+</tr>
+<tr>
+<td><code>voteSpending</code></td>
+<td>Eligible director and proposal</td>
+<td>Signed vote</td>
+</tr>
+<tr>
+<td><code>recordResolution</code></td>
+<td>Quorum, votes, legal rule</td>
+<td>Approved/rejected resolution</td>
+</tr>
+<tr>
+<td><code>recordDisbursement</code></td>
+<td>Resolution and custody evidence</td>
+<td>Spending statement</td>
+</tr>
+<tr>
+<td><code>revokeStatus</code></td>
+<td>Policy ground and due process</td>
+<td>Revocation record</td>
+</tr>
+</tbody>
+</table></div><p>There is no operation for <code>buyProtocolControl</code>, <code>buyUserData</code>,
+<code>forceDirectoryInclusion</code>, <code>overrideConformance</code>, <code>instructDirectorVote</code>, or
+<code>claimInvestmentReturn</code>.</p>
+<h2 id="8-recognition-policy-requirements">8. Recognition policy requirements</h2>
+<p>Every foundation implementation specifies:</p>
+<ol>
+<li>exact resources it controls and can promise;</li>
+<li>tier names, qualification, term, and renewal;</li>
+<li>placement size, order, rotation, accessibility, and sponsorship label;</li>
+<li>permitted names, links, logos, claims, and content categories;</li>
+<li>trademark license, if any, and its revocation;</li>
+<li>editorial, sanctions, safety, and reputational review;</li>
+<li>whether anonymous or pseudonymous recognition is allowed;</li>
+<li>suspension, appeal, expiry, and correction;</li>
+<li>benefit valuation and required tax disclosure; and</li>
+<li>the statement that recognition is not technical endorsement.</li>
+</ol>
+<p>Independent implementations owe no recognition to a foundation sponsor. The
+foundation cannot sell what it does not control.</p>
+<h2 id="9-endowment-and-spending-policy-requirements">9. Endowment and spending policy requirements</h2>
+<p>A conforming implementation publishes:</p>
+<ul>
+<li>purpose and duration of each fund;</li>
+<li>gift-acceptance and restriction-review process;</li>
+<li>custody, signing, valuation, and asset-conversion policy;</li>
+<li>investment objectives, liquidity, diversification, risk, fees, and adviser
+conflicts;</li>
+<li>spending-rate formula and valuation period;</li>
+<li>treatment of inflation, underwater funds, fees, and exceptional draws;</li>
+<li>proposal, public-comment, quorum, voting, recusal, and emergency rules;</li>
+<li>grant diligence, contracts, milestones, reporting, and clawback terms;</li>
+<li>financial statements, audits/reviews, and public reporting schedule; and</li>
+<li>dissolution or successor-foundation treatment.</li>
+</ul>
+<p>No director alone can move endowment assets. Custody authorization and board
+appropriation are separate. A cryptographic multisignature may enforce a
+custody threshold, but it does not replace legal approval, accounting, or a
+valid charitable purpose.</p>
+<p>Donor restrictions are accepted only when they further the foundation's
+purpose, can be administered, and do not create unlawful private control. A
+foundation may refuse a gift whose restriction, asset, source, volatility,
+liability, reputation, or compliance cost is unacceptable.</p>
+<h2 id="10-governance-and-voting-requirements">10. Governance and voting requirements</h2>
+<p>The implementation pins:</p>
+<ul>
+<li>electorate snapshot and eligibility cutoff;</li>
+<li>one-person/organization/identity rule and affiliate aggregation;</li>
+<li>nomination window and candidate disclosure;</li>
+<li>ballot secrecy or publicity and verification method;</li>
+<li>plurality, ranked choice, approval, or other exact tally;</li>
+<li>tie, recount, challenge, vacancy, and failed-election behavior;</li>
+<li>quorum calculated after valid recusals;</li>
+<li>ordinary and extraordinary decision thresholds; and</li>
+<li>whether a legal board, members, regulator, or court has final authority.</li>
+</ul>
+<p>Contribution-weighted board votes are prohibited by the baseline profile.
+Recognition tiers may vary by amount, but every seated director has one vote.
+A foundation wishing to use weighted member governance must publish a
+different profile and may not call those votes fiduciary board votes.</p>
+<h2 id="11-conflicts-and-private-benefit">11. Conflicts and private benefit</h2>
+<p>A director or decision participant discloses a conflict before discussion.
+The unconflicted body records whether the conflict is absent, manageable by
+disclosure/recusal, or too pervasive for the person to participate or remain
+in office.</p>
+<p>At minimum, a sponsor director recuses when a proposal would benefit:</p>
+<ul>
+<li>the director or their family;</li>
+<li>the nominating sponsor or an affiliate;</li>
+<li>an employer, controlled entity, major investment, or board relationship;</li>
+<li>a grant applicant, vendor, or counterparty with a material relationship; or</li>
+<li>another organization to which the director owes a conflicting duty.</li>
+</ul>
+<p>The conflicted person does not receive nonpublic advocacy material, join
+deliberation, vote, or count toward the matter's unconflicted quorum, except
+where applicable law and the recorded policy allow limited factual answers.</p>
+<p>Recognition delivered uniformly under a published sponsor offer is not by
+itself a grant back to a director, but its value and tax treatment must be
+disclosed. Any special benefit outside the offer receives independent review.</p>
+<h2 id="12-privacy-and-transparency">12. Privacy and transparency</h2>
+<p>The public needs enough information to audit institutional power, while the
+foundation should not publish unnecessary payment or identity data.</p>
+<p>Public by default:</p>
+<ul>
+<li>foundation profile and policy versions;</li>
+<li>recognized sponsor name/pseudonym, status, tier, and term;</li>
+<li>aggregate contribution and endowment balances by fund class;</li>
+<li>directors, appointing class, term, public interests, and recusals;</li>
+<li>spending proposals, resolutions, vote totals or named votes under policy;</li>
+<li>grants, vendors, amount, purpose, milestones, and completion status; and</li>
+<li>annual financial, investment, conflict, and impact reports.</li>
+</ul>
+<p>Private or access-controlled by default:</p>
+<ul>
+<li>bank, wallet, tax, and payment coordinates;</li>
+<li>source-of-funds and sanctions-screening documents;</li>
+<li>home address, government identifier, and unrelated personal data;</li>
+<li>security-sensitive custody and signing details;</li>
+<li>legally privileged advice; and</li>
+<li>protected beneficiary or whistleblower information.</li>
+</ul>
+<p>A sponsor may be publicly pseudonymous only if the foundation can still
+perform legally required identification privately. A board director's legal
+identity is disclosed whenever governing law requires it.</p>
+<h2 id="13-errors-and-state">13. Errors and state</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>foundation_profile_invalid</code></td>
+<td>Foundation</td>
+<td>Do not publish offers</td>
+</tr>
+<tr>
+<td><code>legal_entity_unverified</code></td>
+<td>Foundation</td>
+<td>Mark profile proposed/non-operational</td>
+</tr>
+<tr>
+<td><code>offer_expired</code></td>
+<td>Sponsor offer</td>
+<td>Refuse new pledge</td>
+</tr>
+<tr>
+<td><code>asset_unsupported</code></td>
+<td>Gift policy/custodian</td>
+<td>Reject or return under policy</td>
+</tr>
+<tr>
+<td><code>restriction_unacceptable</code></td>
+<td>Board/gift committee</td>
+<td>Reject or negotiate before acceptance</td>
+</tr>
+<tr>
+<td><code>payment_unconfirmed</code></td>
+<td>Rail/custodian</td>
+<td>Keep pledge pending</td>
+</tr>
+<tr>
+<td><code>valuation_unavailable</code></td>
+<td>Treasurer</td>
+<td>Do not assign tier yet</td>
+</tr>
+<tr>
+<td><code>compliance_review_failed</code></td>
+<td>Foundation</td>
+<td>Reject, freeze, or report as law requires</td>
+</tr>
+<tr>
+<td><code>recognition_content_rejected</code></td>
+<td>Publisher</td>
+<td>Request conforming replacement</td>
+</tr>
+<tr>
+<td><code>resource_not_controlled</code></td>
+<td>Foundation</td>
+<td>Remove promise; offer remedy</td>
+</tr>
+<tr>
+<td><code>board_threshold_not_met</code></td>
+<td>Candidate</td>
+<td>Refuse candidacy</td>
+</tr>
+<tr>
+<td><code>affiliate_seat_conflict</code></td>
+<td>Board policy</td>
+<td>Aggregate control group; refuse extra seat</td>
+</tr>
+<tr>
+<td><code>election_disputed</code></td>
+<td>Governance recorder</td>
+<td>Delay appointment and apply challenge rule</td>
+</tr>
+<tr>
+<td><code>legal_appointment_pending</code></td>
+<td>Entity/registry</td>
+<td>Do not expose effective director authority</td>
+</tr>
+<tr>
+<td><code>conflict_undeclared</code></td>
+<td>Director/audit</td>
+<td>Suspend matter; investigate and correct</td>
+</tr>
+<tr>
+<td><code>quorum_unavailable</code></td>
+<td>Board</td>
+<td>Defer or use lawful fallback</td>
+</tr>
+<tr>
+<td><code>restriction_mismatch</code></td>
+<td>Spending proposal</td>
+<td>Reject appropriation</td>
+</tr>
+<tr>
+<td><code>custody_mismatch</code></td>
+<td>Treasurer/auditor</td>
+<td>Freeze disbursement and reconcile</td>
+</tr>
+<tr>
+<td><code>private_benefit_risk</code></td>
+<td>Board/adviser</td>
+<td>Independent review; reject if unresolved</td>
+</tr>
+</tbody>
+</table></div><p>Contribution state:</p>
+<pre><code class="language-text">offered -&gt; pledged -&gt; screening -&gt; accepted -&gt; payment_pending
+  -&gt; received -&gt; valued -&gt; allocated -&gt; status_issued
+  -&gt; recognized -&gt; expired | renewed | revoked
+</code></pre>
+<p>Board state:</p>
+<pre><code class="language-text">eligible -&gt; nominated -&gt; screened -&gt; candidate -&gt; elected
+  -&gt; pending_legal_effect -&gt; seated -&gt; term_ended
+                                  `-&gt; suspended -&gt; removed | restored
+</code></pre>
+<p>Spending state:</p>
+<pre><code class="language-text">draft -&gt; published -&gt; comment -&gt; conflict_review -&gt; vote
+  -&gt; approved | rejected | deferred
+  -&gt; contracted -&gt; disbursed -&gt; milestone_review -&gt; completed | recovered
+</code></pre>
+<h2 id="14-invariants">14. Invariants</h2>
+<ol>
+<li><strong>No contribution buys a user.</strong> Sponsorship never attaches to identities
+or downstream activity.</li>
+<li><strong>No contribution buys protocol privilege.</strong> Wire rules, conformance, and
+direct use remain independent.</li>
+<li><strong>Recognition is owned-resource scoped.</strong> A foundation promises only
+placements it controls.</li>
+<li><strong>A board is finite.</strong> Open eligibility uses a declared selection process,
+not fictional unlimited seats.</li>
+<li><strong>A director is a fiduciary, not a delegate.</strong> Sponsor origin does not
+permit instructed voting.</li>
+<li><strong>One director, one vote.</strong> Contribution size does not weight board votes
+under the baseline profile.</li>
+<li><strong>Conflicts are disclosed and managed.</strong> A sponsor cannot vote foundation
+money to itself or an affiliate.</li>
+<li><strong>Endowment classes are honest.</strong> Operating funds, reserves, restrictions,
+and permanent endowment are not conflated.</li>
+<li><strong>No unilateral custody.</strong> Approval and asset movement require independent
+controls.</li>
+<li><strong>Policy is prospective.</strong> Active recognition, elections, and gifts pin
+their governing versions.</li>
+<li><strong>Legal documents prevail.</strong> Protocol evidence cannot override law,
+bylaws, restrictions, or regulator/court authority.</li>
+<li><strong>Other foundations remain possible.</strong> No Onym Foundation profile becomes
+a root of trust for the sponsor protocol.</li>
+</ol>
+<h2 id="15-versioning-and-conformance">15. Versioning and conformance</h2>
+<ul>
+<li><code>SponsorProfile</code> changes when core contribution, recognition, governance,
+conflict, endowment, or evidence meaning changes.</li>
+<li><code>FoundationImplementationProfile</code> changes when a foundation's entity,
+resource, tier, board, voting, spending, custody, or legal mapping changes.</li>
+<li>Offers, receipts, credentials, elections, appointments, and resolutions pin
+the exact policy versions that govern them.</li>
+<li>A policy change cannot retroactively turn a gift into another fund class,
+extend recognition, qualify a candidacy, or alter a completed vote.</li>
+<li>Legal amendments and protocol updates are recorded separately and cross-
+referenced.</li>
+<li>Conformance tests cover signatures, policy precedence, fund allocation,
+tier calculation, status expiry/revocation, affiliate aggregation, election
+tally, quorum, recusal, spending arithmetic, custody threshold, and replay.</li>
+</ul>
+<h2 id="16-foundation-portability">16. Foundation portability</h2>
+<p>Anyone may create another foundation implementation by publishing:</p>
+<ol>
+<li>a valid <code>FoundationProfile</code> and legal/proposed status;</li>
+<li>its purpose and governing documents;</li>
+<li>resources it actually controls;</li>
+<li>contribution, recognition, endowment, board, voting, conflict, disclosure,
+and dissolution policies;</li>
+<li>public keys and governance recorder;</li>
+<li>contribution rails and custody evidence model; and</li>
+<li>a conformance statement and implementation-profile ID.</li>
+</ol>
+<p>A compatible foundation may use a two-tier board, a membership assembly, no
+sponsor directors, different contribution classes, or a different spending
+formula. It must expose those differences rather than inherit the Onym
+Foundation's choices silently.</p>
+<p>Foundations may recognize one another or share software. They do not share
+treasury, board authority, trademarks, donor restrictions, or liability unless
+a separate legal agreement says so.</p>
+<h2 id="17-acceptance-criteria">17. Acceptance criteria</h2>
+<p>The sponsor boundary is successfully separated when:</p>
+<ol>
+<li>anyone can inspect the profile and submit a conforming sponsorship pledge;</li>
+<li>accepted contributions produce receipts with honest fund classification;</li>
+<li>sponsor status can be verified and displayed only on controlled resources;</li>
+<li>recognition is labelled, scoped, expiring, and never sold as technical
+privilege;</li>
+<li>qualifying sponsors have a defined path into a finite sponsor board class;</li>
+<li>effective legal appointment is distinguished from an election result;</li>
+<li>sponsor directors can propose and vote on spending while conflicts prevent
+self-benefit;</li>
+<li>endowment restrictions, custody, appropriation, and disbursement are
+independently auditable;</li>
+<li>private compliance and payment data stays out of public objects; and</li>
+<li>another foundation can implement the protocol without receiving authority
+from the Onym Foundation.</li>
+</ol>
+<h2 id="18-justification-in-one-sentence">18. Justification in one sentence</h2>
+<blockquote>
+<p>Sponsorship can provide visible status and a real, bounded path into
+endowment governance without converting generosity into ownership of the
+protocol, the foundation's beneficiaries, or its users.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/sponsor/Sponsor.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

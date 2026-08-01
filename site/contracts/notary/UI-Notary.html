@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Notary Boundary — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Notary Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/notary/UI-Notary.html">
+<meta property="og:title" content="Onym UI ↔ Notary Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/notary/UI-Notary.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Group verification</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/notary/UI-Notary.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-notary-boundary">Onym UI ↔ Notary Boundary</h1>
+<p><strong>Architecture draft 0.2 — August 2026</strong></p>
+<blockquote>
+<p>The UI presents intent. The notary decides whether shared state may change.
+Neither becomes the owner of the other.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary between an Onym
+frontend and a notary. It does not require a blockchain, smart contract,
+specific proof system, ledger address, transaction format, or RPC protocol.</p>
+<p>A notary implementation may use a replicated state machine, public smart
+contract, threshold-operated service, verifiable log, or another mechanism
+that satisfies the profile's state, authorization, evidence, and consistency
+requirements. The current Stellar/Soroban implementation is specified
+separately in <a href="../notary/UI-Notary-Stellar.html">UI-Notary-Stellar.md</a>.</p>
+<p>Here <strong>UI</strong> means the frontend application layer, not a screen calling a notary
+endpoint directly. Views send user intent to flows, view-models, repositories,
+or interactors. Those components obtain current state, construct authorization
+evidence, and invoke a narrow notary port.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the UI, policy implementation, notary deployment, and submission
+provider as independently owned components joined by versioned protocols.</p>
+<ul>
+<li>The <strong>UI owner</strong> controls presentation, local orchestration, billing
+integration, supported profiles, and release distribution.</li>
+<li>The <strong>policy author</strong> controls the semantics and version of a governance
+rule and its authorization-evidence schema.</li>
+<li>The <strong>notary operator</strong> controls a deployment, availability, retention,
+operational policy, and offers, but only within the authority declared by
+its profile.</li>
+<li>The <strong>submission provider</strong> transports operations and may supply execution
+resources or fees. It is not automatically an authority over validity.</li>
+<li>The <strong>read provider</strong> serves state and evidence. It is an observer, not an
+alternative canonical source unless the profile explicitly says otherwise.</li>
+<li>The <strong>group</strong> selects and pins its notary binding and owns any governed
+migration decision.</li>
+</ul>
+<p>One organization may occupy several roles, but their authorities and payment
+offers remain logically separate. A group created through one conforming UI
+must remain under the same notary binding when opened in another. A frontend
+may support several notary profiles. A notary may serve several frontends
+without making their publisher an authority over group state.</p>
+<h2 id="2-what-the-notary-does">2. What the notary does</h2>
+<p>The notary answers narrow questions about shared state:</p>
+<ol>
+<li>Does a state object already exist under this identifier?</li>
+<li>What canonical state and revision does it currently have?</li>
+<li>Is this proposed transition authorized under the pinned policy and prior
+state?</li>
+<li>If accepted, what is the next canonical state and revision?</li>
+<li>Is a supplied statement valid against a selected state snapshot?</li>
+<li>What verifiable evidence supports the answer?</li>
+</ol>
+<p>The notary does not carry chat ciphertext, store local identity secrets,
+interpret UI navigation, resolve human names, sell app-store products, or
+decide which transport delivers a message.</p>
+<p>The minimum Onym group state is an opaque state commitment and monotonic
+revision. A policy may add explicitly public committed values—such as an
+occupancy commitment, authority commitment, threshold, status, or policy
+version—but must declare each field and its privacy effect.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-it-prevents-the-ui-from-becoming-the-real-administrator">3.1 It prevents the UI from becoming the real administrator</h3>
+<p>If governance rules exist only in frontend code or the frontend publisher's
+server, an apparently open application retains a hidden kill switch. A pinned
+notary profile makes transition validity independent of later UI releases,
+defaults, and company policy.</p>
+<h3 id="32-it-prevents-the-notary-from-capturing-the-user-experience">3.2 It prevents the notary from capturing the user experience</h3>
+<p>The notary should know only the state, revision, evidence, and public policy
+metadata needed to validate its rule. It should not know screen routes,
+contacts, local message history, app-store accounts, transport topics, or
+which client brand assembled an operation.</p>
+<h3 id="33-it-makes-the-authorization-seam-reviewable">3.3 It makes the authorization seam reviewable</h3>
+<p>A mathematically valid proof or signature can still authorize the wrong
+operation if a state-changing parameter is not bound to it. Every profile must
+enumerate:</p>
+<ol>
+<li>the user's displayed intent;</li>
+<li>the canonical operation bytes;</li>
+<li>the expected prior state and revision;</li>
+<li>the proposed next state;</li>
+<li>every public input or authenticated parameter;</li>
+<li>provider-controlled inputs;</li>
+<li>the exact authorization predicate; and</li>
+<li>the canonical state and evidence produced after acceptance.</li>
+</ol>
+<h3 id="34-it-supports-independent-ownership-and-payment">3.4 It supports independent ownership and payment</h3>
+<p>Each seat defines its own service model. A notary operator may be free,
+subscription-funded, funded by an institution, or charge per retained state
+or transition. A submission provider may charge separately for transport,
+execution resources, or fees. The UI decides which offers it can present.
+Payment buys the declared service; it does not change authorization validity.</p>
+<h3 id="35-it-isolates-failure">3.5 It isolates failure</h3>
+<ul>
+<li>A broken UI can be replaced without moving canonical group state.</li>
+<li>A censoring submission provider can be replaced when the binding permits
+another compatible path.</li>
+<li>A failing read provider can be replaced without choosing a new canonical
+state.</li>
+<li>A policy defect requires explicit migration or recovery, not a silent
+frontend redirect.</li>
+<li>A payment outage does not make an invalid transition valid or roll back an
+accepted one.</li>
+</ul>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">┌──────────────────────────────────────────────────────────────────────┐
+│ UI process                                                           │
+│                                                                      │
+│ View / Composable                                                    │
+│        │ user intent                                                 │
+│        v                                                             │
+│ Flow / ViewModel                                                     │
+│        │ application command                                        │
+│        v                                                             │
+│ Repository / Interactor                                              │
+│        ├────────&gt; Identity vault: scoped signing capability          │
+│        ├────────&gt; Evidence adapter: proof / quorum / capability      │
+│        ├────────&gt; State reader: snapshot + canonical evidence        │
+│        └────────&gt; Notary port: canonical operation                   │
+└──────────────────────────────┬───────────────────────────────────────┘
+                               │ implementation-neutral protocol
+                               v
+                    ┌────────────────────────┐
+                    │ Submission provider    │
+                    │ validate · queue · fund│
+                    └───────────┬────────────┘
+                                │ canonical invocation
+                                v
+                    ┌────────────────────────┐
+                    │ Notary policy engine   │
+                    │ verify evidence + state│
+                    │ accept or reject       │
+                    └───────────┬────────────┘
+                                │ canonical record / evidence
+                                v
+                    ┌────────────────────────┐
+                    │ Read provider(s)       │
+                    │ snapshot · history     │
+                    └───────────┬────────────┘
+                                │ independently checked observation
+                                v
+                         local reconciliation
+</code></pre>
+<p>This diagram is logical. An implementation may combine the submission,
+execution, record, and read roles or distribute them across many parties.
+Combining roles does not combine their authority in the abstract protocol.</p>
+<p>The submission provider can refuse, delay, duplicate, reorder, or fail to
+submit an operation. It must not be able to make an invalid operation valid.
+A read response is not trusted merely because it uses an authenticated
+connection; the profile defines how the UI verifies canonical evidence.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-notary-profile">5.1 Notary Profile</h3>
+<p>A <code>NotaryProfile</code> defines policy meaning independently of a deployment:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:notary-profile:&lt;policy-family&gt;-v1&quot;,
+  &quot;interface&quot;: &quot;onym-notary-v1&quot;,
+  &quot;policy&quot;: &quot;&lt;governance-policy-id&gt;&quot;,
+  &quot;operations&quot;: [
+    &quot;create-state&quot;,
+    &quot;read-state&quot;,
+    &quot;transition-state&quot;,
+    &quot;verify-statement&quot;,
+    &quot;read-history&quot;
+  ],
+  &quot;stateSchema&quot;: &quot;&lt;content-addressed-schema&gt;&quot;,
+  &quot;operationSchemas&quot;: &quot;&lt;content-addressed-schema-set&gt;&quot;,
+  &quot;authorization&quot;: {
+    &quot;scheme&quot;: &quot;&lt;proof-signature-or-capability-scheme&gt;&quot;,
+    &quot;statementSchemas&quot;: &quot;&lt;content-addressed-schema-set&gt;&quot;
+  },
+  &quot;consistency&quot;: {
+    &quot;model&quot;: &quot;&lt;declared-model&gt;&quot;,
+    &quot;finality&quot;: &quot;&lt;declared-finality-rule&gt;&quot;,
+    &quot;evidence&quot;: &quot;&lt;canonical-evidence-schema&gt;&quot;
+  },
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes meanings, byte shapes, verification rules, consistency, and
+evidence. It does not select an operator, endpoint, backend technology,
+deployment identifier, price, or frontend.</p>
+<p>Two deployments are profile-compatible only if a conforming client can
+produce, submit, read, and verify the same logical operations and evidence.
+Similar marketing language or shared function names are not compatibility.</p>
+<h3 id="52-notary-deployment">5.2 Notary Deployment</h3>
+<p>A <code>NotaryDeployment</code> binds a profile to an operated system:</p>
+<pre><code class="language-json">{
+  &quot;deploymentVersion&quot;: 1,
+  &quot;deploymentId&quot;: &quot;onym:notary:&lt;deployment-id&gt;&quot;,
+  &quot;profileId&quot;: &quot;onym:notary-profile:&lt;policy-family&gt;-v1&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;notary-provider&gt;&quot;,
+  &quot;backend&quot;: {
+    &quot;kind&quot;: &quot;&lt;implementation-profile-id&gt;&quot;,
+    &quot;namespace&quot;: &quot;&lt;backend-namespace&gt;&quot;,
+    &quot;instance&quot;: &quot;&lt;backend-instance-id&gt;&quot;,
+    &quot;implementationHash&quot;: &quot;&lt;code-config-or-rules-hash&gt;&quot;
+  },
+  &quot;submitEndpoints&quot;: [&quot;&lt;submission-component-id&gt;&quot;],
+  &quot;readEndpoints&quot;: [&quot;&lt;read-component-id&gt;&quot;],
+  &quot;evidenceRoots&quot;: [&quot;&lt;verification-root-or-key&gt;&quot;],
+  &quot;availabilityProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;offers&quot;: [&quot;&lt;offer-id&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;notary-provider-signature&gt;&quot;
+}
+</code></pre>
+<p>The UI verifies the profile, operator signature, backend binding,
+implementation identity, evidence roots, and validity period before offering
+the deployment. A directory entry or friendly name is insufficient.</p>
+<p>The deployment manifest declares operator powers. If the operator can upgrade
+rules, pause transitions, censor creation, rewrite state, rotate verification
+material, or delete history, those powers must be explicit and reflected in
+the trust and migration model.</p>
+<h3 id="53-group-notary-binding">5.3 Group Notary Binding</h3>
+<p>At creation, the group pins the state it considers canonical:</p>
+<pre><code class="language-json">{
+  &quot;bindingVersion&quot;: 1,
+  &quot;groupId&quot;: &quot;&lt;opaque-group-id&gt;&quot;,
+  &quot;deploymentId&quot;: &quot;onym:notary:&lt;deployment-id&gt;&quot;,
+  &quot;profileId&quot;: &quot;onym:notary-profile:&lt;policy-family&gt;-v1&quot;,
+  &quot;backendNamespace&quot;: &quot;&lt;backend-namespace&gt;&quot;,
+  &quot;backendInstance&quot;: &quot;&lt;backend-instance-id&gt;&quot;,
+  &quot;policy&quot;: &quot;&lt;governance-policy-id&gt;&quot;,
+  &quot;genesis&quot;: {
+    &quot;revision&quot;: 0,
+    &quot;stateCommitment&quot;: &quot;&lt;opaque-commitment&gt;&quot;,
+    &quot;canonicalReference&quot;: &quot;&lt;creation-reference&gt;&quot;,
+    &quot;evidence&quot;: &quot;&lt;creation-evidence&gt;&quot;
+  }
+}
+</code></pre>
+<p>The binding is durable group state. The UI must not replace it because another
+deployment is cheaper, newer, more available, or preferred by its publisher.
+A settings change affects new groups only. An existing binding changes solely
+through its declared migration or recovery protocol.</p>
+<h3 id="54-state-snapshot">5.4 State Snapshot</h3>
+<p>Every read normalizes into a <code>NotaryStateSnapshot</code>:</p>
+<pre><code class="language-json">{
+  &quot;snapshotVersion&quot;: 1,
+  &quot;groupId&quot;: &quot;&lt;opaque-group-id&gt;&quot;,
+  &quot;deploymentId&quot;: &quot;onym:notary:&lt;deployment-id&gt;&quot;,
+  &quot;profileId&quot;: &quot;onym:notary-profile:&lt;policy-family&gt;-v1&quot;,
+  &quot;revision&quot;: 12,
+  &quot;stateCommitment&quot;: &quot;&lt;opaque-commitment&gt;&quot;,
+  &quot;policyState&quot;: {
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;publicValues&quot;: &quot;&lt;profile-defined-object&gt;&quot;
+  },
+  &quot;canonicalReference&quot;: &quot;&lt;backend-reference&gt;&quot;,
+  &quot;observedAt&quot;: &quot;&lt;client-observation-time&gt;&quot;,
+  &quot;evidence&quot;: &quot;&lt;canonical-evidence&gt;&quot;
+}
+</code></pre>
+<p><code>observedAt</code> is not canonical time. The profile defines which fields are
+authoritative, how evidence is verified, and how stale or conflicting reads
+are detected. Optional public values must never be guessed or defaulted when
+their absence changes policy meaning.</p>
+<h3 id="55-notary-operation">5.5 Notary Operation</h3>
+<p>The UI-side adapter constructs a canonical operation before choosing a
+physical submission provider:</p>
+<pre><code class="language-json">{
+  &quot;operationVersion&quot;: 1,
+  &quot;operationId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;deploymentId&quot;: &quot;onym:notary:&lt;deployment-id&gt;&quot;,
+  &quot;profileId&quot;: &quot;onym:notary-profile:&lt;policy-family&gt;-v1&quot;,
+  &quot;groupId&quot;: &quot;&lt;opaque-group-id&gt;&quot;,
+  &quot;operation&quot;: &quot;transition-state&quot;,
+  &quot;expected&quot;: {
+    &quot;revision&quot;: 12,
+    &quot;stateCommitment&quot;: &quot;&lt;old-commitment&gt;&quot;,
+    &quot;policyStateDigest&quot;: &quot;&lt;old-policy-state-digest&gt;&quot;
+  },
+  &quot;proposed&quot;: {
+    &quot;revision&quot;: 13,
+    &quot;stateCommitment&quot;: &quot;&lt;new-commitment&gt;&quot;,
+    &quot;policyState&quot;: &quot;&lt;profile-defined-next-values&gt;&quot;
+  },
+  &quot;authorizationEvidence&quot;: {
+    &quot;scheme&quot;: &quot;&lt;profile-defined-scheme&gt;&quot;,
+    &quot;statementSchema&quot;: &quot;&lt;schema-id&gt;&quot;,
+    &quot;statement&quot;: &quot;&lt;canonical-public-statement&gt;&quot;,
+    &quot;evidence&quot;: &quot;&lt;proof-signatures-or-capability&gt;&quot;
+  },
+  &quot;clientNonce&quot;: &quot;&lt;random-or-profile-defined-nonce&gt;&quot;,
+  &quot;expiresAt&quot;: &quot;&lt;optional-expiry&gt;&quot;,
+  &quot;entitlement&quot;: &quot;&lt;submission-or-notary-entitlement-or-null&gt;&quot;
+}
+</code></pre>
+<p>The <code>expected</code> object is a precondition, not descriptive metadata. The notary
+must compare the operation's prior state to canonical state before accepting a
+transition. The authorization statement must bind every proposed value that
+the policy depends on. A profile that derives next revision or other values
+inside the notary must say so and forbid conflicting caller-supplied values.</p>
+<p><code>operationId</code> supports idempotency and diagnosis. It does not become an
+authority unless the profile binds it into replay protection.</p>
+<h3 id="56-notary-receipt">5.6 Notary Receipt</h3>
+<p>A submission response distinguishes transport progress from canonical state:</p>
+<pre><code class="language-json">{
+  &quot;operationId&quot;: &quot;&lt;same-random-id&gt;&quot;,
+  &quot;status&quot;: &quot;submitted&quot;,
+  &quot;submissionProvider&quot;: &quot;onym:component:&lt;submitter-id&gt;&quot;,
+  &quot;submissionReference&quot;: &quot;&lt;provider-reference&gt;&quot;,
+  &quot;canonicalReference&quot;: null,
+  &quot;acceptedRevision&quot;: null,
+  &quot;acceptedStateCommitment&quot;: null,
+  &quot;evidence&quot;: null
+}
+</code></pre>
+<p>Valid statuses are profile-mapped forms of:</p>
+<ul>
+<li><code>received</code>: the provider parsed the request;</li>
+<li><code>submitted</code>: the provider sent it toward the canonical notary;</li>
+<li><code>accepted</code>: the policy engine accepted and recorded it;</li>
+<li><code>finalized</code>: it satisfies the binding's finality rule;</li>
+<li><code>rejected</code>: a named policy or execution rule refused it; and</li>
+<li><code>unknown</code>: outcome cannot yet be determined safely.</li>
+</ul>
+<p>An HTTP success is not finality. <code>accepted</code> and <code>finalized</code> may be equivalent
+only when the profile explicitly defines immediate finality and supplies
+verifiable evidence. The UI reconciles the receipt with an independently
+verified state snapshot before committing durable local state.</p>
+<h2 id="6-common-notary-surface">6. Common notary surface</h2>
+<p>The technology-neutral port exposes semantic operations rather than backend
+function names:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Class</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>createState</code></td>
+<td>Write</td>
+<td>Create revision zero under a pinned profile and genesis commitment</td>
+</tr>
+<tr>
+<td><code>readState</code></td>
+<td>Read</td>
+<td>Return canonical snapshot and evidence</td>
+</tr>
+<tr>
+<td><code>transitionState</code></td>
+<td>Write</td>
+<td>Validate expected prior state and authorization, then record next state</td>
+</tr>
+<tr>
+<td><code>verifyStatement</code></td>
+<td>Verification</td>
+<td>Check profile-defined evidence against a selected snapshot without mutating state</td>
+</tr>
+<tr>
+<td><code>readHistory</code></td>
+<td>Read</td>
+<td>Return verifiable retained transitions when supported</td>
+</tr>
+<tr>
+<td><code>maintainState</code></td>
+<td>Maintenance</td>
+<td>Preserve backend availability without changing policy state</td>
+</tr>
+<tr>
+<td><code>readCapabilities</code></td>
+<td>Discovery</td>
+<td>Return signed profile/deployment capabilities, never inferred behavior</td>
+</tr>
+</tbody>
+</table></div><p>Not every policy supports transition, history, or maintenance. An immutable
+two-party policy, for example, may support creation, reads, and membership
+verification but no post-creation transition. Capability flags are explicit;
+the UI must not infer support from another profile.</p>
+<p>Provider administration—such as onboarding, restricted creation, billing,
+capacity, or deployment upgrades—is not ordinary group governance. It belongs
+to a separate administrative surface with separately disclosed authority.</p>
+<h2 id="7-uiapplication-obligations">7. UI/application obligations</h2>
+<p>A conforming frontend and notary adapter must:</p>
+<ol>
+<li>verify the <code>NotaryProfile</code>, deployment, signatures, implementation binding,
+and evidence roots;</li>
+<li>pin the complete group binding at creation or join;</li>
+<li>read and verify current canonical state before constructing a transition;</li>
+<li>show governance semantics, operator powers, consistency/finality, public
+metadata, availability, and expected fees;</li>
+<li>construct authorization evidence locally through a narrow adapter;</li>
+<li>keep private keys, BIP-39 material, group secrets, witnesses, Merkle paths,
+and unnecessary proof internals outside UI state, logs, payment objects,
+and submission metadata;</li>
+<li>serialize the exact operation and public statement defined by the profile;</li>
+<li>confirm that displayed intent matches every state-changing field;</li>
+<li>preserve machine-readable provider, policy, evidence, and finality errors;</li>
+<li>retry stale-state failure only after reading state and rebuilding evidence;</li>
+<li>preserve operation identity for safe unknown-outcome recovery;</li>
+<li>reconcile against canonical evidence before committing optimistic state;</li>
+<li>reject invitations or announcements whose claimed binding and state cannot
+be verified;</li>
+<li>support export of the binding, profile, and required verification roots;</li>
+<li>require explicit governed migration before changing a binding; and</li>
+<li>never select a notary or submitter merely to maximize frontend commission.</li>
+</ol>
+<p>The screen itself should not perform these tasks. Domain interactors coordinate
+the identity, evidence, notary, payment, and persistence ports.</p>
+<h2 id="8-notary-profile-obligations">8. Notary profile obligations</h2>
+<p>A conforming profile must:</p>
+<ol>
+<li>define state and transition semantics unambiguously;</li>
+<li>define canonical identifiers, encodings, operation arguments, results, and
+evidence;</li>
+<li>define each authorization statement and every public input in order;</li>
+<li>bind every authorized state-changing value into evidence or an explicitly
+authenticated notary input;</li>
+<li>compare prior canonical state and reject stale or replayed transitions;</li>
+<li>define replay protection, idempotency, and unknown-outcome recovery;</li>
+<li>reject malformed lengths, encodings, policy values, and unsupported
+operations;</li>
+<li>emit enough deterministic evidence for independent reconciliation;</li>
+<li>define consistency, finality, conflict, reorganization, and rollback
+behavior;</li>
+<li>separate deployment-operator powers from group-state authority;</li>
+<li>publish metadata exposure, retention, history, shutdown, upgrade, and
+recovery behavior; and</li>
+<li>define migration into and out of the profile.</li>
+</ol>
+<p>The profile must not require an Onym UI publisher signature for ordinary group
+validity unless it openly defines that publisher as an authority. Core Onym
+profiles should derive validity from group evidence and pinned policy, not the
+brand of client that assembled an operation.</p>
+<h2 id="9-submission-and-read-provider-obligations">9. Submission and read provider obligations</h2>
+<p>A conforming submission provider must:</p>
+<ul>
+<li>validate envelope size and profile compatibility before expensive work;</li>
+<li>preserve the exact canonical operation or expose any deterministic mapping;</li>
+<li>distinguish parse, queue, submit, accept, finalize, and unknown outcomes;</li>
+<li>prevent duplicate retry from becoming duplicate logical execution;</li>
+<li>return structured refusal and payment requirements;</li>
+<li>scope credentials to its own component and endpoint;</li>
+<li>avoid logging secrets or unnecessary public statement data; and</li>
+<li>never claim its response is canonical evidence unless the profile makes it
+independently verifiable.</li>
+</ul>
+<p>A conforming read provider must:</p>
+<ul>
+<li>return snapshots with canonical references and verification evidence;</li>
+<li>expose freshness or checkpoint information;</li>
+<li>support comparison across independent providers where the profile permits;</li>
+<li>never silently synthesize missing policy fields; and</li>
+<li>make stale, pruned, archived, unavailable, and invalid evidence distinct.</li>
+</ul>
+<h2 id="10-payment-at-the-ui-notary-boundary">10. Payment at the UI ↔ notary boundary</h2>
+<p>Notary, submission, read, and evidence-generation providers are separate seats
+and may publish separate offers:</p>
+<ul>
+<li>a notary may charge for creation, retained state, transitions, or a service
+period;</li>
+<li>a submission provider may charge for routing, execution resources, or fees;</li>
+<li>a read provider may charge for queries, indexing, history, or availability;</li>
+<li>an evidence service may charge for computation while never receiving the
+secret witness if local generation is required by the profile.</li>
+</ul>
+<h3 id="101-off-path-entitlement">10.1 Off-path entitlement</h3>
+<p>The provider can reject with a canonical <code>PaymentRequired</code>. The UI uses its
+billing adapter; the broker validates payment and issues a component-scoped
+<code>SeatEntitlement</code>; the UI retries the same logical operation.</p>
+<pre><code class="language-text">UI -&gt; provider: NotaryOperation
+UI &lt;- provider: PaymentRequired(component + signed offer)
+UI -&gt; billing channel: purchase
+UI &lt;- billing broker: SeatEntitlement
+UI -&gt; provider: same logical operation + entitlement
+UI &lt;- provider: submitted / accepted / rejected receipt
+UI -&gt; read path: verify canonical state and finality
+</code></pre>
+<p>Store transaction identifiers, app-store accounts, and global identity keys do
+not belong in authorization evidence, public state, history, or canonical
+records.</p>
+<h3 id="102-native-implementation-fee">10.2 Native implementation fee</h3>
+<p>An implementation may require a fee within its own canonical operation. This
+can make payment publicly linkable to group activity. The implementation
+profile must disclose the asset or unit, payer, recipient, visibility, refund
+behavior, resource estimation, and whether the payment is authorization-bound.</p>
+<h3 id="103-payment-does-not-change-validity">10.3 Payment does not change validity</h3>
+<p>Payment answers whether a provider will submit, execute, retain, or serve the
+operation. It never answers whether the transition satisfies group policy. A
+paid invalid operation remains invalid. A valid but unpaid operation may use
+another compatible provider when the pinned deployment permits it.</p>
+<h2 id="11-errors-and-state-machine">11. Errors and state machine</h2>
+<p>The adapter normalizes failures without erasing origin:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">UI response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Client/profile</td>
+<td>Refuse and explain required version</td>
+</tr>
+<tr>
+<td><code>deployment_mismatch</code></td>
+<td>Client verification</td>
+<td>Refuse; never silently redirect</td>
+</tr>
+<tr>
+<td><code>binding_mismatch</code></td>
+<td>Operation/client</td>
+<td>Refuse and preserve pinned binding</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>Provider</td>
+<td>Present referenced signed seat offer</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td>Provider</td>
+<td>Perform component-scoped authentication</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td>Provider/broker</td>
+<td>Refresh or repurchase; do not submit</td>
+</tr>
+<tr>
+<td><code>state_exists</code></td>
+<td>Policy engine</td>
+<td>Reconcile the existing genesis state; do not overwrite</td>
+</tr>
+<tr>
+<td><code>state_not_found</code></td>
+<td>Policy engine/read path</td>
+<td>Refuse the operation or verify creation status</td>
+</tr>
+<tr>
+<td><code>invalid_evidence</code></td>
+<td>Policy engine</td>
+<td>Reject; regenerate only from verified state</td>
+</tr>
+<tr>
+<td><code>public_input_mismatch</code></td>
+<td>Policy engine</td>
+<td>Treat as implementation or malicious-input error</td>
+</tr>
+<tr>
+<td><code>stale_revision</code></td>
+<td>Policy engine</td>
+<td>Refresh state and rebuild authorization evidence</td>
+</tr>
+<tr>
+<td><code>replay</code></td>
+<td>Policy engine</td>
+<td>Reconcile original operation; do not blind-retry</td>
+</tr>
+<tr>
+<td><code>unauthorized</code></td>
+<td>Policy engine</td>
+<td>Explain policy; do not retry without changed evidence</td>
+</tr>
+<tr>
+<td><code>submission_failed</code></td>
+<td>Provider/network</td>
+<td>Preserve operation ID and safely try another path</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Provider/network</td>
+<td>Query by operation/reference before resubmission</td>
+</tr>
+<tr>
+<td><code>finality_timeout</code></td>
+<td>Canonical system/read path</td>
+<td>Keep state pending</td>
+</tr>
+<tr>
+<td><code>conflicting_state</code></td>
+<td>Read/reconciliation</td>
+<td>Quarantine and surface a security error</td>
+</tr>
+<tr>
+<td><code>state_unavailable</code></td>
+<td>Read/provider</td>
+<td>Distinguish temporary, archived, pruned, and lost state</td>
+</tr>
+</tbody>
+</table></div><p>Local write state:</p>
+<pre><code class="language-text">draft
+  -&gt; state_verified
+  -&gt; evidence_ready
+  -&gt; payment_required? -&gt; entitled
+  -&gt; submitted
+  -&gt; accepted
+  -&gt; finalized
+  -&gt; snapshot_verified
+  -&gt; committed_locally
+</code></pre>
+<p>Only <code>snapshot_verified</code> authorizes durable local reconciliation. A profile
+with immediate finality may collapse <code>accepted</code> and <code>finalized</code>, but it may not
+skip evidence verification.</p>
+<h2 id="12-security-and-privacy-invariants">12. Security and privacy invariants</h2>
+<ol>
+<li><strong>Secrets stay at the edge.</strong> Private keys, seed material, group secrets,
+witnesses, and unneeded paths stay inside identity and evidence boundaries.</li>
+<li><strong>Every changed value is authorized.</strong> Evidence or explicit authenticated
+input binds prior state, next state, group identifier, revision, policy
+authority, and every policy-dependent public value.</li>
+<li><strong>Expected state is enforced.</strong> A transition built against stale state is
+rejected rather than applied to a different revision.</li>
+<li><strong>The submitter is not an oracle.</strong> Its success response is not canonical
+state without independently verified evidence.</li>
+<li><strong>The binding is sticky.</strong> UI, directory, price, default, or endpoint changes
+cannot silently move an existing group.</li>
+<li><strong>Payment and identity are scoped.</strong> Billing evidence and access keys do not
+reveal global identity, transport topics, or message relationships.</li>
+<li><strong>Errors fail closed.</strong> Decode, evidence, read, consistency, and finality
+failures never mean verification passed.</li>
+<li><strong>Optimism is reversible.</strong> UI progress may be optimistic; durable group
+state changes only after reconciliation.</li>
+<li><strong>Operator powers are bounded and visible.</strong> Service controls do not imply
+group-state authority.</li>
+<li><strong>History is not secretly stronger than declared.</strong> Pruned or unavailable
+history cannot be presented as complete.</li>
+<li><strong>Maintenance is not governance.</strong> Availability renewal cannot change the
+committed group state or authorization policy.</li>
+<li><strong>Migration is an authorized transition.</strong> No provider or frontend may
+redirect canonical state outside the pinned recovery rules.</li>
+</ol>
+<h2 id="13-consistency-and-reconciliation">13. Consistency and reconciliation</h2>
+<p>Every implementation profile declares one consistency and finality model. At a
+minimum it defines:</p>
+<ul>
+<li>what uniquely identifies a canonical state version;</li>
+<li>whether forks or conflicting accepted versions can occur;</li>
+<li>when a version is final enough for local commitment;</li>
+<li>what evidence proves inclusion and finality;</li>
+<li>how a client detects stale, equivocated, or rolled-back reads;</li>
+<li>how long evidence remains verifiable;</li>
+<li>whether history can be pruned or archived; and</li>
+<li>what the UI does when providers disagree.</li>
+</ul>
+<p>The UI stores the last verified canonical reference and revision. A later
+snapshot with a lower revision, incompatible predecessor, invalid evidence, or
+different state at the same supposedly final revision is a security event, not
+ordinary cache staleness.</p>
+<p>Caching can reduce read load but must be bounded and labeled. Cached state may
+defer progress; it must not cause a transition or incoming announcement to be
+accepted as current after its freshness policy expires.</p>
+<h2 id="14-migration-and-recovery">14. Migration and recovery</h2>
+<p>A migration protocol states:</p>
+<ol>
+<li>who can authorize migration under the old policy;</li>
+<li>the old final state and canonical evidence being exported;</li>
+<li>the new profile and deployment being selected;</li>
+<li>how the new genesis state binds the old final state;</li>
+<li>how incomplete or disputed migration is resolved;</li>
+<li>whether a rollback window exists;</li>
+<li>how clients discover the migration without trusting one UI; and</li>
+<li>what happens when the old notary is unavailable.</li>
+</ol>
+<p>Migration should preserve group identity only when both profiles define a
+verifiable continuity statement. Otherwise the UI presents the result as a
+new group linked by an explicit claim, not the same group by assumption.</p>
+<p>Emergency recovery powers are part of the original profile. They cannot be
+invented after deployment merely because recovery would be convenient.</p>
+<h2 id="15-versioning-and-conformance">15. Versioning and conformance</h2>
+<ul>
+<li><code>NotaryProfile</code> changes when state, operation, authorization, evidence,
+consistency, finality, or error meaning changes.</li>
+<li><code>NotaryDeployment</code> changes when endpoints, operator metadata, implementation
+identity, evidence roots, capabilities, or offers change.</li>
+<li>Existing group bindings remain pinned to their selected profile version and
+deployment until governed migration.</li>
+<li>Unknown policies are never interpreted as a known policy with defaults.</li>
+<li>Optional fields may be ignored only when the profile says their absence
+cannot change authorization or reconciliation.</li>
+<li>Ordered public statements require content-addressed schemas; matching vector
+length is insufficient.</li>
+<li>Conformance fixtures cover state encoding, operation bytes, authorization
+statements, replay, stale state, errors, receipts, finality, conflicting
+reads, migration, and payment interruption.</li>
+<li>Each concrete implementation publishes a mapping from every abstract object,
+operation, status, error, and invariant to its physical protocol.</li>
+</ul>
+<h2 id="16-concrete-implementation-profiles">16. Concrete implementation profiles</h2>
+<p>This specification is deliberately incomplete without an implementation
+profile. A profile must state how the abstract boundary becomes executable.</p>
+<p>The current implementation is:</p>
+<ul>
+<li><a href="../notary/UI-Notary-Stellar.html">UI-Notary-Stellar.md</a> — Stellar network, Soroban
+contracts, PLONK evidence, HTTP fee-paying relayer, and Stellar RPC/read
+reconciliation.</li>
+</ul>
+<p>Future profiles may use different canonical systems while preserving the same
+UI-facing semantics. They must not reuse the same profile ID if state,
+authorization, finality, or migration meaning differs.</p>
+<h2 id="17-acceptance-criteria">17. Acceptance criteria</h2>
+<p>The UI ↔ notary boundary is successfully separated when:</p>
+<ol>
+<li>a third-party UI can create, read, transition, verify, and reconcile state
+using public profiles and conformance tests;</li>
+<li>a conforming UI can use another compatible deployment without changing
+view or domain logic;</li>
+<li>a group can replace a submission or read provider without changing its
+binding when the implementation profile permits it;</li>
+<li>no implementation-specific address, transaction, RPC, fee, storage, or
+finality type leaks through the abstract notary port;</li>
+<li>every state-changing intent has a documented state/evidence binding table;</li>
+<li>no UI publisher, billing account, submitter, or store identity is required
+for ordinary group validity;</li>
+<li>an operation cannot be shown as complete before canonical evidence and
+finality are reconciled;</li>
+<li>payment refusal is distinguishable from authorization invalidity;</li>
+<li>an existing group cannot be redirected by a manifest, default, or UI update;</li>
+<li>a second backend technology can implement the abstract conformance suite
+without pretending to be the first; and</li>
+<li>migration continuity is verified rather than inferred from matching group
+names or identifiers.</li>
+</ol>
+<h2 id="18-justification-in-one-sentence">18. Justification in one sentence</h2>
+<blockquote>
+<p>Separating UI from notary lets people replace the software that presents a
+group without replacing the public rules that own its shared state—and lets
+them replace service infrastructure without granting it authority over those
+rules.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/notary/UI-Notary.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

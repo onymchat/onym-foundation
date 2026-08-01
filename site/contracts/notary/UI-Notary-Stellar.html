@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Notary: Stellar/Soroban Implementation — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Notary: Stellar/Soroban Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/notary/UI-Notary-Stellar.html">
+<meta property="og:title" content="Onym UI ↔ Notary: Stellar/Soroban Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/notary/UI-Notary-Stellar.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/notary/UI-Notary-Stellar.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-notary-stellarsoroban-implementation">Onym UI ↔ Notary: Stellar/Soroban Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This profile maps the technology-neutral Onym notary boundary onto Stellar
+ledgers, Soroban smart contracts, PLONK authorization evidence, and the
+current Onym HTTP transaction relayer.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../notary/UI-Notary.html">UI-Notary.md</a>. The abstract specification remains authoritative
+for UI-facing semantics. This document defines how its objects, operations,
+receipts, evidence, finality, errors, and maintenance map to the current
+Stellar solution.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>implemented behavior</strong>, which exists in the present Onym repositories;</li>
+<li><strong>profile requirements</strong>, which are required for a complete conforming
+Stellar implementation; and</li>
+<li><strong>gaps</strong>, where current code does not yet satisfy the complete boundary.</li>
+</ul>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Stellar/Soroban mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canonical system</td>
+<td>Stellar network selected by network passphrase</td>
+</tr>
+<tr>
+<td>Policy engine</td>
+<td>One deployed Soroban <code>sep-*</code> contract instance</td>
+</tr>
+<tr>
+<td>Canonical state</td>
+<td>Soroban persistent/instance ledger entries</td>
+</tr>
+<tr>
+<td>State commitment</td>
+<td><code>BytesN&lt;32&gt;</code> group commitment</td>
+</tr>
+<tr>
+<td>Revision</td>
+<td><code>u64</code> epoch</td>
+</tr>
+<tr>
+<td>Authorization evidence</td>
+<td>1601-byte TurboPLONK proof plus ordered 32-byte public inputs</td>
+</tr>
+<tr>
+<td>Implementation identity</td>
+<td>Network, contract ID, Wasm/code hash, profile/release</td>
+</tr>
+<tr>
+<td>Submission provider</td>
+<td>Fee-paying <code>onym-relayer</code> HTTP service</td>
+</tr>
+<tr>
+<td>Read provider</td>
+<td>Current relayer proxy; direct Stellar RPC/indexer is the target alternative</td>
+</tr>
+<tr>
+<td>Submission reference</td>
+<td>Stellar transaction hash</td>
+</tr>
+<tr>
+<td>Acceptance/finality evidence</td>
+<td>Successful transaction in a closed Stellar ledger plus resulting state/event</td>
+</tr>
+<tr>
+<td>Maintenance</td>
+<td>Soroban persistent/instance/code TTL extension and restoration behavior</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:notary-implementation:stellar-soroban-sep-plonk-v1
+</code></pre>
+<p>Each governance flavor has its own logical <code>NotaryProfile</code> because its state
+and authorization predicate differ:</p>
+<pre><code class="language-text">onym:notary-profile:sep-anarchy-plonk-v1
+onym:notary-profile:sep-oneonone-plonk-v1
+onym:notary-profile:sep-democracy-plonk-v1
+onym:notary-profile:sep-oligarchy-plonk-v1
+onym:notary-profile:sep-tyranny-plonk-v1
+</code></pre>
+<p>Sharing the Soroban call names does not make the five policies one profile.</p>
+<h2 id="2-ownership-mapping">2. Ownership mapping</h2>
+<ul>
+<li>The <strong>policy author</strong> publishes the <code>sep-*</code> Rust contract, prover shape,
+verifying keys, fixtures, source revision, and release artifacts in
+<code>onym-contracts</code>.</li>
+<li>The <strong>notary deployer</strong> deploys a selected Wasm artifact to a selected Stellar
+network and controls only the operator powers encoded by that contract.</li>
+<li>The <strong>Stellar validator set</strong> establishes canonical ledgers through Stellar
+Consensus Protocol.</li>
+<li>The <strong>transaction-relayer operator</strong> holds a funded Stellar account, selects
+RPC endpoints, simulates and submits invocations, pays network/resource fees,
+and exposes an HTTP API.</li>
+<li>The <strong>RPC or indexer operator</strong> serves recent transactions, events, and ledger
+entries but does not independently define canonical contract state.</li>
+<li>The <strong>group</strong> pins network, governance flavor, contract ID, release/profile,
+and genesis evidence.</li>
+<li>The <strong>UI publisher</strong> presents selection and may broker payment, but is not a
+contract authority.</li>
+</ul>
+<p>The same organization can operate the deployment, HTTP relayer, and RPC, but a
+client must not treat their combined API response as independent canonical
+evidence.</p>
+<h2 id="3-physical-topology">3. Physical topology</h2>
+<pre><code class="language-text">┌──────────────────────────────────────────────────────────────────────┐
+│ iOS / Android                                                        │
+│                                                                      │
+│ View / flow / interactor                                             │
+│        ├────────&gt; Onym identity and group state                      │
+│        ├────────&gt; Swift/Kotlin SDK + Rust FFI prover                 │
+│        ├────────&gt; SepContractClient / SEPContractClient              │
+│        └────────&gt; canonical relayer JSON invocation                  │
+└──────────────────────────────┬───────────────────────────────────────┘
+                               │ HTTPS POST
+                               v
+                    ┌────────────────────────┐
+                    │ onym-relayer           │
+                    │ auth · rate limit      │
+                    │ allowlist · validation │
+                    │ Stellar fee account    │
+                    └───────────┬────────────┘
+                                │ stellar contract invoke
+                                │ simulate / sign / submit
+                                v
+                    ┌────────────────────────┐
+                    │ Stellar RPC + Core     │
+                    │ transaction lifecycle  │
+                    └───────────┬────────────┘
+                                │ InvokeHostFunction
+                                v
+                    ┌────────────────────────┐
+                    │ sep-* Soroban contract │
+                    │ validate PI + PLONK    │
+                    │ update persistent state│
+                    │ emit contract event    │
+                    └───────────┬────────────┘
+                                │ ledger close / RPC / indexer
+                                v
+                         client reconciliation
+</code></pre>
+<p>The relayer currently shells out to Stellar CLI. That is an implementation
+choice behind the profile; a direct Stellar SDK implementation can replace it
+without changing the abstract notary port.</p>
+<h2 id="4-deployment-identity">4. Deployment identity</h2>
+<h3 id="41-target-deployment-object">4.1 Target deployment object</h3>
+<p>The abstract <code>NotaryDeployment</code> maps as follows:</p>
+<pre><code class="language-json">{
+  &quot;deploymentVersion&quot;: 1,
+  &quot;deploymentId&quot;: &quot;onym:notary:stellar:&lt;network-hash&gt;:&lt;contract-id&gt;&quot;,
+  &quot;profileId&quot;: &quot;onym:notary-profile:sep-tyranny-plonk-v1&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;deployment-operator&gt;&quot;,
+  &quot;backend&quot;: {
+    &quot;kind&quot;: &quot;onym:notary-implementation:stellar-soroban-sep-plonk-v1&quot;,
+    &quot;namespace&quot;: &quot;stellar:&lt;network-passphrase-hash&gt;&quot;,
+    &quot;instance&quot;: &quot;C...&quot;,
+    &quot;implementationHash&quot;: &quot;&lt;deployed-wasm-hash&gt;&quot;
+  },
+  &quot;release&quot;: &quot;vX.Y.Z&quot;,
+  &quot;proofSystem&quot;: &quot;turbo-plonk-bls12-381-kzg&quot;,
+  &quot;verifierAnchors&quot;: &quot;&lt;content-addressed-vk-anchor-set&gt;&quot;,
+  &quot;submitEndpoints&quot;: [&quot;onym:component:&lt;transaction-relayer&gt;&quot;],
+  &quot;readEndpoints&quot;: [&quot;onym:component:&lt;stellar-rpc-or-indexer&gt;&quot;],
+  &quot;offers&quot;: [&quot;&lt;notary-offer-id&gt;&quot;],
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>Network identity is not a display label alone. It is bound by the Stellar
+network passphrase or a canonical digest of it. <code>public</code>, <code>testnet</code>, and local
+networks with different passphrases are different namespaces even if a UI
+gives them similar names.</p>
+<p>The contract ID selects one deployed instance. The Wasm hash identifies its
+implementation. Both are required to prevent an address, release label, or
+manifest entry from standing in for code verification.</p>
+<h3 id="42-current-manifest">4.2 Current manifest</h3>
+<p>The current <code>contracts-manifest.json</code> contains historical releases with:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;releases&quot;: [
+    {
+      &quot;release&quot;: &quot;vX.Y.Z&quot;,
+      &quot;publishedAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+      &quot;contracts&quot;: [
+        {
+          &quot;network&quot;: &quot;testnet&quot;,
+          &quot;type&quot;: &quot;tyranny&quot;,
+          &quot;id&quot;: &quot;C...&quot;
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<p>The mobile clients decode known network/type pairs and select a release. The
+relayer flattens the cumulative history into an allowlist. This is useful
+discovery, but it is not yet the target deployment object: it lacks the signed
+profile, Wasm/code hash, network-passphrase binding, verifier anchors,
+capabilities, privacy profile, and offers.</p>
+<h2 id="5-group-binding">5. Group binding</h2>
+<p>The current clients persist an <code>AnchorBinding</code>:</p>
+<pre><code class="language-json">{
+  &quot;network&quot;: &quot;testnet&quot;,
+  &quot;governanceType&quot;: &quot;tyranny&quot;,
+  &quot;contractId&quot;: &quot;C...&quot;,
+  &quot;release&quot;: &quot;vX.Y.Z&quot;
+}
+</code></pre>
+<p>This already establishes the critical sticky-binding rule: settings changes
+select defaults for new groups and do not mutate existing group anchors.</p>
+<p>The complete Stellar <code>GroupNotaryBinding</code> also needs:</p>
+<ul>
+<li>abstract and Stellar profile versions;</li>
+<li>network-passphrase identity;</li>
+<li>deployed Wasm hash and verifier-anchor set;</li>
+<li>genesis commitment and epoch zero;</li>
+<li>creation transaction hash and ledger sequence;</li>
+<li>contract event or state evidence for creation; and</li>
+<li>declared migration/recovery policy.</li>
+</ul>
+<p>An invitation carries enough information to reconstruct and verify the same
+binding. A receiver must not resolve “latest contract for this governance
+type” in place of the inviter's pinned contract.</p>
+<h2 id="6-state-mapping">6. State mapping</h2>
+<p>Every <code>sep-*</code> deployment stores its operator admin and restricted-mode control
+in contract instance storage. Group state uses persistent storage keyed by a
+32-byte group ID. Most mutable profiles also keep bounded history and
+proof-replay markers.</p>
+<p>The abstract snapshot maps to:</p>
+<pre><code class="language-json">{
+  &quot;snapshotVersion&quot;: 1,
+  &quot;groupId&quot;: &quot;&lt;base64-32-byte-id&gt;&quot;,
+  &quot;deploymentId&quot;: &quot;onym:notary:stellar:&lt;network&gt;:&lt;contract-id&gt;&quot;,
+  &quot;profileId&quot;: &quot;onym:notary-profile:sep-tyranny-plonk-v1&quot;,
+  &quot;revision&quot;: 12,
+  &quot;stateCommitment&quot;: &quot;&lt;base64-32-byte-field-element&gt;&quot;,
+  &quot;policyState&quot;: {
+    &quot;timestamp&quot;: 1785580800,
+    &quot;tier&quot;: 1,
+    &quot;active&quot;: true,
+    &quot;publicValues&quot;: &quot;&lt;flavor-specific-fields&gt;&quot;
+  },
+  &quot;canonicalReference&quot;: {
+    &quot;network&quot;: &quot;stellar:&lt;network-passphrase-hash&gt;&quot;,
+    &quot;contractId&quot;: &quot;C...&quot;,
+    &quot;ledger&quot;: 123456,
+    &quot;transactionHash&quot;: &quot;&lt;64-hex-hash-or-read-reference&gt;&quot;
+  },
+  &quot;evidence&quot;: &quot;&lt;transaction-meta-event-or-ledger-entry-evidence&gt;&quot;
+}
+</code></pre>
+<p>The portable minimum is <code>(commitment, epoch)</code>. Other current public fields
+vary by flavor:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Flavor</th>
+<th scope="col">Additional public state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anarchy</td>
+<td>tier, active, timestamp, informational <code>member_count</code></td>
+</tr>
+<tr>
+<td>One-on-one</td>
+<td>timestamp; epoch remains zero because no transition exists</td>
+</tr>
+<tr>
+<td>Democracy</td>
+<td>tier, active, occupancy commitment, threshold numerator, timestamp</td>
+</tr>
+<tr>
+<td>Oligarchy</td>
+<td>tier, active, occupancy commitment, admin threshold numerator, timestamp</td>
+</tr>
+<tr>
+<td>Tyranny</td>
+<td>tier, timestamp, separately readable admin public-key commitment</td>
+</tr>
+</tbody>
+</table></div><p>The client must preserve “absent” versus “false/zero.” Current mobile
+<code>SepCommitmentEntry</code> models only commitment and epoch as mandatory and a subset
+of the remaining fields as optional, so it is not yet a lossless common state
+representation for all five profiles.</p>
+<h2 id="7-contract-family-and-policy-semantics">7. Contract family and policy semantics</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Profile</th>
+<th scope="col">Who can create</th>
+<th scope="col">Who can transition</th>
+<th scope="col">Current limits/shape</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anarchy</td>
+<td>Relayer-funded caller, subject to deployment restriction</td>
+<td>Any member who produces valid membership-based update evidence</td>
+<td>Tiers 32/256/2048; member count stored as informational</td>
+</tr>
+<tr>
+<td>One-on-one</td>
+<td>Relayer-funded caller, subject to deployment restriction</td>
+<td>Nobody; immutable after creation</td>
+<td>Exactly two-party circuit; no update/history entrypoint</td>
+</tr>
+<tr>
+<td>Democracy</td>
+<td>Relayer-funded caller, subject to deployment restriction</td>
+<td>Member quorum proven in one PLONK proof</td>
+<td>Hidden occupancy commitment; current circuit threshold bound is limited</td>
+</tr>
+<tr>
+<td>Oligarchy</td>
+<td>Relayer-funded caller, subject to deployment restriction</td>
+<td>Admin quorum proven in one PLONK proof</td>
+<td>Hidden admin/member structure; public stored threshold and occupancy commitment</td>
+</tr>
+<tr>
+<td>Tyranny</td>
+<td>Relayer-funded caller, subject to deployment restriction</td>
+<td>Holder of the pinned group-admin secret, proven without revealing it</td>
+<td>Admin commitment and group ID are bound into update evidence</td>
+</tr>
+</tbody>
+</table></div><p>“Relayer-funded caller” means the current HTTP relayer supplies its Stellar
+source account and signs the outer transaction. It does not mean that source
+account is the group's transition authority. Post-creation authorization comes
+from PLONK evidence except where a contract entrypoint explicitly calls Stellar
+address authorization.</p>
+<p>Every deployment also has an operator admin established by the constructor.
+Its <code>set_restricted_mode</code> power gates new group creation. It cannot advance or
+rewrite existing group state under the current contract code.</p>
+<h2 id="8-soroban-operation-mapping">8. Soroban operation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract operation</th>
+<th scope="col">Soroban entrypoint</th>
+<th scope="col">Availability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>createState</code></td>
+<td><code>create_group</code></td>
+<td>Anarchy, one-on-one, democracy, tyranny</td>
+</tr>
+<tr>
+<td><code>createState</code></td>
+<td><code>create_oligarchy_group</code></td>
+<td>Oligarchy</td>
+</tr>
+<tr>
+<td><code>transitionState</code></td>
+<td><code>update_commitment</code></td>
+<td>All except one-on-one</td>
+</tr>
+<tr>
+<td><code>verifyStatement</code></td>
+<td><code>verify_membership</code></td>
+<td>All five</td>
+</tr>
+<tr>
+<td><code>readState</code></td>
+<td><code>get_commitment</code></td>
+<td>All five</td>
+</tr>
+<tr>
+<td><code>readHistory</code></td>
+<td><code>get_history</code></td>
+<td>All except one-on-one</td>
+</tr>
+<tr>
+<td>Flavor read</td>
+<td><code>get_admin_commitment</code></td>
+<td>Tyranny only</td>
+</tr>
+<tr>
+<td><code>maintainState</code></td>
+<td><code>bump_group_ttl</code></td>
+<td>All five</td>
+</tr>
+<tr>
+<td>Deployment administration</td>
+<td><code>set_restricted_mode</code></td>
+<td>All five; not group governance</td>
+</tr>
+</tbody>
+</table></div><p>The HTTP relayer allowlists contract IDs per network and flavor, verifies the
+requested function is supported for that flavor, validates field lengths and
+encodings, and invokes Stellar CLI.</p>
+<p><code>set_restricted_mode</code> is exposed only when relayer bearer authentication is
+configured, because the relayer's Stellar identity signs the administrative
+call. This is an operator control plane and must remain separate from ordinary
+group operations and user entitlements.</p>
+<h2 id="9-authorization-evidence-mapping">9. Authorization evidence mapping</h2>
+<p>The current PLONK profile uses:</p>
+<ul>
+<li>a 1601-byte proof;</li>
+<li>an ordered vector of 32-byte public inputs;</li>
+<li>per-flavor and, where applicable, per-tier verifying keys baked into Wasm;</li>
+<li>BLS12-381 verification through Soroban host primitives;</li>
+<li>proof replay records for state-changing calls; and</li>
+<li>read-only membership verification that does not consume the proof.</li>
+</ul>
+<p>The important public-input bindings are:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Flavor/operation</th>
+<th scope="col">Ordered public statement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anarchy create</td>
+<td><code>[commitment, be32(0)]</code></td>
+</tr>
+<tr>
+<td>Anarchy update</td>
+<td><code>[c_old, be32(epoch_old), c_new]</code></td>
+</tr>
+<tr>
+<td>One-on-one create</td>
+<td><code>[commitment, be32(0)]</code></td>
+</tr>
+<tr>
+<td>Democracy create</td>
+<td><code>[commitment, be32(0), occupancy_initial]</code></td>
+</tr>
+<tr>
+<td>Democracy update</td>
+<td><code>[c_old, be32(epoch_old), c_new, occupancy_old, occupancy_new, threshold]</code></td>
+</tr>
+<tr>
+<td>Oligarchy create</td>
+<td><code>[commitment, be32(0), occupancy_initial]</code></td>
+</tr>
+<tr>
+<td>Oligarchy update</td>
+<td><code>[c_old, be32(epoch_old), c_new, occupancy_old, occupancy_new, admin_threshold]</code></td>
+</tr>
+<tr>
+<td>Tyranny create</td>
+<td><code>[commitment, be32(0), admin_commitment, group_id_fr]</code></td>
+</tr>
+<tr>
+<td>Tyranny update</td>
+<td><code>[c_old, be32(epoch_old), c_new, admin_commitment, group_id_fr]</code></td>
+</tr>
+<tr>
+<td>Membership verification</td>
+<td><code>[current_commitment, be32(current_epoch)]</code></td>
+</tr>
+</tbody>
+</table></div><p>The contract reads prior state and policy values from storage and compares them
+to the ordered public inputs before verifying the proof. For update operations,
+<code>c_new</code> comes from the proof-bound public inputs and the next epoch is derived
+as stored epoch plus one. A separate client-supplied new epoch or unbound next
+commitment must not be forwarded.</p>
+<p>Each public-input schema needs a content-addressed identifier. A bare JSON
+array plus contract flavor is the current de facto convention but is too easy
+to misorder across client, relayer, prover, and contract releases.</p>
+<h2 id="10-current-relayer-protocol">10. Current relayer protocol</h2>
+<p>The mobile client sends:</p>
+<pre><code class="language-json">{
+  &quot;network&quot;: &quot;testnet&quot;,
+  &quot;contractID&quot;: &quot;C...&quot;,
+  &quot;contractType&quot;: &quot;tyranny&quot;,
+  &quot;function&quot;: &quot;update_commitment&quot;,
+  &quot;payload&quot;: {
+    &quot;group_id&quot;: &quot;&lt;base64-32-bytes&gt;&quot;,
+    &quot;proof&quot;: &quot;&lt;base64-1601-bytes&gt;&quot;,
+    &quot;publicInputs&quot;: [
+      &quot;&lt;base64-32-byte-c-old&gt;&quot;,
+      &quot;&lt;base64-32-byte-epoch&gt;&quot;,
+      &quot;&lt;base64-32-byte-c-new&gt;&quot;,
+      &quot;&lt;base64-32-byte-admin-commitment&gt;&quot;,
+      &quot;&lt;base64-32-byte-group-id-field&gt;&quot;
+    ]
+  }
+}
+</code></pre>
+<p>Byte fields may arrive as base64 or hex at the relayer. Current mobile clients
+emit base64. The relayer converts fixed-size values to the hex representation
+expected by Stellar CLI and normalizes selected byte fields back to base64 in
+read responses.</p>
+<p>The top-level request selects network, contract ID, flavor, function, and
+payload. The relayer rejects mismatched flavor/function/contract combinations
+using a per-network allowlist.</p>
+<h3 id="101-target-operation-mapping">10.1 Target operation mapping</h3>
+<p>Before the current request can be a complete implementation of abstract
+<code>NotaryOperation</code>, it needs:</p>
+<ul>
+<li>operation/profile/schema versions;</li>
+<li>stable client <code>operationId</code> and idempotency semantics;</li>
+<li>complete pinned deployment identity rather than only ID/type/network label;</li>
+<li>explicit expected state at the abstract layer;</li>
+<li>canonical public-statement schema identifier;</li>
+<li>component-scoped entitlement field;</li>
+<li>structured result/error codes; and</li>
+<li>unknown-outcome query support.</li>
+</ul>
+<p>The function-specific payload remains the implementation mapping, not the UI's
+generic domain type.</p>
+<h2 id="11-write-lifecycle-and-receipt">11. Write lifecycle and receipt</h2>
+<p>The target lifecycle is:</p>
+<pre><code class="language-text">1. UI reads and verifies the current contract state.
+2. Local SDK creates the new commitment and PLONK proof.
+3. UI serializes the profile-pinned operation.
+4. Relayer validates auth, rate limit, allowlist, function, and payload.
+5. Relayer simulates/prepares the Soroban invocation and estimates resources.
+6. Relayer signs with its funded Stellar source account.
+7. Relayer submits the transaction and returns its transaction hash.
+8. Client or relayer polls Stellar RPC `getTransaction`.
+9. `SUCCESS` identifies the closed ledger containing the transaction.
+10. Client reads contract state or event evidence and confirms expected epoch
+    and commitment.
+11. Client commits optimistic state locally.
+</code></pre>
+<p>Stellar RPC <code>sendTransaction</code> means queued/submitted, not successful execution;
+the transaction hash must be checked with <code>getTransaction</code>. A conforming
+receipt therefore includes:</p>
+<pre><code class="language-json">{
+  &quot;operationId&quot;: &quot;&lt;client-operation-id&gt;&quot;,
+  &quot;status&quot;: &quot;finalized&quot;,
+  &quot;submissionProvider&quot;: &quot;onym:component:&lt;relayer-id&gt;&quot;,
+  &quot;transactionHash&quot;: &quot;&lt;64-hex-hash&gt;&quot;,
+  &quot;ledger&quot;: 123456,
+  &quot;contractId&quot;: &quot;C...&quot;,
+  &quot;event&quot;: &quot;&lt;group-created-or-commitment-updated-event&gt;&quot;,
+  &quot;acceptedRevision&quot;: 13,
+  &quot;acceptedStateCommitment&quot;: &quot;&lt;base64-commitment&gt;&quot;,
+  &quot;resultEvidence&quot;: &quot;&lt;XDR-or-content-addressed-evidence&gt;&quot;
+}
+</code></pre>
+<p>The current relayer write response is only:</p>
+<pre><code class="language-json">{
+  &quot;accepted&quot;: true,
+  &quot;transactionHash&quot;: null,
+  &quot;message&quot;: &quot;&lt;optional-stellar-cli-output&gt;&quot;
+}
+</code></pre>
+<p>Because the current success path does not populate the transaction hash,
+clients cannot implement independent transaction-status reconciliation from
+that response. <code>accepted: true</code> currently means the relayer's CLI invocation
+returned success; it must not be treated as the complete abstract receipt.</p>
+<h2 id="12-read-lifecycle-and-evidence">12. Read lifecycle and evidence</h2>
+<p>The present relayer invokes read-only functions through Stellar CLI with
+<code>--send no</code>, parses the output, and returns normalized JSON. The mobile
+<code>ChainStateReading</code> seam fetches <code>(commitment, epoch)</code> for selected flows; a
+short-lived cache and bounded retry reduce request bursts.</p>
+<p>The target read path must identify:</p>
+<ul>
+<li>network passphrase and contract ID;</li>
+<li>ledger or checkpoint observed;</li>
+<li>contract code/instance identity;</li>
+<li>exact state key and decoded schema;</li>
+<li>state value and revision;</li>
+<li>evidence needed to establish the value against canonical Stellar state; and</li>
+<li>RPC freshness/retention window.</li>
+</ul>
+<p>A TLS response from the same company that submitted the write is not
+independent evidence. At minimum, the client should compare the returned state
+to transaction/event evidence and be able to use another RPC or indexer. High
+assurance profiles may require stronger ledger-header or proof verification.</p>
+<p>Stellar RPC retains recent transactions and events for a bounded operator-set
+window; it is not a permanent history index. Long-term audit requires the
+client, notary provider, or an independent indexer to retain the necessary
+canonical references and evidence.</p>
+<h2 id="13-events-and-history">13. Events and history</h2>
+<p>Current mutable contracts emit typed events for:</p>
+<ul>
+<li>group creation;</li>
+<li>commitment update; and</li>
+<li>restricted-mode changes.</li>
+</ul>
+<p>Events include a group ID topic and profile-specific data such as commitment,
+epoch, tier, occupancy commitment, threshold, and timestamp. A conforming
+adapter maps them to abstract receipts without treating the ledger timestamp
+as a user-authored time.</p>
+<p>The contracts also retain bounded profile-specific commitment history where
+supported. Contract history and RPC event retention are different:</p>
+<ul>
+<li>contract history is state explicitly retained by the contract and subject to
+its own cap and TTL; and</li>
+<li>RPC history is an operator's recent query window over canonical ledgers.</li>
+</ul>
+<p>Neither should be labeled complete history unless its explicit bounds are
+satisfied.</p>
+<h2 id="14-stellar-authorization-layers">14. Stellar authorization layers</h2>
+<p>The solution has three distinct authorization layers:</p>
+<ol>
+<li><strong>Group authorization evidence.</strong> PLONK proof and public inputs authorize a
+transition under the selected <code>sep-*</code> policy.</li>
+<li><strong>Stellar address authorization.</strong> Constructors, creation callers, and
+deployment-administration calls use Soroban address authorization where the
+contract invokes <code>require_auth()</code>.</li>
+<li><strong>Relayer service access.</strong> The HTTP service may require a host-scoped bearer
+token or future <code>SeatEntitlement</code> before it spends resources.</li>
+</ol>
+<p>These layers must not be conflated. Possessing the current relayer bearer token
+does not authorize a group transition without valid PLONK evidence. A valid
+group proof does not authorize <code>set_restricted_mode</code>. An App Store purchase is
+neither a Soroban signature nor a group proof.</p>
+<p>The current app credential is a build/deployment bearer token scoped to the
+configured relayer host. It is not yet the per-user, per-seat entitlement
+described by the economic model.</p>
+<h2 id="15-state-ttl-archival-and-maintenance">15. State TTL, archival, and maintenance</h2>
+<p>Soroban contract code, instances, and contract-data entries have ledger-based
+lifetimes. The current family uses:</p>
+<ul>
+<li>instance storage for operator admin, restricted mode, and deployment-level
+counters;</li>
+<li>persistent storage for group state, history, and proof-replay entries; and</li>
+<li>permissionless <code>bump_group_ttl(group_id)</code> maintenance for group state.</li>
+</ul>
+<p>Persistent and instance entries can become archived when their TTL expires and
+require restoration before normal access; exact limits and fees are network
+parameters, not constants for the Onym abstract protocol. Temporary state, if
+introduced by a future profile, has different deletion semantics and must not
+be used where permanent loss violates group correctness.</p>
+<p>The Stellar profile must declare:</p>
+<ul>
+<li>which keys each operation reads and writes;</li>
+<li>which keys <code>bump_group_ttl</code> extends;</li>
+<li>whether proof-replay markers live as long as the state they protect;</li>
+<li>code and instance lifetime management;</li>
+<li>restoration behavior and payer;</li>
+<li>what the UI sees when state is archived; and</li>
+<li>how monitoring prevents unexpected unavailability.</li>
+</ul>
+<p>TTL extension is maintenance, not governance. It cannot change a commitment,
+epoch, threshold, authority, or group status.</p>
+<h2 id="16-payment-and-fee-mapping">16. Payment and fee mapping</h2>
+<p>There are three possible paid layers:</p>
+<ul>
+<li><strong>notary deployment service:</strong> availability, monitoring, upgrades permitted
+by profile, and retained state support;</li>
+<li><strong>transaction relayer:</strong> simulation, source account, Stellar resource and
+inclusion fees, submission, and status service; and</li>
+<li><strong>RPC/indexer:</strong> reads, event access, and retained history.</li>
+</ul>
+<p>The current transaction relayer pays Stellar fees from its configured account.
+The mobile operation does not contain an end-user Stellar secret key. This is a
+useful fee-abstraction boundary but makes the relayer a service dependency, not
+a validity authority.</p>
+<p>Off-chain Apple or other billing follows the abstract <code>PaymentRequired</code> and
+<code>SeatEntitlement</code> flow. Store evidence stays at the billing broker. The relayer
+receives a component-scoped entitlement or derived credential.</p>
+<p>An alternative profile may make the user pay a Stellar asset or native fee in
+the canonical transaction. That changes privacy, signing, simulation, refund,
+and authorization semantics and must be declared as another payment channel or
+profile capability.</p>
+<p>No payment mechanism may bypass PLONK verification, prior-state checks, proof
+replay protection, or contract authorization.</p>
+<h2 id="17-error-mapping">17. Error mapping</h2>
+<p>The adapter maps distinct layers rather than returning one free-form message:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract error</th>
+<th scope="col">Stellar source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Unknown release/profile/Wasm/verifier anchors</td>
+</tr>
+<tr>
+<td><code>deployment_mismatch</code></td>
+<td>Wrong network, contract ID, flavor, or code hash</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>HTTP relayer/notary gateway refusal</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td>Relayer bearer/entitlement or Soroban authorization missing</td>
+</tr>
+<tr>
+<td><code>state_exists</code></td>
+<td>Contract <code>GroupAlreadyExists</code></td>
+</tr>
+<tr>
+<td><code>state_not_found</code></td>
+<td>Contract <code>GroupNotFound</code></td>
+</tr>
+<tr>
+<td><code>invalid_evidence</code></td>
+<td>Contract <code>InvalidProof</code> or verifier failure</td>
+</tr>
+<tr>
+<td><code>public_input_mismatch</code></td>
+<td>Contract <code>PublicInputsMismatch</code></td>
+</tr>
+<tr>
+<td><code>stale_revision</code></td>
+<td>Stored commitment/epoch differs from public inputs</td>
+</tr>
+<tr>
+<td><code>replay</code></td>
+<td>Contract <code>ProofReplay</code> or duplicate operation mapping</td>
+</tr>
+<tr>
+<td><code>unauthorized</code></td>
+<td><code>AdminOnly</code>, address authorization, or policy refusal</td>
+</tr>
+<tr>
+<td><code>state_unavailable</code></td>
+<td>Archived entry, missing RPC window, or unavailable read</td>
+</tr>
+<tr>
+<td><code>submission_failed</code></td>
+<td>HTTP, CLI, simulation, fee, RPC enqueue, or transaction failure</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Lost response or transaction hash not yet resolved</td>
+</tr>
+<tr>
+<td><code>conflicting_state</code></td>
+<td>Read value contradicts verified transaction/event/binding</td>
+</tr>
+</tbody>
+</table></div><p>Contract error numbers are implementation details that the Stellar adapter
+normalizes with the profile version. Raw CLI stderr and HTTP status remain
+diagnostic context, not the stable domain error.</p>
+<p>Malformed but well-sized proof bytes can fail through different host or
+contract paths. A client must distinguish <code>valid = false</code>, contract error,
+transaction failure, and unavailable result without treating any failure as
+membership success.</p>
+<h2 id="18-security-and-privacy-properties">18. Security and privacy properties</h2>
+<ol>
+<li>Proof witnesses and group secrets remain in the mobile SDK/FFI boundary.</li>
+<li>The contract receives only profile-declared commitments, proof, public
+inputs, group ID, and public policy values.</li>
+<li>The relayer can observe IP, time, network, contract, function, group ID,
+proof bytes, public inputs, and payload size.</li>
+<li>Stellar observers can inspect successful invocation inputs, contract state,
+and events included in public ledgers.</li>
+<li>A policy claiming hidden membership must disclose every remaining public
+value, including tier, epoch, occupancy/authority commitments, thresholds,
+and group identifiers where applicable.</li>
+<li>Relayer credentials and payment evidence never become public inputs or
+ledger state.</li>
+<li>The source account that pays and submits does not become group authority
+merely by appearing in the outer transaction.</li>
+<li>Verifier keys and Wasm identity are pinned; an unverified “latest” release
+cannot replace an existing binding.</li>
+<li>A proof or operation is accepted only against the state and policy values it
+cryptographically binds.</li>
+<li>Client state is durable only after transaction and state reconciliation.</li>
+</ol>
+<p>Public-ledger metadata is a property of this implementation, not of the
+technology-neutral notary boundary. Another implementation may expose a
+different set of metadata and must use a different implementation profile.</p>
+<h2 id="19-versioning-and-conformance">19. Versioning and conformance</h2>
+<p>The Stellar profile pins:</p>
+<ul>
+<li>network passphrase identity;</li>
+<li>contract ID and deployed Wasm hash;</li>
+<li>governance flavor and abstract profile version;</li>
+<li>Soroban ABI and contract release;</li>
+<li>proof length, field encoding, public-input order, tier, and verifier anchors;</li>
+<li>relayer request/response version;</li>
+<li>state and event schemas;</li>
+<li>transaction receipt and reconciliation rules;</li>
+<li>TTL and restoration behavior; and</li>
+<li>payment/entitlement capability.</li>
+</ul>
+<p>Cross-component fixtures must execute this path:</p>
+<pre><code class="language-text">Swift/Kotlin input
+  -&gt; Rust proof/PI bytes
+  -&gt; relayer JSON
+  -&gt; Soroban ABI values
+  -&gt; contract verification/state/event
+  -&gt; RPC/relayer response
+  -&gt; normalized NotaryStateSnapshot and NotaryReceipt
+</code></pre>
+<p>Fixtures cover all five governance flavors, every tier, create/read/update or
+immutability, membership verification, invalid proof, wrong public-input
+order, stale epoch, replay, restricted creation, TTL, receipt reconciliation,
+and unknown outcome.</p>
+<h2 id="20-current-implementation-gaps">20. Current implementation gaps</h2>
+<p>The repositories implement a substantial portion of this profile, but the
+following gaps prevent full abstract conformance:</p>
+<ul>
+<li>deployment discovery lacks signed profiles, Wasm hashes,
+network-passphrase binding, verifier anchors, privacy declarations, offers,
+and operator signatures;</li>
+<li><code>AnchorBinding</code> lacks profile/version, Wasm hash, genesis transaction/ledger,
+and creation evidence;</li>
+<li>relayer JSON is the de facto wire spec and has no version, operation ID,
+schema ID, entitlement, or outcome-query endpoint;</li>
+<li>write responses currently omit the Stellar transaction hash and therefore
+cannot drive independent <code>getTransaction</code> reconciliation;</li>
+<li><code>accepted: true</code> collapses CLI completion, submission, execution, and
+finality into one ambiguous field;</li>
+<li>client read verification primarily trusts the selected HTTP relayer and is
+currently narrow—<code>ChainStateReading</code> covers selected tyranny flows rather
+than all governance profiles;</li>
+<li>the common client state type omits flavor-specific fields needed for a
+lossless snapshot;</li>
+<li>mobile and relayer errors rely on HTTP bodies and CLI strings instead of a
+stable profile error taxonomy;</li>
+<li>proof/public-input schema identities are implicit in flavor/function/release;</li>
+<li>the relayer holds one configured source identity and optional bearer-token
+set rather than component-scoped user entitlements;</li>
+<li><code>PaymentRequired</code>, purchase validation, entitlement issuance, quota,
+renewal, refund, and revocation are not implemented;</li>
+<li>long-term transaction/event evidence and independent read-provider selection
+are not implemented as a complete audit path;</li>
+<li>code/instance TTL monitoring, archived-state recovery UX, and payment for
+restoration are not expressed through the client boundary;</li>
+<li>migration between contract deployments or notary implementations is not
+specified; and</li>
+<li>cross-platform tests mirror many shapes but do not yet run one complete
+abstract-notary conformance suite.</li>
+</ul>
+<h2 id="21-acceptance-criteria">21. Acceptance criteria</h2>
+<p>The Stellar implementation satisfies <code>UI-Notary.md</code> when:</p>
+<ol>
+<li>each deployment is cryptographically bound to network, contract ID, Wasm,
+verifier anchors, profile, and operator;</li>
+<li>every group persists genesis and binding evidence, not only a release label
+and contract ID;</li>
+<li>the UI can switch compatible transaction relayers and RPC providers without
+changing the contract binding;</li>
+<li>every write returns a stable operation ID and Stellar transaction hash;</li>
+<li><code>sendTransaction</code>/submission is distinct from successful closed-ledger
+inclusion;</li>
+<li>the client reconciles successful transaction, contract event/state, epoch,
+and commitment before durable local commit;</li>
+<li>all five governance profiles have lossless state, operation, error, and
+conformance mappings;</li>
+<li>proof/public-input order is identified by a content-addressed schema;</li>
+<li>payment entitlement is scoped to the selected service and never enters
+group evidence or the ledger;</li>
+<li>TTL/archive/restore behavior is visible and cannot silently look like
+group deletion;</li>
+<li>operator restricted mode can gate creation but cannot transition existing
+group state; and</li>
+<li>a third-party UI, relayer, RPC provider, and deployment can interoperate
+using the published profile and test suite.</li>
+</ol>
+<h2 id="22-references">22. References</h2>
+<ol>
+<li>Technology-neutral Onym notary boundary:
+<a href="../notary/UI-Notary.html">UI-Notary.md</a></li>
+<li>Onym contract family: <a href="https://github.com/onymchat/onym-contracts">https://github.com/onymchat/onym-contracts</a></li>
+<li>Onym transaction relayer: <a href="https://github.com/onymchat/onym-relayer">https://github.com/onymchat/onym-relayer</a></li>
+<li>Onym iOS client: <a href="https://github.com/onymchat/onym-ios">https://github.com/onymchat/onym-ios</a></li>
+<li>Onym Android client: <a href="https://github.com/onymchat/onym-android">https://github.com/onymchat/onym-android</a></li>
+<li>Stellar, “Smart Contracts”:
+<a href="https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/contracts">https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/contracts</a></li>
+<li>Stellar, “Transaction Lifecycle”:
+<a href="https://developers.stellar.org/docs/learn/fundamentals/transactions/transaction-lifecycle">https://developers.stellar.org/docs/learn/fundamentals/transactions/transaction-lifecycle</a></li>
+<li>Stellar RPC, <code>sendTransaction</code>:
+<a href="https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/sendTransaction">https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/sendTransaction</a></li>
+<li>Stellar RPC, <code>getTransaction</code>:
+<a href="https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getTransaction">https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getTransaction</a></li>
+<li>Stellar, “State Archival”:
+<a href="https://developers.stellar.org/docs/learn/fundamentals/contract-development/storage/state-archival">https://developers.stellar.org/docs/learn/fundamentals/contract-development/storage/state-archival</a></li>
+<li>Stellar, “Smart contract authorization”:
+<a href="https://developers.stellar.org/docs/build/guides/auth/contract-authorization">https://developers.stellar.org/docs/build/guides/auth/contract-authorization</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/notary/UI-Notary-Stellar.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

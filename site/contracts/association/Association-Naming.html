@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Association Naming Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Association Naming Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/association/Association-Naming.html">
+<meta property="og:title" content="Onym Association Naming Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/association/Association-Naming.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Naming &amp; credentials</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/4712694da80a9d2f82fff0fa73725af30260eb6b/association/Association-Naming.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-association-naming-contract-boundary">Onym Association Naming Contract Boundary</h1>
+<p><strong>Proposal draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>An association may name an identity; it may never become the identity. The
+holder decides which names to accept, which registries to appear in, and
+when to walk away with the identity intact.</p>
+</blockquote>
+<p>This document proposes the technology-neutral boundary for <strong>association
+naming</strong>: the service seat that attaches human-readable names, roles, and
+memberships to cryptographic identities as signed, consent-bound claims. It
+expands section 6 of the <a href="../WHITEPAPER.html">whitepaper</a> into a contract that
+independent registry operators, associations, subjects, and verifying clients
+can implement against.</p>
+<p>It does not require a particular ledger, database, resolution transport,
+signature suite, or jurisdiction. A concrete implementation profile may use
+signed static documents, a replicated log, a smart contract, or an ordinary
+web service that satisfies the profile's issuance, consent, resolution,
+expiry, and revocation semantics. No concrete profile exists yet; this
+proposal defines what one must satisfy.</p>
+<p>Here <strong>naming provider</strong> and <strong>registry</strong> are used interchangeably for the
+operator of one namespace. The term <em>identity provider</em> is deliberately
+avoided: identities are provided by the holder's own vault
+(<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a>); a registry
+provides names about them.</p>
+<p>Message delivery, media storage, and shared-state validation are separate
+boundaries (<a href="../message/UI-Message.html">../message/UI-Message.md</a>,
+<a href="../blob/UI-Blob.html">../blob/UI-Blob.md</a>,
+<a href="../notary/UI-Notary.html">../notary/UI-Notary.md</a>). A registry participates in
+none of them.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the subject, the registry operator, the association, the
+verifying client, and directories as independently owned components joined by
+versioned interfaces.</p>
+<ul>
+<li>The <strong>subject</strong> is the identity holder. A name attaches to their identity
+only through their explicit, revocable acceptance. They may hold names in
+many registries, or in none, and neither choice affects their identity's
+validity.</li>
+<li>The <strong>registry operator</strong> owns one namespace: its trust root, issuance
+policy, records, resolution service, pricing, and disputes. It is the
+issuer of assertions, not the custodian of subjects.</li>
+<li>The <strong>association</strong> is the community whose social meaning a name carries—a
+professional body, employer, family, municipality, game, or anonymous
+collective. It defines who deserves a name under its policy. An association
+may operate its own registry or designate an independent operator.</li>
+<li>The <strong>verifying client</strong> (UI or application) resolves, verifies, and
+displays qualified names without conflating any of them with the identity
+itself.</li>
+<li><strong>Directories</strong> may recommend registries. Recommendation is curation, not
+validity.</li>
+</ul>
+<p>One organization may occupy several roles—most commonly association and
+registry operator—but the authorities remain separate: operating the
+namespace never implies controlling the subject's keys, and naming a subject
+never implies the subject endorses the namer.</p>
+<p>The boundary has three interfaces:</p>
+<ol>
+<li>the <strong>subject ↔ registry</strong> issuance interface: request, offer, acceptance,
+renewal, disavowal;</li>
+<li>the <strong>verifier ↔ registry</strong> resolution interface: forward and reverse
+lookup, verification material, freshness; and</li>
+<li>the <strong>association ↔ member</strong> enrollment interface: the declared naming
+policy a person accepts when joining (see §10).</li>
+</ol>
+<p>None of these interfaces may carry the subject's root secret, private keys,
+or vault capability results beyond the specific signatures this contract
+defines.</p>
+<h2 id="2-what-association-naming-does">2. What association naming does</h2>
+<p>A conforming registry can:</p>
+<ol>
+<li>publish a signed manifest declaring its namespace, trust root, issuance
+policy, and endpoints;</li>
+<li>issue signed <code>AssociationRecord</code>s binding a local name, role, or
+membership scope to a subject identifier;</li>
+<li>record the subject's countersigned acceptance, without which a record is
+a claim about someone, not a name of them;</li>
+<li>resolve a qualified name to its current record and acceptance;</li>
+<li>reverse-resolve a subject to the names it has accepted for publication in
+that registry;</li>
+<li>renew, supersede, expire, and revoke its own records; and</li>
+<li>accept and publish subject disavowals.</li>
+</ol>
+<p>It does not create identities, store or recover keys, relay messages,
+authorize group state, vouch for other registries, or decide whether its own
+policy is socially deserved. A registry that loses its database loses its
+assertions; every subject's identity survives it untouched.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-names-must-not-become-account-authority">3.1 Names must not become account authority</h3>
+<p>Systems that start by naming users end by owning them: the namespace becomes
+the login, the login becomes the account, and the account becomes something
+an operator can suspend. Keeping the name a separable, signed claim—issued by
+a registry, accepted by a subject, verifiable by anyone—means losing or
+leaving a registry costs exactly the name, never the identity, groups,
+messages, or funds behind it.</p>
+<h3 id="32-one-global-namespace-is-the-wrong-goal">3.2 One global namespace is the wrong goal</h3>
+<p>A professional body, a family, a game, and an anonymous community may all
+legitimately name the same person differently, under incompatible policies.
+Forcing them into one unique global table either recreates a central naming
+authority or launches a land-grab for scarce strings. Qualified names make
+the issuer part of the displayed name, so uniqueness is only required within
+one registry, where its policy actually governs.</p>
+<h3 id="33-consent-must-be-structural-not-assumed">3.3 Consent must be structural, not assumed</h3>
+<p>Anyone can sign a statement about a public key; nothing can prevent that. The
+boundary therefore distinguishes an <strong>assertion</strong> (registry-signed) from a
+<strong>name</strong> (registry-signed and subject-accepted). Verifying clients enforce
+the difference at display time, which removes the value of unsolicited or
+adversarial naming: a claim the subject never accepted is never rendered as
+the subject's name.</p>
+<h3 id="34-it-makes-the-trust-decision-visible">3.4 It makes the trust decision visible</h3>
+<p><code>alice@writers.tallinn</code> tells the viewer exactly who is vouching: the
+<code>writers.tallinn</code> registry, under its published policy. Whether that policy
+means careful vetting or five euros and a checkbox is the registry's
+disclosed business. Cryptography proves who signed; it cannot prove a name is
+deserved—so the party making the social claim must be visible in the name
+itself.</p>
+<h3 id="35-it-lets-associations-require-without-capturing">3.5 It lets associations require without capturing</h3>
+<p>An association may reasonably want members to be nameable in its own
+registry—a bar association naming licensed lawyers, an employer naming staff.
+The boundary allows that as a disclosed membership condition while keeping it
+bounded: the requirement binds the membership name, not the person's other
+names, other registries, or root keys, and it ends when membership ends.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">                    ┌────────────────────────────┐
+                    │ Association                │
+                    │ community · policy · roles │
+                    └───────┬────────────────────┘
+                            │ designates / operates
+                            v
+┌───────────────┐   ┌────────────────────────────┐
+│ Subject       │   │ Registry (naming provider) │
+│ identity vault│──&gt;│ namespace · trust root     │
+│ consent       │&lt;──│ records · resolution       │
+└───────┬───────┘   └───────┬────────────────────┘
+        │ accepted names    │ signed records + acceptances
+        │ (countersigned)   v
+        │           ┌────────────────────────────┐
+        └──────────&gt;│ Verifying clients          │
+                    │ resolve · verify · display │
+                    │ qualified names            │
+                    └────────────────────────────┘
+
+     Directories recommend registries; they do not validate names.
+     A registry failure deletes assertions, never identities.
+</code></pre>
+<p>The subject's signatures come from vault capabilities (a <code>prove-credential</code> /
+acceptance signing operation); the vault, not the registry, holds the keys.
+The registry is outside the subject's trust boundary. A verifier trusts a
+registry's records exactly as far as it trusts that registry's published
+policy—a per-registry, per-viewer decision.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-naming-profile">5.1 Naming Profile</h3>
+<p>A <code>NamingProfile</code> defines the portable interface independently of storage or
+transport technology:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:naming-profile:qualified-association-v1&quot;,
+  &quot;interface&quot;: &quot;onym-naming-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;resolve-name&quot;,
+    &quot;resolve-subject&quot;,
+    &quot;request-issuance&quot;,
+    &quot;accept-record&quot;,
+    &quot;renew-record&quot;,
+    &quot;revoke-record&quot;,
+    &quot;disavow-record&quot;
+  ],
+  &quot;nameSyntax&quot;: &quot;onym-qualified-name-v1&quot;,
+  &quot;recordSchema&quot;: &quot;onym-association-record-v1&quot;,
+  &quot;acceptanceSchema&quot;: &quot;onym-subject-acceptance-v1&quot;,
+  &quot;freshness&quot;: &quot;&lt;declared-staleness-and-revocation-checking-model&gt;&quot;,
+  &quot;errorSchema&quot;: &quot;onym-naming-errors-v1&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="52-registry-manifest">5.2 Registry Manifest</h3>
+<p>A registry claims the seat by publishing a signed manifest:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;registry-id&gt;&quot;,
+  &quot;seat&quot;: &quot;naming.association&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;namespace&quot;: &quot;writers.tallinn&quot;,
+  &quot;trustRoot&quot;: &quot;&lt;registry-signing-key-descriptor&gt;&quot;,
+  &quot;namingProfileId&quot;: &quot;onym:naming-profile:qualified-association-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:naming-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;endpoints&quot;: [
+    {&quot;uri&quot;: &quot;&lt;resolution-endpoint&gt;&quot;, &quot;role&quot;: &quot;resolve&quot;},
+    {&quot;uri&quot;: &quot;&lt;issuance-endpoint&gt;&quot;, &quot;role&quot;: &quot;issue&quot;}
+  ],
+  &quot;issuancePolicy&quot;: &quot;&lt;hash-or-url-of-human-and-machine-readable-policy&gt;&quot;,
+  &quot;association&quot;: &quot;onym:key:&lt;association-id-or-same-as-operator&gt;&quot;,
+  &quot;localNameRules&quot;: &quot;&lt;syntax-normalization-and-confusable-policy&gt;&quot;,
+  &quot;reverseResolution&quot;: &quot;accepted-and-published-records-only&quot;,
+  &quot;retention&quot;: &quot;&lt;record-and-log-retention-policy&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;offers&quot;: [&quot;&lt;issuance-or-resolution-offer-ids&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The namespace string is claimed, not allocated by a global authority; two
+registries may claim colliding namespaces, and clients disambiguate by
+<code>componentId</code> and trust root, warning on collision. A directory may refuse to
+list a squatter; it cannot make the squatter's signatures invalid—only
+untrusted.</p>
+<h3 id="53-qualified-name">5.3 Qualified name</h3>
+<p>The displayable unit is a <strong>qualified name</strong>:</p>
+<pre><code class="language-text">alice@writers.tallinn        (accepted record, resolvable registry)
+treasurer@helping-hands      (role scope within an association)
+0xA17F… · self-described     (no registry: local presentation only)
+</code></pre>
+<p>Syntax <code>onym-qualified-name-v1</code> requires:</p>
+<ul>
+<li>a registry-normalized local part, with the registry's declared confusable
+and normalization rules applied at issuance, not at display;</li>
+<li>the namespace as displayed suffix, never elided by a conforming client;
+and</li>
+<li>no protocol meaning for an unqualified string: bare <code>Alice</code> is local
+presentation (a petname), not a resolvable protocol fact.</li>
+</ul>
+<p>Uniqueness of the local part is guaranteed only within one registry at one
+time. Cross-registry collisions are expected and legitimate; the qualifier is
+the disambiguation.</p>
+<h3 id="54-association-record">5.4 Association Record</h3>
+<p>The registry's half of a name (extending whitepaper §6.2):</p>
+<pre><code class="language-json">{
+  &quot;recordVersion&quot;: 1,
+  &quot;registry&quot;: &quot;onym:registry:&lt;registry-id&gt;&quot;,
+  &quot;name&quot;: &quot;alice&quot;,
+  &quot;subject&quot;: &quot;onym:key:&lt;subject-id&gt;&quot;,
+  &quot;scope&quot;: [&quot;display-name&quot;, &quot;member&quot;],
+  &quot;issuedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;sequence&quot;: 3,
+  &quot;policy&quot;: &quot;&lt;hash-or-url-of-issuance-policy-version-applied&gt;&quot;,
+  &quot;membershipCondition&quot;: &quot;&lt;hash-of-membership-naming-policy-or-null&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;registry-signature&gt;&quot;
+}
+</code></pre>
+<p><code>scope</code> bounds what the record asserts: a display name, a membership, a role,
+an office. Sensitive personal attributes do not belong in public records;
+they are future selective-disclosure credentials, adopted only after their
+own privacy review.</p>
+<p><code>sequence</code> orders records for the same (registry, name) pair; a higher
+sequence supersedes. <code>membershipCondition</code> links a record issued under §10 to
+the policy the subject enrolled under.</p>
+<h3 id="55-subject-acceptance">5.5 Subject Acceptance</h3>
+<p>The subject's half. Without it, the record must not be displayed as the
+subject's name:</p>
+<pre><code class="language-json">{
+  &quot;acceptanceVersion&quot;: 1,
+  &quot;record&quot;: &quot;&lt;hash-of-association-record&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:key:&lt;subject-id&gt;&quot;,
+  &quot;publish&quot;: true,
+  &quot;acceptedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;subject-signature-via-vault-capability&gt;&quot;
+}
+</code></pre>
+<ul>
+<li><code>publish: true</code> permits the registry to serve this record in reverse
+resolution (subject → names). <code>publish: false</code> accepts the name for
+contexts where the subject presents it, while keeping the registry from
+volunteering it.</li>
+<li>Acceptance binds a specific record hash; a superseding record needs a new
+acceptance.</li>
+<li>The signature is produced through the subject's vault as a typed
+capability with displayed intent—the registry never holds subject keys.</li>
+</ul>
+<h3 id="56-disavowal">5.6 Disavowal</h3>
+<p>The subject may unilaterally unbind:</p>
+<pre><code class="language-json">{
+  &quot;disavowalVersion&quot;: 1,
+  &quot;record&quot;: &quot;&lt;hash-of-association-record&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:key:&lt;subject-id&gt;&quot;,
+  &quot;effectiveFrom&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;subject-signature&gt;&quot;
+}
+</code></pre>
+<p>A conforming registry publishes disavowals it receives for its own records; a
+conforming client stops displaying a disavowed name even if the registry
+stalls. Disavowal needs no registry permission and no reason. The symmetric
+right—registry revocation—needs no subject permission. A name exists only
+while both sides maintain it.</p>
+<h3 id="57-membership-naming-policy">5.7 Membership Naming Policy</h3>
+<p>The object behind §10. An association that conditions membership on naming
+publishes, before enrollment:</p>
+<pre><code class="language-json">{
+  &quot;policyVersion&quot;: 1,
+  &quot;association&quot;: &quot;onym:key:&lt;association-id&gt;&quot;,
+  &quot;designatedRegistries&quot;: [&quot;onym:component:&lt;registry-id&gt;&quot;],
+  &quot;requiredScopes&quot;: [&quot;member&quot;],
+  &quot;namingRequired&quot;: true,
+  &quot;publicationRequired&quot;: false,
+  &quot;onExit&quot;: &quot;revocation-of-membership-scoped-records-only&quot;,
+  &quot;exclusivity&quot;: &quot;none&quot;,
+  &quot;signature&quot;: &quot;&lt;association-signature&gt;&quot;
+}
+</code></pre>
+<p>Constraints on what such a policy may demand are normative in §10.</p>
+<h3 id="58-resolution-results">5.8 Resolution results</h3>
+<p>Forward resolution (<code>resolve-name</code>) returns the current record, its
+acceptance status, and verification material:</p>
+<pre><code class="language-json">{
+  &quot;query&quot;: &quot;alice@writers.tallinn&quot;,
+  &quot;record&quot;: &quot;&lt;association-record&gt;&quot;,
+  &quot;acceptance&quot;: &quot;&lt;subject-acceptance-or-null&gt;&quot;,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;supersededBy&quot;: null,
+  &quot;checkedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p><code>status</code> is one of <code>active</code>, <code>unaccepted</code>, <code>expired</code>, <code>superseded</code>,
+<code>revoked</code>, <code>disavowed</code>. Reverse resolution (<code>resolve-subject</code>) returns only
+records that are accepted with <code>publish: true</code>; a registry must not
+enumerate a subject's unaccepted or unpublished records to third parties.</p>
+<p>Resolution responses are registry-signed and dateable so verifiers can apply
+the profile's freshness rules; a stale cached record is evidence of a past
+state, not the current one.</p>
+<h2 id="6-common-naming-surface">6. Common naming surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resolve-name</code></td>
+<td>Qualified name</td>
+<td>Record, acceptance, status, freshness</td>
+</tr>
+<tr>
+<td><code>resolve-subject</code></td>
+<td>Subject ID</td>
+<td>Published accepted records in this registry</td>
+</tr>
+<tr>
+<td><code>request-issuance</code></td>
+<td>Desired name, subject ID, policy evidence</td>
+<td>Offer or refusal under the registry's policy</td>
+</tr>
+<tr>
+<td><code>accept-record</code></td>
+<td><code>SubjectAcceptance</code></td>
+<td>Activated name</td>
+</tr>
+<tr>
+<td><code>renew-record</code></td>
+<td>Record reference, per policy</td>
+<td>Successor record awaiting acceptance</td>
+</tr>
+<tr>
+<td><code>revoke-record</code></td>
+<td>Registry authority, per policy</td>
+<td>Revocation visible in resolution</td>
+</tr>
+<tr>
+<td><code>disavow-record</code></td>
+<td><code>Disavowal</code></td>
+<td>Published disavowal; name inactive</td>
+</tr>
+<tr>
+<td><code>verify</code></td>
+<td>Record + acceptance + manifest</td>
+<td>Local validity decision, offline-capable</td>
+</tr>
+</tbody>
+</table></div><p><code>verify</code> is local: given the registry manifest, a record, and an acceptance,
+a client can validate signatures and expiry without contacting the registry,
+subject to the profile's freshness rules for revocation and supersession.</p>
+<h2 id="7-verifying-client-obligations">7. Verifying client obligations</h2>
+<p>A conforming UI or application must:</p>
+<ol>
+<li>verify the registry manifest, record, and acceptance signatures before
+attributing a name;</li>
+<li>never display an unaccepted, expired, superseded, revoked, or disavowed
+record as the subject's current name—<code>unaccepted</code> renders as a claim by
+the registry, if at all;</li>
+<li>always display the qualifier; two names from different registries are
+different names even when local parts match;</li>
+<li>keep local petnames visually distinct from registry names and from
+self-described labels;</li>
+<li>warn on namespace collisions, confusable local parts across the viewer's
+trusted registries, and registry trust-root changes;</li>
+<li>let the viewer choose which registries to trust for display, per context,
+without a hardcoded default becoming mandatory;</li>
+<li>treat resolution answers as registry-signed observations with declared
+freshness, and re-check per profile before high-stakes display;</li>
+<li>never derive routing, authorization, or payment targets from a name
+alone—names annotate identities; keys and records authorize;</li>
+<li>avoid leaking the viewer's social graph through resolution queries beyond
+the profile's declared exposure, and disclose that exposure; and</li>
+<li>keep names out of transport addresses, logs, and analytics, per the
+courier boundary's rule that human names are not routing material.</li>
+</ol>
+<p>Registry display names, policy URLs, and record contents are untrusted
+input. They must not execute code, spoof consent UI, or impersonate other
+registries' qualified forms.</p>
+<h2 id="8-registry-operator-obligations">8. Registry operator obligations</h2>
+<p>A conforming registry must:</p>
+<ol>
+<li>publish and honor its manifest: policy version, name rules, endpoints,
+pricing, retention, and privacy profile;</li>
+<li>issue records only under the policy version referenced in the record, and
+apply normalization and confusable rules at issuance;</li>
+<li>obtain and store the subject's acceptance before representing a name as
+held—an issued-but-unaccepted record is served as <code>unaccepted</code>;</li>
+<li>serve resolution answers that are signed, dateable, and consistent: no
+equivocation between viewers about the current record for a name;</li>
+<li>publish supersession, expiry, revocation, and received disavowals
+promptly and irreversibly in resolution results;</li>
+<li>restrict reverse resolution to accepted, <code>publish: true</code> records, and
+resist enumeration and scraping of its subject population;</li>
+<li>collect only the personal data its published policy requires for
+issuance, keep it out of public records, and bound its retention;</li>
+<li>never request root secrets, recovery material, unrelated addresses,
+message history, or vault capabilities beyond acceptance signatures;</li>
+<li>keep issuance fees, renewal fees, and disputes inside its published
+offers—payment buys process under the policy, never truth; and</li>
+<li>declare its shutdown behavior: how records, acceptances, and disavowals
+remain verifiable (for example, a final signed archive) after the
+service ends.</li>
+</ol>
+<p>A registry that equivocates—serving different current records for the same
+name to different viewers—is misbehaving in a detectable way, and clients
+comparing signed responses may treat its records as untrusted.</p>
+<h2 id="9-association-obligations">9. Association obligations</h2>
+<p>An association, when distinct from its registry operator, must:</p>
+<ol>
+<li>publish which registry it designates and the policy hash under which
+names carry its meaning;</li>
+<li>keep the social claim honest: a <code>member</code> scope means whatever its
+published policy says membership means, and nothing more;</li>
+<li>request revocation only through the registry's declared process, leaving
+a signed trail; and</li>
+<li>follow §10 whenever naming is a condition of membership.</li>
+</ol>
+<h2 id="10-membership-conditioned-naming">10. Membership-conditioned naming</h2>
+<p>People may enroll in associations, and an association may require, as a
+condition of membership, that the member hold a name in its designated
+registry. This proposal permits that pattern and bounds it.</p>
+<p>A conforming membership naming requirement:</p>
+<ol>
+<li>is disclosed before enrollment as a signed <code>MembershipNamingPolicy</code>
+(§5.7), referenced from every record it produces;</li>
+<li>binds only membership-scoped records in the designated registries—it
+cannot demand disavowal of the member's names elsewhere, exclusivity
+across registries, or the member's other contexts, addresses, or keys;</li>
+<li>still requires the member's acceptance signature per record; enrollment
+consent is to the policy, acceptance is to each concrete name;</li>
+<li>may require publication (<code>publicationRequired: true</code>) only where the
+association's function genuinely requires public membership (for
+example, a professional license register), and must say so in the
+pre-enrollment policy;</li>
+<li>ends with membership: <code>onExit</code> revokes membership-scoped records only,
+and exit never touches the identity, other registries' names, groups, or
+funds; and</li>
+<li>cannot be retroactively broadened—expanding the requirement is a new
+policy version that existing members explicitly re-accept or decline by
+leaving.</li>
+</ol>
+<p>Declining such a policy costs the membership and its benefits, never the
+identity. An association may choose its registry; it may not choose the
+member's vault, and a registry designated by one association gains no
+standing over the member's participation anywhere else.</p>
+<h2 id="11-payment-at-the-naming-boundary">11. Payment at the naming boundary</h2>
+<p>A registry may charge for issuance, renewal, dispute handling, expedited
+process, or high-availability resolution, under its published seat offers
+and, where sold through a frontend, a signed <code>ChannelOffer</code> per the
+whitepaper's settlement model.</p>
+<ul>
+<li>Payment buys the registry's declared process under its declared policy. A
+paid name is not more cryptographically true, and display rank in a
+conforming client is not for sale.</li>
+<li>Resolution of accepted public records should have a free or at-cost tier
+wherever feasible; a registry whose names can only be verified behind a
+paywall is disclosing that limitation in its manifest, and clients weigh
+it.</li>
+<li>No payment state—lapse, refund, dispute—revokes the subject's identity or
+any name in any other registry. Non-payment consequences are bounded to
+the purchased record's renewal per the published policy.</li>
+</ul>
+<h2 id="12-errors-and-state-machine">12. Errors and state machine</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Client/subject response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse; explain required profile</td>
+</tr>
+<tr>
+<td><code>namespace_collision</code></td>
+<td>Resolution/trust store</td>
+<td>Disambiguate by componentId; warn viewer</td>
+</tr>
+<tr>
+<td><code>name_unavailable</code></td>
+<td>Registry policy</td>
+<td>Report; policy governs, not the protocol</td>
+</tr>
+<tr>
+<td><code>policy_refused</code></td>
+<td>Registry</td>
+<td>Report the referenced policy version</td>
+</tr>
+<tr>
+<td><code>unaccepted</code></td>
+<td>Resolution</td>
+<td>Display as registry claim at most, never as the name</td>
+</tr>
+<tr>
+<td><code>acceptance_mismatch</code></td>
+<td>Verification</td>
+<td>Treat as invalid; possible substitution attempt</td>
+</tr>
+<tr>
+<td><code>expired</code></td>
+<td>Verification</td>
+<td>Stop displaying; offer renewal path to subject</td>
+</tr>
+<tr>
+<td><code>superseded</code></td>
+<td>Resolution</td>
+<td>Re-resolve; display successor only after its acceptance</td>
+</tr>
+<tr>
+<td><code>revoked</code></td>
+<td>Resolution</td>
+<td>Stop displaying; show issuer action, not subject fault</td>
+</tr>
+<tr>
+<td><code>disavowed</code></td>
+<td>Resolution/subject</td>
+<td>Stop displaying regardless of registry state</td>
+</tr>
+<tr>
+<td><code>equivocation_detected</code></td>
+<td>Cross-checking clients</td>
+<td>Distrust registry records pending explanation</td>
+</tr>
+<tr>
+<td><code>resolution_unavailable</code></td>
+<td>Network/registry</td>
+<td>Use cached signed answers within freshness bounds</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>Registry offer</td>
+<td>Present signed offer via billing flow; never inline</td>
+</tr>
+</tbody>
+</table></div><p>Name lifecycle:</p>
+<pre><code class="language-text">requested
+  -&gt; offered (registry policy check)
+  -&gt; issued (registry-signed record)
+  -&gt; accepted (subject-countersigned)      &lt;- only here does it become a name
+  -&gt; active
+       -&gt; renewed -&gt; issued' -&gt; accepted' -&gt; active
+       -&gt; expired
+       -&gt; superseded (higher sequence, needs new acceptance)
+       -&gt; revoked   (registry authority)
+       -&gt; disavowed (subject authority)
+</code></pre>
+<p>Both terminal authorities are unilateral: the registry can always revoke its
+assertion; the subject can always disavow their acceptance. Nothing in the
+lifecycle can strand a subject inside a name they no longer want, or force a
+registry to keep asserting what it no longer believes.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>The name is not the identity.</strong> No registry operation—issuance,
+revocation, shutdown, sale, compromise—changes who controls the subject's
+keys.</li>
+<li><strong>A name requires both signatures.</strong> Registry assertion plus subject
+acceptance; either side's absence or withdrawal ends display.</li>
+<li><strong>Qualification is mandatory.</strong> Conforming clients never render a
+registry name without its source; trust in the name is trust in the
+named issuer's policy.</li>
+<li><strong>No global namespace.</strong> Uniqueness is per registry; collisions across
+registries are legitimate and disambiguated, not raced for.</li>
+<li><strong>Reverse lookup is opt-in.</strong> Only accepted, publication-consented
+records connect a subject to its names; registries resist enumeration.</li>
+<li><strong>Consent is per record.</strong> Enrollment in an association authorizes a
+policy; each concrete name still needs its own acceptance, and
+supersession needs re-acceptance.</li>
+<li><strong>Membership conditions are bounded.</strong> Designated-registry requirements
+bind membership-scoped names only, end at exit, and never reach other
+registries, contexts, or keys.</li>
+<li><strong>Registries hold no subject keys.</strong> Acceptance and disavowal signatures
+come from the subject's vault as typed capabilities; issuance never
+requests secrets or recovery material.</li>
+<li><strong>Public records carry no dossier.</strong> Scopes bound assertions; sensitive
+attributes await selective-disclosure credentials rather than riding in
+public records.</li>
+<li><strong>Equivocation is detectable.</strong> Signed, dateable resolution answers let
+clients compare views; a registry cannot silently show different truths
+to different viewers.</li>
+<li><strong>Payment buys process, not truth.</strong> Fees, tiers, and disputes are
+disclosed offers; display and validity are not purchasable.</li>
+<li><strong>Registry death is survivable.</strong> Records verify from archives, names
+are re-issuable elsewhere, and every identity continues without
+interruption.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>NamingProfile</code> changes when operation, record, acceptance, status, or
+freshness meaning changes.</li>
+<li><code>RegistryManifest</code> changes when trust root, namespace, policy, endpoints,
+or offers change; trust-root rotation is a manifest event clients surface.</li>
+<li>Records are ordered by <code>sequence</code> per (registry, name); acceptances bind
+record hashes, so no record content changes silently under an old
+acceptance.</li>
+<li>Policy versions are content-addressed; a record always names the policy it
+was issued under.</li>
+<li>Cross-platform fixtures cover: record and acceptance canonical encodings
+and signatures; unaccepted/expired/superseded/revoked/disavowed display
+decisions; qualifier rendering; normalization and confusable handling;
+collision warnings; reverse-resolution consent filtering; equivocation
+detection from conflicting signed answers; membership-policy binding and
+exit revocation scope; and archive verification after registry shutdown.</li>
+<li>A registry, a subject vault, and a verifying client from three different
+authors must interoperate using only published profiles and fixtures.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>No concrete profile exists yet. The first reference profile
+(<code>onym:naming-implementation:&lt;technology&gt;-v1</code>) should be chosen for
+auditability of the resolution log—equivocation resistance is the property
+that most distinguishes candidate technologies—and specified in a separate
+document following the seat's abstract/implementation pattern.</p>
+<p>A minimal first registry (for example, an Onym contributor namespace) is the
+natural proving ground before any association with real-world stakes
+designates one.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The association naming seat is successfully specified when:</p>
+<ol>
+<li>a subject can hold zero names and lose nothing but human-readable
+presentation;</li>
+<li>a subject can accept names in several registries without any registry
+learning of, or gaining standing over, the others;</li>
+<li>no record displays as a person's name without their vault-signed
+acceptance, and disavowal stops display even against a stalling registry;</li>
+<li>two registries can issue the same local part to different subjects and
+conforming clients never confuse them;</li>
+<li>an association can require a designated registry for membership names,
+and a member who leaves keeps their identity and every other name;</li>
+<li>a registry compromise or shutdown invalidates at most that registry's
+assertions, verifiably and survivably;</li>
+<li>equivocation between viewers is detectable from signed answers alone;</li>
+<li>a paid issuance renders identically to a free one of the same status; and</li>
+<li>a second registry technology can implement the abstract suite without
+pretending to be the first.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>Association naming lets any community attach human meaning to an identity
+its holder alone controls—so a person can be <code>alice@writers.tallinn</code>,
+<code>treasurer@helping-hands</code>, and nobody at all, in the same network, at the
+same time, by their own choice.</p>
+</blockquote>
+<h2 id="references">References</h2>
+<ol>
+<li>Onym system whitepaper, section 6:
+<a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
+<li>Abstract Onym identity boundary:
+<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a></li>
+<li>W3C, “Decentralized Identifiers (DIDs) v1.0”:
+<a href="https://www.w3.org/TR/did-core/">https://www.w3.org/TR/did-core/</a></li>
+<li>W3C, “Verifiable Credentials Data Model v2.0”:
+<a href="https://www.w3.org/TR/vc-data-model-2.0/">https://www.w3.org/TR/vc-data-model-2.0/</a></li>
+<li>M. Stiegler, “An Introduction to Petname Systems”:
+<a href="http://www.skyhunter.com/marcs/petnames/IntroPetNames.html">http://www.skyhunter.com/marcs/petnames/IntroPetNames.html</a></li>
+<li>Zooko Wilcox-O'Hearn, “Names: Decentralized, Secure, Human-Meaningful”
+(Zooko's triangle):
+<a href="https://web.archive.org/web/20011020191610/http://zooko.com/distnames.html">https://web.archive.org/web/20011020191610/http://zooko.com/distnames.html</a></li>
+<li>Unicode Technical Standard #39, “Unicode Security Mechanisms”
+(confusables): <a href="https://www.unicode.org/reports/tr39/">https://www.unicode.org/reports/tr39/</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/worktree-association-naming/association/Association-Naming.md">latest version on worktree-association-naming →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

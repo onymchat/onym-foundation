@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Blob: Blossom Implementation — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Blob: Blossom Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/blob/UI-Blob-Blossom.html">
+<meta property="og:title" content="Onym UI ↔ Blob: Blossom Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/blob/UI-Blob-Blossom.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/blob/UI-Blob-Blossom.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-blob-blossom-implementation">Onym UI ↔ Blob: Blossom Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This profile maps the technology-neutral Onym blob boundary onto Blossom
+HTTPS endpoints, SHA-256 content addresses, BUD-11 Nostr authorization, and
+the current Onym encrypted-media flow.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../blob/UI-Blob.html">UI-Blob.md</a>. The abstract specification remains authoritative for
+UI-facing operations, ownership, content-integrity meaning, per-provider
+outcomes, payment isolation, and deletion uncertainty. This document defines
+the Blossom wire mapping and records where the present iOS, Android, and
+reference-server code does not yet implement the complete boundary.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>implemented behavior</strong>, which exists in the current Onym repositories;</li>
+<li><strong>profile requirements</strong>, which are required for a conforming Blossom
+adapter or provider; and</li>
+<li><strong>gaps</strong>, where current code still needs to converge on the profile.</li>
+</ul>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Blossom mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider endpoint</td>
+<td>Blossom HTTPS origin with endpoints at its root</td>
+</tr>
+<tr>
+<td>Content reference</td>
+<td>Lowercase hexadecimal SHA-256 of exact stored bytes</td>
+</tr>
+<tr>
+<td>Upload</td>
+<td>BUD-02 <code>PUT /upload</code></td>
+</tr>
+<tr>
+<td>Probe</td>
+<td>BUD-01 <code>HEAD /&lt;sha256&gt;</code></td>
+</tr>
+<tr>
+<td>Complete download</td>
+<td>BUD-01 <code>GET /&lt;sha256&gt;</code></td>
+</tr>
+<tr>
+<td>Ranged download</td>
+<td><code>Range</code> request and <code>206 Partial Content</code></td>
+</tr>
+<tr>
+<td>Provider upload receipt</td>
+<td>BUD-02 Blob Descriptor</td>
+</tr>
+<tr>
+<td>Retention observation</td>
+<td>Optional HTTP <code>Sunset</code> response header</td>
+</tr>
+<tr>
+<td>Delete</td>
+<td>BUD-12 <code>DELETE /&lt;sha256&gt;</code> when declared</td>
+</tr>
+<tr>
+<td>Provider account listing</td>
+<td>BUD-12 <code>GET /list/&lt;pubkey&gt;</code> when declared</td>
+</tr>
+<tr>
+<td>Access authorization</td>
+<td>BUD-11 kind-<code>24242</code> signed Nostr event</td>
+</tr>
+<tr>
+<td>Direct protocol payment</td>
+<td>BUD-07 HTTP 402 payment-method headers</td>
+</tr>
+<tr>
+<td>Onym channel payment</td>
+<td>HTTP 402 plus profile-declared <code>PaymentRequired</code> and seat registration</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:blob-implementation:blossom-v1
+</code></pre>
+<p>It maps this portable profile:</p>
+<pre><code class="language-text">onym:blob-profile:opaque-content-addressed-v1
+</code></pre>
+<p>The Blossom BUDs used by this profile are published as drafts. A production
+manifest therefore pins a content-addressed wire specification or exact BUD
+revision; a mutable <code>master</code> branch cannot silently change an already selected
+provider's contract.</p>
+<h2 id="2-ownership-mapping">2. Ownership mapping</h2>
+<ul>
+<li>The <strong>application-protocol author</strong> defines the encrypted attachment bytes,
+protected key, plaintext metadata, and authenticated attachment descriptor.</li>
+<li>The <strong>Blossom adapter author</strong> maps the common blob port to HTTPS methods,
+paths, headers, Nostr tokens, descriptors, redirects, and status codes.</li>
+<li>The <strong>Blossom operator</strong> controls its origin, storage, CDN or object-store
+indirection, limits, retention, deletion, offers, and settlement terms.</li>
+<li>The <strong>billing broker</strong> validates platform purchases and registers a
+provider-scoped seat entitlement; it does not receive blob keys.</li>
+<li>The <strong>UI publisher</strong> presents providers and compatible offers without
+becoming content owner or storage authority.</li>
+<li>The <strong>user or group</strong> selects providers and the number of required copies.</li>
+</ul>
+<p>A signed BUD-11 token authorizes one declared provider action. It does not
+prove ownership of plaintext, attachment readership, group membership, or a
+notary transition.</p>
+<h2 id="3-physical-topology">3. Physical topology</h2>
+<pre><code class="language-text">UI media flow
+  |-- validate / encode plaintext
+  |-- encrypt with fresh application key
+  |-- SHA-256(exact encrypted bytes)
+  `-- abstract blob port
+            |
+            v
+      Blossom adapter
+      BUD request + optional BUD-11 authorization
+            |
+            | HTTPS
+            v
+      Blossom server origin
+      |-- local persistent storage
+      `-- optional redirect / CDN / object store
+</code></pre>
+<p>The application encryption and Blossom authorization signatures are separate.
+Current Onym media uses a fresh encryption key per object and a fresh Nostr key
+per upload authorization. A paid provider may instead need a stable but
+provider-scoped access key for quota and entitlement continuity.</p>
+<h2 id="4-pinned-blossom-documents">4. Pinned Blossom documents</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Document</th>
+<th scope="col">Use in this profile</th>
+<th scope="col">Status in upstream repository</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BUD-01</td>
+<td>Root endpoints, retrieval, probe, ranges, redirects, <code>Sunset</code>, common errors</td>
+<td>Draft, mandatory</td>
+</tr>
+<tr>
+<td>BUD-02</td>
+<td>Upload and Blob Descriptor</td>
+<td>Draft, optional</td>
+</tr>
+<tr>
+<td>BUD-07</td>
+<td>Direct HTTP 402 payment negotiation</td>
+<td>Draft, optional</td>
+</tr>
+<tr>
+<td>BUD-11</td>
+<td>Nostr authorization tokens</td>
+<td>Draft, optional</td>
+</tr>
+<tr>
+<td>BUD-12</td>
+<td>List and delete management endpoints</td>
+<td>Draft, optional</td>
+</tr>
+</tbody>
+</table></div><p>An operator may omit optional BUDs only when its signed manifest omits the
+corresponding capability. <code>nostr</code> authorization, paid access, list, and delete
+must never be inferred merely because an origin serves BUD-01 downloads.</p>
+<h2 id="5-provider-declaration">5. Provider declaration</h2>
+<h3 id="51-target-manifest">5.1 Target manifest</h3>
+<p>A conforming provider publishes a signed abstract <code>ServiceManifest</code> whose
+Blossom mapping includes at least:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;blossom-provider-id&gt;&quot;,
+  &quot;seat&quot;: &quot;transport.blob&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;blobProfileId&quot;: &quot;onym:blob-profile:opaque-content-addressed-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:blob-implementation:blossom-v1&quot;,
+  &quot;wireSpecification&quot;: &quot;&lt;content-addressed-BUD-revision-set&gt;&quot;,
+  &quot;endpoints&quot;: [
+    {&quot;uri&quot;: &quot;https://blobs.example.org&quot;, &quot;role&quot;: &quot;read-write&quot;}
+  ],
+  &quot;capabilities&quot;: [
+    &quot;bud01-get&quot;,
+    &quot;bud01-head&quot;,
+    &quot;bud01-range&quot;,
+    &quot;bud02-upload&quot;,
+    &quot;bud11-auth&quot;,
+    &quot;bud12-delete&quot;
+  ],
+  &quot;limits&quot;: {
+    &quot;maximumBlobBytes&quot;: &quot;&lt;declared-limit&gt;&quot;,
+    &quot;maximumRedirects&quot;: &quot;&lt;declared-limit&gt;&quot;,
+    &quot;maximumConcurrentOperations&quot;: &quot;&lt;declared-limit&gt;&quot;
+  },
+  &quot;retention&quot;: {
+    &quot;class&quot;: &quot;&lt;declared-class&gt;&quot;,
+    &quot;deletion&quot;: &quot;&lt;declared-scope&gt;&quot;
+  },
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;entitlementIssuers&quot;: [&quot;onym:key:&lt;issuer-id&gt;&quot;],
+  &quot;offers&quot;: [&quot;&lt;storage-offer-id&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The endpoint is an HTTPS origin, not an arbitrary path. Blossom endpoints are
+served from the origin root. The adapter canonicalizes the origin once and
+does not permit path traversal, user information, fragments, insecure scheme
+downgrade, or manifest-escaping redirects.</p>
+<p>For browser interoperability, the provider applies BUD-01 cross-origin
+headers to all responses. Its preflight response permits the <code>Authorization</code>
+header and the <code>GET</code>, <code>HEAD</code>, <code>PUT</code>, and <code>DELETE</code> methods. Native clients do
+not depend on browser CORS enforcement, but a conforming provider implements
+the same public wire contract for independently owned web frontends.</p>
+<h3 id="52-current-server-selection">5.2 Current server selection</h3>
+<p>Current mobile configuration stores <code>name</code>, <code>url</code>, and <code>isDefault</code>, plus a
+local user-interaction flag. Both apps instantiate one <code>BlossomClient</code> using
+the first configured endpoint at startup and otherwise fall back to
+<code>https://blossom.onym.app</code>. Other listed endpoints are alternatives for manual
+selection, not replicas.</p>
+<p>This preference record is not the target manifest: it does not bind operator,
+BUD revision set, capabilities, limits, retention, indirection, privacy,
+offers, or entitlement issuers. The default and known-server catalog are
+discovery hints, not proof of ownership.</p>
+<h2 id="6-content-reference-and-onym-ciphertext">6. Content reference and Onym ciphertext</h2>
+<h3 id="61-sha-256-reference">6.1 SHA-256 reference</h3>
+<p>The Blossom reference is exactly 32 digest bytes rendered as 64 lowercase
+hexadecimal characters:</p>
+<pre><code class="language-text">sha256 = lowercase_hex(SHA-256(exact_request_body_bytes))
+</code></pre>
+<p>Clients reject uppercase, malformed, truncated, overlong, or algorithm-ambiguous
+references at the wire boundary, while an application importer may normalize a
+legacy value only before it becomes a pinned <code>ContentReference</code>.</p>
+<p>The digest covers encrypted bytes, not plaintext media, its decoded pixels,
+the Blob Descriptor, a URL, or response headers. Identical encrypted bytes can
+be uploaded to several Blossom providers without changing the attachment
+reference.</p>
+<h3 id="62-current-application-encryption">6.2 Current application encryption</h3>
+<p>The current iOS and Android application layer seals images, video, posters,
+and voice recordings with AES-256-GCM under a fresh 32-byte key. The stored
+layout is:</p>
+<pre><code class="language-text">12-byte nonce || ciphertext || 16-byte authentication tag
+</code></pre>
+<p>The key and plaintext media metadata are placed in the sealed attachment
+message. This layout is an Onym application format, not a Blossom requirement.
+The Blossom adapter sees only the combined encrypted bytes and their SHA-256.</p>
+<p>For opaque storage, the target request uses
+<code>Content-Type: application/octet-stream</code>, and returned location hints normally
+use an opaque extension such as <code>.bin</code>. Current clients instead pass the
+plaintext <code>image/jpeg</code>, <code>video/mp4</code>, or <code>audio/mp4</code> type when uploading
+ciphertext; that metadata leak is listed as a gap.</p>
+<h2 id="7-upload-mapping">7. Upload mapping</h2>
+<h3 id="71-request">7.1 Request</h3>
+<p>A conforming upload is:</p>
+<pre><code class="language-http">PUT /upload HTTP/1.1
+Host: blobs.example.org
+Content-Type: application/octet-stream
+Content-Length: &lt;exact-byte-count&gt;
+X-SHA-256: &lt;lowercase-sha256&gt;
+Authorization: Nostr &lt;unpadded-base64url-kind-24242-event&gt;
+
+&lt;exact encrypted bytes&gt;
+</code></pre>
+<p><code>Authorization</code> is included only when the manifest requires BUD-11. The
+adapter computes <code>Content-Length</code> and <code>X-SHA-256</code> locally and rejects a blob
+above the signed manifest limit before creating an authorization or sending a
+body. Providers do not modify, transcode, decompress, resize, or otherwise
+rewrite the request bytes.</p>
+<p>An optional <code>HEAD /upload</code> preflight uses the same content metadata and an
+upload-scoped authorization when required, but no body. A provider handles
+<code>PUT /upload</code> correctly whether or not preflight occurred.</p>
+<h3 id="72-response-and-blob-descriptor">7.2 Response and Blob Descriptor</h3>
+<p>The expected success codes are:</p>
+<ul>
+<li><code>201 Created</code> when the provider newly stored the blob; and</li>
+<li><code>200 OK</code> when the exact blob already existed.</li>
+</ul>
+<p>Both return a BUD-02 descriptor:</p>
+<pre><code class="language-json">{
+  &quot;url&quot;: &quot;https://blobs.example.org/&lt;sha256&gt;.bin&quot;,
+  &quot;sha256&quot;: &quot;&lt;same-lowercase-sha256&gt;&quot;,
+  &quot;size&quot;: 184292,
+  &quot;type&quot;: &quot;application/octet-stream&quot;,
+  &quot;uploaded&quot;: 1785580800
+}
+</code></pre>
+<p>Before returning <code>stored</code> or <code>already_stored</code>, the adapter requires:</p>
+<ol>
+<li>valid bounded JSON and every required descriptor field;</li>
+<li>exact digest equality with the locally computed reference;</li>
+<li>exact byte-size equality;</li>
+<li>an absolute HTTPS locator allowed by the profile;</li>
+<li>the same digest in the locator path, allowing the declared extension; and</li>
+<li>a wire type compatible with opaque encrypted storage.</li>
+</ol>
+<p><code>uploaded</code> and the locator are provider observations. They do not replace the
+digest or prove retention. Optional descriptor fields are ignored or exposed
+only through bounded implementation diagnostics.</p>
+<h3 id="73-upload-status-mapping">7.3 Upload status mapping</h3>
+<div class="tscroll"><table><thead>
+<tr>
+<th style="text-align:right" scope="col">HTTP status</th>
+<th scope="col">Abstract outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">200</td>
+<td><code>already_stored</code> after descriptor verification</td>
+</tr>
+<tr>
+<td style="text-align:right">201</td>
+<td><code>stored</code> after descriptor verification</td>
+</tr>
+<tr>
+<td style="text-align:right">400</td>
+<td><code>upload_rejected</code> or invalid payment proof by context</td>
+</tr>
+<tr>
+<td style="text-align:right">401</td>
+<td><code>auth_required</code> or <code>invalid_entitlement</code></td>
+</tr>
+<tr>
+<td style="text-align:right">402</td>
+<td><code>payment_required</code></td>
+</tr>
+<tr>
+<td style="text-align:right">403</td>
+<td><code>upload_rejected</code> / <code>unauthorized</code></td>
+</tr>
+<tr>
+<td style="text-align:right">409</td>
+<td><code>descriptor_mismatch</code> or <code>invalid_reference</code></td>
+</tr>
+<tr>
+<td style="text-align:right">411</td>
+<td><code>upload_rejected</code> because length is required</td>
+</tr>
+<tr>
+<td style="text-align:right">413</td>
+<td><code>payload_too_large</code></td>
+</tr>
+<tr>
+<td style="text-align:right">415</td>
+<td><code>unsupported_wire_type</code></td>
+</tr>
+<tr>
+<td style="text-align:right">429</td>
+<td><code>rate_limited</code></td>
+</tr>
+<tr>
+<td style="text-align:right">5xx</td>
+<td><code>unreachable</code> or provider failure</td>
+</tr>
+</tbody>
+</table></div><p>An optional <code>X-Reason</code> is human-readable diagnostic text. It is never parsed
+for control flow or treated as a payment link.</p>
+<h2 id="8-probe-and-retrieval-mapping">8. Probe and retrieval mapping</h2>
+<h3 id="81-probe">8.1 Probe</h3>
+<p><code>HEAD /&lt;sha256&gt;</code> checks current availability without returning a body. On
+success it carries the same <code>Content-Type</code> and <code>Content-Length</code> as <code>GET</code> and
+may advertise <code>Accept-Ranges: bytes</code> and <code>Sunset</code>.</p>
+<p>The result is an observation:</p>
+<pre><code class="language-json">{
+  &quot;componentId&quot;: &quot;onym:component:&lt;provider-id&gt;&quot;,
+  &quot;available&quot;: true,
+  &quot;encryptedByteSize&quot;: 184292,
+  &quot;wireMediaType&quot;: &quot;application/octet-stream&quot;,
+  &quot;acceptRanges&quot;: true,
+  &quot;sunset&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p><code>Sunset</code> is advisory. It neither guarantees availability until that instant
+nor permanent deletion afterward. A later probe is definitive for then-current
+availability.</p>
+<h3 id="82-complete-retrieval">8.2 Complete retrieval</h3>
+<p>The adapter requests:</p>
+<pre><code class="language-http">GET /&lt;sha256&gt; HTTP/1.1
+Host: blobs.example.org
+</code></pre>
+<p>An optional extension is permitted after the digest, but it does not affect
+content identity. The adapter bounds <code>Content-Length</code> before allocation when
+present, bounds streamed bytes regardless, computes SHA-256 incrementally,
+and returns usable complete bytes only after exact digest and expected-size
+verification.</p>
+<h3 id="83-ranges">8.3 Ranges</h3>
+<p>A ranged request uses <code>Range: bytes=&lt;start&gt;-&lt;end&gt;</code> and expects <code>206 Partial Content</code> with a valid <code>Content-Range</code>. Ranges improve seeking and bandwidth,
+but an ordinary SHA-256 of the whole object cannot verify an isolated range.
+The adapter labels range output unverified until it assembles and hashes the
+complete object. A future chunk-tree profile uses another content-reference
+scheme and implementation profile ID.</p>
+<h3 id="84-redirects">8.4 Redirects</h3>
+<p>BUD-01 permits temporary or permanent redirects. The redirect locator contains
+the same SHA-256. A conforming adapter also:</p>
+<ul>
+<li>permits only the declared schemes and a bounded redirect count;</li>
+<li>rejects digest-changing or downgrade redirects;</li>
+<li>never forwards BUD-11, entitlement, billing, upload, or delete credentials
+across origins without a separately authorized destination;</li>
+<li>applies the same size and digest verification to final bytes; and</li>
+<li>reports the selected provider as origin even when a CDN serves the body.</li>
+</ul>
+<p>TLS, a matching URL path, <code>200</code>, ETag, media type, or provider signature never
+replaces verification of the final bytes.</p>
+<h2 id="9-bud-11-authorization">9. BUD-11 authorization</h2>
+<h3 id="91-token-shape">9.1 Token shape</h3>
+<p>A BUD-11 token is a signed Nostr event of kind <code>24242</code>:</p>
+<pre><code class="language-json">{
+  &quot;kind&quot;: 24242,
+  &quot;created_at&quot;: 1785580800,
+  &quot;tags&quot;: [
+    [&quot;t&quot;, &quot;upload&quot;],
+    [&quot;expiration&quot;, &quot;1785581100&quot;],
+    [&quot;x&quot;, &quot;&lt;lowercase-sha256&gt;&quot;],
+    [&quot;server&quot;, &quot;blobs.example.org&quot;]
+  ],
+  &quot;content&quot;: &quot;Upload encrypted Onym blob&quot;
+}
+</code></pre>
+<p>The complete event also contains the canonical Nostr <code>id</code>, x-only <code>pubkey</code>,
+and BIP-340 signature. Its <code>content</code> is human-readable. <code>created_at</code> is in the
+past, <code>expiration</code> is in the future, and the action verb matches the endpoint:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Endpoint</th>
+<th scope="col"><code>t</code> verb</th>
+<th scope="col">Matching <code>x</code> required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /&lt;sha256&gt;</code></td>
+<td><code>get</code></td>
+<td>Optional by BUD-11; required by this scoped profile when auth is used</td>
+</tr>
+<tr>
+<td><code>HEAD /&lt;sha256&gt;</code></td>
+<td><code>get</code></td>
+<td>Optional by BUD-11; required by this scoped profile when auth is used</td>
+</tr>
+<tr>
+<td><code>PUT /upload</code></td>
+<td><code>upload</code></td>
+<td>Required; implied digest comes from <code>X-SHA-256</code></td>
+</tr>
+<tr>
+<td><code>HEAD /upload</code></td>
+<td><code>upload</code></td>
+<td>Required; implied digest comes from <code>X-SHA-256</code></td>
+</tr>
+<tr>
+<td><code>DELETE /&lt;sha256&gt;</code></td>
+<td><code>delete</code></td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>GET /list/&lt;pubkey&gt;</code></td>
+<td><code>list</code></td>
+<td>Not applicable</td>
+</tr>
+</tbody>
+</table></div><p>Although BUD-11 makes <code>server</code> optional, this profile includes the lowercase
+domain-only server tag to prevent replay at another provider. It includes one
+matching <code>x</code> whenever the operation concerns a known object.</p>
+<h3 id="92-http-encoding-and-validation">9.2 HTTP encoding and validation</h3>
+<p>The JSON event is encoded as URL-safe Base64 without padding and placed in:</p>
+<pre><code class="language-http">Authorization: Nostr &lt;base64url-without-padding&gt;
+</code></pre>
+<p>The provider verifies event ID, Schnorr signature, kind, timestamps, action,
+server scope, digest scope, and endpoint relation before granting the action.
+The token is short-lived and never logged in full.</p>
+<h3 id="93-key-policy">9.3 Key policy</h3>
+<p>Current upload tokens use a fresh ephemeral key. This reduces correlation but
+cannot later prove that the same user may list or delete the uploaded blob.
+Free write-only providers can accept that tradeoff. Providers offering quota,
+subscriptions, listing, or deletion use a pseudonymous key scoped to their
+<code>componentId</code>, or issue narrower capabilities from it. They never require the
+global Onym, association, message, or notary key.</p>
+<h2 id="10-list-and-deletion-mapping">10. List and deletion mapping</h2>
+<p>BUD-12 optionally provides:</p>
+<ul>
+<li><code>GET /list/&lt;pubkey&gt;</code> with cursor/limit pagination; and</li>
+<li><code>DELETE /&lt;sha256&gt;</code> for one object.</li>
+</ul>
+<p>Listing reveals every object associated with one provider public key and is
+not required for ordinary content-addressed Onym retrieval. A UI enables it
+only when the provider manifest, privacy disclosure, and use case require it.</p>
+<p>Delete authorization uses <code>t=delete</code>, a matching <code>x</code>, expiration, server
+scope, and the provider-scoped key associated with the object. Successful
+<code>200</code> or <code>204</code> means only that this provider accepted deletion under its
+declared scope. <code>404</code> means absent or unavailable for deletion; it does not
+prove erasure. Copies may remain with a CDN, mirror, cache, backup, recipient,
+or another provider.</p>
+<p>Multiple <code>x</code> tags never turn one BUD-12 request into bulk deletion. Each
+object receives its own request and per-provider outcome.</p>
+<h2 id="11-payment-mapping">11. Payment mapping</h2>
+<h3 id="111-direct-blossom-payments">11.1 Direct Blossom payments</h3>
+<p>BUD-07 permits a Blossom endpoint to return HTTP <code>402 Payment Required</code> with
+one or more payment-method headers, currently including <code>X-Cashu</code> and
+<code>X-Lightning</code>. A direct-protocol client validates a supported challenge,
+obtains the method-specific proof, and retries as required by that method.</p>
+<p><code>HEAD /upload</code> or <code>HEAD /&lt;sha256&gt;</code> can reveal a requirement before transferring
+the large body. Under BUD-07, payment proof is not sent by retrying the <code>HEAD</code>;
+the client proceeds to the corresponding <code>PUT</code> or <code>GET</code>.</p>
+<h3 id="112-onym-platform-channel-payments">11.2 Onym platform-channel payments</h3>
+<p>StoreKit and Play Billing are not BUD-07 Cashu or Lightning payments. An Onym
+provider can additionally declare <code>onym-seat-entitlement-v1</code>. Its HTTP 402
+returns a canonical, bounded <code>PaymentRequired</code> document or signed reference
+that names the provider component and <code>SeatOffer</code>.</p>
+<pre><code class="language-text">application -&gt; Blossom adapter: HEAD preflight or blob operation
+application &lt;- adapter: 402 + PaymentRequired(provider + offer)
+UI -&gt; platform channel: approved subscription or consumable purchase
+UI -&gt; billing broker: signed purchase + provider-scoped access public key
+UI &lt;- billing broker: SeatEntitlement
+billing broker -&gt; provider control plane: validate/register entitlement
+provider -&gt; client: short-lived capability, or active key binding
+application -&gt; adapter: retry exact operation with scoped BUD-11 proof
+application &lt;- adapter: verified provider outcome
+</code></pre>
+<p>The browser/mobile adapter does not treat a client-side “paid” flag as proof.
+The billing broker validates the platform transaction, handles idempotency,
+renewal, refund, and revocation, and settles the provider according to the
+signed <code>ChannelOffer</code>. Apple or Google fees, taxes, the UI owner's disclosed
+commission, reserves, and payout occur outside Blossom content requests.</p>
+<p>The provider receives a seat entitlement, webhook registration, or derived
+credential—not the App Store receipt, account, global identity, group ID,
+attachment key, or plaintext metadata. A BUD-11 signature proves control of
+the registered provider-scoped key when the request is retried.</p>
+<p>This is an Onym extension layered over HTTP 402, not a claim that StoreKit is a
+standard Blossom payment method. Direct BUD-07 methods and Onym channel offers
+remain separate capabilities in the manifest.</p>
+<h2 id="12-retention-and-replication">12. Retention and replication</h2>
+<p>Blossom SHA-256 addressing allows the same exact ciphertext to be stored at
+multiple providers. The route returns one outcome per origin and considers the
+application's <code>minimumStored</code> policy separately from each individual success.</p>
+<p>A BUD-02 descriptor proves a matching provider response at upload time. A
+BUD-01 <code>HEAD</code> or verified <code>GET</code> proves availability when observed. None proves
+future durability. A paid minimum-retention offer needs its own signed terms,
+monitoring, and evidence; the optional <code>Sunset</code> header remains advisory.</p>
+<p>If one provider is missing the object, a receiver tries authenticated
+attachment locations and then explicitly selected compatible alternatives.
+It does not assume the receiver's default server has the digest. Replication
+and migration reuse verified encrypted bytes; re-encryption creates another
+SHA-256 and attachment version.</p>
+<h2 id="13-limits-and-resource-control">13. Limits and resource control</h2>
+<p>The signed manifest declares complete limits. Clients bound request bodies,
+response bodies, descriptor JSON, header counts and lengths, redirects,
+range assembly, concurrent calls, retries, authorization lifetimes, and local
+outbox retention.</p>
+<p>The current reference deployment runs <code>ghcr.io/hzrd149/blossom-server:latest</code>
+behind Caddy. Caddy's request-body limit for the Blossom origin is configured
+as <code>100MB</code>. That is an ingress ceiling, not a promise that every provider or
+backend accepts an object of that size, and an unpinned <code>latest</code> image is not a
+stable implementation identity.</p>
+<p>Current application encoders impose additional media-specific limits, such as
+image resizing, but those are application policy rather than Blossom limits.
+The adapter checks the selected provider's smaller effective limit before
+upload.</p>
+<h2 id="14-http-and-domain-error-mapping">14. HTTP and domain error mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract error</th>
+<th scope="col">Blossom source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Missing required BUD/profile capability</td>
+</tr>
+<tr>
+<td><code>invalid_endpoint</code></td>
+<td>Invalid origin, manifest mismatch, TLS failure, or downgrade</td>
+</tr>
+<tr>
+<td><code>invalid_reference</code></td>
+<td>Noncanonical SHA-256 or <code>X-SHA-256</code> mismatch</td>
+</tr>
+<tr>
+<td><code>payload_too_large</code></td>
+<td>Local manifest limit or HTTP 413</td>
+</tr>
+<tr>
+<td><code>unreachable</code></td>
+<td>DNS, TLS, timeout, connection, or 5xx failure</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td>HTTP 401 without a usable authorization</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>HTTP 402 with supported signed offer/challenge</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td>Rejected registered key, capability, or payment proof</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>HTTP 429</td>
+</tr>
+<tr>
+<td><code>unsupported_wire_type</code></td>
+<td>HTTP 415</td>
+</tr>
+<tr>
+<td><code>upload_rejected</code></td>
+<td>HTTP 400/403/411 or other explicit refusal</td>
+</tr>
+<tr>
+<td><code>descriptor_mismatch</code></td>
+<td>Missing/wrong descriptor digest, size, URL, or type</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Lost response after request body may have been accepted</td>
+</tr>
+<tr>
+<td><code>not_found</code></td>
+<td>HTTP 404 on probe/download</td>
+</tr>
+<tr>
+<td><code>invalid_indirection</code></td>
+<td>Unsafe, excessive, or digest-changing redirect</td>
+</tr>
+<tr>
+<td><code>digest_mismatch</code></td>
+<td>Complete returned bytes hash to another value</td>
+</tr>
+<tr>
+<td><code>range_invalid</code></td>
+<td>HTTP 416 or inconsistent <code>Content-Range</code></td>
+</tr>
+<tr>
+<td><code>delete_unconfirmed</code></td>
+<td>Lost response, 404 ambiguity, or unsupported deletion evidence</td>
+</tr>
+</tbody>
+</table></div><p>Provider <code>X-Reason</code> and bodies are bounded diagnostics. They cannot become an
+executable locator, product mapping, or authorization rule.</p>
+<h2 id="15-current-implementation-mapping">15. Current implementation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Boundary role</th>
+<th scope="col">Current implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blob seam</td>
+<td><code>BlossomClient</code> in <code>onym-ios</code> and <code>onym-android</code></td>
+</tr>
+<tr>
+<td>Production adapter</td>
+<td><code>URLSessionBlossomClient</code> and <code>OkHttpBlossomClient</code></td>
+</tr>
+<tr>
+<td>Encryption and digest</td>
+<td><code>ChatImageCrypto</code> on both platforms</td>
+</tr>
+<tr>
+<td>Attachment descriptors</td>
+<td>Image, video, and voice attachment types</td>
+</tr>
+<tr>
+<td>Download verification</td>
+<td>Media loaders call <code>ChatImageCrypto.open</code></td>
+</tr>
+<tr>
+<td>Provider selection</td>
+<td><code>BlossomServersRepository</code> and selection stores</td>
+</tr>
+<tr>
+<td>Retry source</td>
+<td>Encrypted chat outbox retains exact uploaded bytes</td>
+</tr>
+<tr>
+<td>Reference deployment</td>
+<td><code>blossom-server</code> behind Caddy in <code>onym-infra</code></td>
+</tr>
+</tbody>
+</table></div><p>Implemented today on both platforms:</p>
+<ul>
+<li>AES-256-GCM encrypted image, video, poster, and voice blobs;</li>
+<li>SHA-256 over exact combined ciphertext bytes;</li>
+<li><code>PUT /upload</code> and <code>GET /&lt;sha256&gt;</code>;</li>
+<li>kind-<code>24242</code> upload tokens with <code>t=upload</code>, <code>x</code>, and five-minute
+<code>expiration</code>, signed by a fresh ephemeral Nostr key;</li>
+<li>BUD-02-inspired <code>sha256</code>, <code>url</code>, and <code>size</code> response decoding;</li>
+<li>encrypted outbox preservation for upload retry; and</li>
+<li>separate user-selectable Blossom server configuration.</li>
+</ul>
+<h2 id="16-known-gaps">16. Known gaps</h2>
+<p>Current code is not yet a complete conforming implementation:</p>
+<ol>
+<li>each app uses only the first configured server instead of executing a
+replicated <code>BlobRoute</code> with per-provider outcomes;</li>
+<li>the common seam exposes only upload and complete download—no <code>HEAD</code>, range,
+delete, list, replication, outcome query, retention, or payment operations;</li>
+<li>upload requests omit <code>X-SHA-256</code>, even though current BUD-11 uses it as the
+implied hash for <code>PUT /upload</code> authorization;</li>
+<li>BUD-11 events are encoded with ordinary padded Base64, while the current
+document requires URL-safe Base64 without padding;</li>
+<li>tokens omit the optional <code>server</code> tag, so they are not provider-scoped at
+the wire level, and their generic <code>Upload chat image</code> content is inaccurate
+for video and voice;</li>
+<li>fresh ephemeral upload keys provide no durable continuity for subscription,
+quota, list, or later delete authorization;</li>
+<li>response decoding accepts missing <code>sha256</code>, <code>url</code>, and <code>size</code> by substituting
+local digest, empty URL, and zero size; it ignores required BUD-02 <code>type</code>
+and <code>uploaded</code> fields and does not fully verify the returned descriptor;</li>
+<li>clients accept any HTTP 2xx upload response rather than the profile's
+explicit 200/201 semantics;</li>
+<li>encrypted objects are uploaded with their plaintext media MIME type rather
+than <code>application/octet-stream</code>;</li>
+<li>download digest verification occurs later inside media decryption callers,
+not in the blob port's return type, and downloads lack a declared network
+size bound and explicit redirect validation;</li>
+<li>status failures collapse into small platform-specific error models, so
+auth, payment, quota, rate, missing content, and mismatch are not stable
+domain results;</li>
+<li>provider preferences do not bind signed identity, BUD revisions, limits,
+retention, deletion, redirects, privacy, offers, or entitlement issuers;</li>
+<li><code>PaymentRequired</code>, <code>SeatEntitlement</code>, preflight, broker registration,
+renewal, revocation, and storage/egress quota accounting are not
+implemented;</li>
+<li>attachment locations are incomplete, and missing-server behavior can fall
+back to the receiver's current default without evidence that it stores the
+digest;</li>
+<li>source comments call signed upload authorization “BUD-01 auth,” while the
+current protocol assigns retrieval to BUD-01, upload to BUD-02,
+authorization to BUD-11, and management to BUD-12; and</li>
+<li>the reference deployment uses an unpinned <code>latest</code> server image, while
+conformance relies on mirrored application tests rather than one public
+suite runnable by third-party clients and providers.</li>
+</ol>
+<p>These gaps are interoperability, privacy, and correctness work, not alternate
+Blossom semantics that third parties should copy.</p>
+<h2 id="17-conformance-tests">17. Conformance tests</h2>
+<p>A shared fixture suite covers:</p>
+<ol>
+<li>cross-platform AES-GCM layout and SHA-256 reference construction;</li>
+<li>lowercase digest validation and path/extension handling;</li>
+<li>upload headers, exact bytes, 200-versus-201 outcomes, and strict descriptor
+validation;</li>
+<li>BUD-11 canonical event ID/signature and unpadded Base64url encoding;</li>
+<li>action, expiration, server, and digest authorization scoping;</li>
+<li><code>HEAD</code>, complete <code>GET</code>, optional extension, <code>Sunset</code>, and not-found cases;</li>
+<li>ranges, full-object assembly, and refusal to decrypt an isolated
+unverified range;</li>
+<li>redirect bounds, same-digest enforcement, and cross-origin credential
+stripping;</li>
+<li>HTTP status and safe <code>X-Reason</code> mapping;</li>
+<li>BUD-07 direct payment and Onym seat-payment separation;</li>
+<li>timeout-after-upload, probe-before-retry, and idempotent existing-object
+response;</li>
+<li>partial replication, provider loss, receiver-location selection, and
+exact-byte migration;</li>
+<li>list/delete authorization and narrow deletion outcomes; and</li>
+<li>manifest identity, capability, limit, retention, offer, and expiry checks.</li>
+</ol>
+<h2 id="18-acceptance-criteria">18. Acceptance criteria</h2>
+<p>This Blossom profile satisfies the abstract boundary when:</p>
+<ol>
+<li>a third-party adapter can implement it from pinned public documents and
+fixtures without inspecting Onym mobile code;</li>
+<li>a third-party Blossom provider can offer paid or free storage without
+becoming an Onym identity, message, or notary authority;</li>
+<li>HTTP methods, paths, descriptors, status codes, Nostr events, and headers
+remain behind the abstract blob port;</li>
+<li>each selected provider outcome states exactly what its response proved;</li>
+<li>all usable complete downloads are size-bounded and SHA-256 verified before
+decryption;</li>
+<li>authorization uses only short-lived or provider-scoped keys and is never
+forwarded to an unauthorized origin;</li>
+<li>payment never sends platform receipts, plaintext metadata, or blob keys to
+the provider;</li>
+<li>redirects, ranges, retry, partial replication, missing content, digest
+corruption, and deletion uncertainty pass shared fixtures; and</li>
+<li>replacing Blossom does not alter abstract operations or the encrypted Onym
+attachment format.</li>
+</ol>
+<h2 id="references">References</h2>
+<ol>
+<li>Abstract Onym blob boundary: <a href="../blob/UI-Blob.html">UI-Blob.md</a></li>
+<li>Onym iOS client: <a href="https://github.com/onymchat/onym-ios">https://github.com/onymchat/onym-ios</a></li>
+<li>Onym Android client: <a href="https://github.com/onymchat/onym-android">https://github.com/onymchat/onym-android</a></li>
+<li>Onym infrastructure: <a href="https://github.com/onymchat/onym-infra">https://github.com/onymchat/onym-infra</a></li>
+<li>Blossom protocol and BUD index: <a href="https://github.com/hzrd149/blossom">https://github.com/hzrd149/blossom</a></li>
+<li>BUD-01, server requirements and blob retrieval:
+<a href="https://github.com/hzrd149/blossom/blob/master/buds/01.md">https://github.com/hzrd149/blossom/blob/master/buds/01.md</a></li>
+<li>BUD-02, blob upload:
+<a href="https://github.com/hzrd149/blossom/blob/master/buds/02.md">https://github.com/hzrd149/blossom/blob/master/buds/02.md</a></li>
+<li>BUD-07, paid upload and download:
+<a href="https://github.com/hzrd149/blossom/blob/master/buds/07.md">https://github.com/hzrd149/blossom/blob/master/buds/07.md</a></li>
+<li>BUD-11, Nostr authorization:
+<a href="https://github.com/hzrd149/blossom/blob/master/buds/11.md">https://github.com/hzrd149/blossom/blob/master/buds/11.md</a></li>
+<li>BUD-12, blob management endpoints:
+<a href="https://github.com/hzrd149/blossom/blob/master/buds/12.md">https://github.com/hzrd149/blossom/blob/master/buds/12.md</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/blob/UI-Blob-Blossom.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Message Transport Boundary — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Message Transport Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/message/UI-Message.html">
+<meta property="og:title" content="Onym UI ↔ Message Transport Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/message/UI-Message.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Message carriage</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/message/UI-Message.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-message-transport-boundary">Onym UI ↔ Message Transport Boundary</h1>
+<p><strong>Architecture draft 0.2 — August 2026</strong></p>
+<blockquote>
+<p>The UI decides what the user wants to send. The message transport moves an
+opaque envelope. It does not become the sender, recipient, or group.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary between an Onym
+frontend and a small-message courier. It does not require a particular event
+format, socket protocol, relay network, signing curve, server implementation,
+or addressing syntax.</p>
+<p>A concrete implementation may use federated relays, store-and-forward queues,
+peer-to-peer links, privacy networks, mesh radio, or another mechanism that
+satisfies the profile's opacity, addressing, delivery, receipt, and error
+semantics. The current Nostr implementation is specified separately in
+<a href="../message/UI-Message-Nostr.html">UI-Message-Nostr.md</a>.</p>
+<p>Here <strong>UI</strong> means the frontend application layer, not a screen calling a
+network connection. Views send intent to flows, view-models, repositories, or
+interactors. Those components authenticate and seal the application envelope
+before invoking the message port.</p>
+<p>Encrypted large-object storage is a separate boundary defined in
+<a href="../blob/UI-Blob.html">../blob/UI-Blob.md</a>. Shared-state validation is defined in
+<a href="../notary/UI-Notary.html">../notary/UI-Notary.md</a>.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the UI, application protocol, message adapter, and courier
+operator as independently owned components joined by versioned interfaces.</p>
+<ul>
+<li>The <strong>UI owner</strong> controls presentation, local orchestration, billing
+integration, supported profiles, and release distribution.</li>
+<li>The <strong>application-protocol author</strong> controls encrypted inner-envelope
+formats, sender authentication, replay rules, and message meaning.</li>
+<li>The <strong>message-adapter author</strong> maps the common Onym port to a concrete wire
+technology.</li>
+<li>The <strong>courier operator</strong> owns endpoints, capacity, routing, retention,
+moderation, availability, privacy practices, and its payment model.</li>
+<li>The <strong>user or group</strong> selects a route and may combine several couriers.</li>
+</ul>
+<p>One organization may occupy several roles, but their authorities remain
+separate. A user can change UI without requiring a new courier. A UI can use a
+compatible third-party courier without importing its domain model. A courier
+can serve several frontends without learning or enforcing their group rules.</p>
+<p>The boundary has two interfaces:</p>
+<ol>
+<li>the local <strong>UI/application ↔ message adapter</strong> port, which carries opaque
+envelopes, opaque addresses, and typed outcomes; and</li>
+<li>the network <strong>message adapter ↔ courier</strong> implementation profile, which
+defines framing, connection behavior, access control, payment refusal,
+limits, and acknowledgements.</li>
+</ol>
+<p>Neither interface may expose plaintext, identity-vault secrets, attachment
+decryption keys, or notary witnesses.</p>
+<h2 id="2-what-message-transport-does">2. What message transport does</h2>
+<p>Message transport provides two logical delivery modes:</p>
+<ul>
+<li><strong>topic delivery:</strong> many publishers and subscribers share an opaque routing
+address; and</li>
+<li><strong>inbox delivery:</strong> a sender targets one opaque recipient-derived routing
+address.</li>
+</ul>
+<p>The base port can:</p>
+<ol>
+<li>connect to a verified set of courier endpoints;</li>
+<li>publish an opaque envelope to a topic;</li>
+<li>subscribe to a topic with an optional catch-up cursor;</li>
+<li>send an opaque envelope to an inbox;</li>
+<li>subscribe to an inbox;</li>
+<li>cancel subscriptions and disconnect; and</li>
+<li>report per-courier progress and refusal.</li>
+</ol>
+<p>It does not authenticate the inner sender, determine group membership, decrypt
+content, interpret message type, upload large media, resolve human names, or
+authorize notary state.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-it-prevents-the-courier-from-becoming-the-messenger">3.1 It prevents the courier from becoming the messenger</h3>
+<p>If message meaning, group membership, sender authorization, or decryption is
+implemented inside one courier, replacing that courier becomes equivalent to
+replacing the product. A courier should see only the routing material and
+opaque bytes needed to provide its declared service.</p>
+<h3 id="32-it-prevents-the-ui-from-becoming-a-network-implementation">3.2 It prevents the UI from becoming a network implementation</h3>
+<p>Screens and domain flows should not know wire frames, event types, routing
+tags, filters, reconnect algorithms, or server-specific errors. A narrow port
+allows another transport technology without rewriting chat and group flows.</p>
+<h3 id="33-it-makes-metadata-exposure-reviewable">3.3 It makes metadata exposure reviewable</h3>
+<p>End-to-end encryption does not necessarily hide endpoint IPs, timing, payload
+sizes, routing addresses, catch-up windows, retention, or retry patterns. A
+named profile must state which fields cross the boundary and what a courier
+can correlate.</p>
+<h3 id="34-it-supports-independent-ownership-and-payment">3.4 It supports independent ownership and payment</h3>
+<p>Each courier defines what it sells. One may be free, another subscription
+funded, another consumable, and another funded by an institution. The UI
+decides which offers it can present through its billing channels. Payment buys
+the declared courier service; it does not buy plaintext or group authority.</p>
+<h3 id="35-it-isolates-failure-and-censorship">3.5 It isolates failure and censorship</h3>
+<ul>
+<li>A failing or censoring courier can be removed without changing identity.</li>
+<li>A broken adapter can be replaced without changing inner envelopes.</li>
+<li>Redundant couriers can improve availability and permit deduplication.</li>
+<li>A catalog or UI update cannot silently redefine one operator as another.</li>
+<li>Message loss, replay, or refusal cannot itself mutate canonical notary state.</li>
+</ul>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">┌──────────────────────────────────────────────────────────────────────┐
+│ UI process                                                           │
+│                                                                      │
+│ View / Composable                                                    │
+│        │ user intent                                                 │
+│        v                                                             │
+│ Flow / ViewModel                                                     │
+│        │ application command                                        │
+│        v                                                             │
+│ Repository / Interactor                                              │
+│        ├────────&gt; Identity vault: scoped capability                  │
+│        ├────────&gt; Group/application crypto: seal inner envelope      │
+│        └────────&gt; Message port: opaque bytes + opaque address        │
+└──────────────────────────────┬───────────────────────────────────────┘
+                               │ implementation-neutral operation
+                               v
+                    ┌────────────────────────┐
+                    │ Message adapter        │
+                    │ map · frame · validate │
+                    │ retry · normalize      │
+                    └───────────┬────────────┘
+                                │ implementation profile
+                                v
+                    ┌────────────────────────┐
+                    │ Courier endpoint(s)    │
+                    │ route · retain · refuse│
+                    └────────────────────────┘
+</code></pre>
+<p>The adapter is inside the client trust boundary but handles untrusted network
+input. The courier is outside it. A successful provider response is evidence
+of that provider's action—not proof of recipient delivery, inner-message
+authenticity, application validity, or permanent retention.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-message-profile">5.1 Message Profile</h3>
+<p>A <code>MessageProfile</code> defines the portable interface independently of a wire
+technology or operator:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:message-profile:opaque-topic-inbox-v1&quot;,
+  &quot;interface&quot;: &quot;onym-message-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;publish-topic&quot;,
+    &quot;subscribe-topic&quot;,
+    &quot;send-inbox&quot;,
+    &quot;subscribe-inbox&quot;
+  ],
+  &quot;addressSchemas&quot;: [&quot;topic-v1&quot;, &quot;inbox-v1&quot;],
+  &quot;envelopeSchema&quot;: &quot;&lt;content-addressed-opaque-envelope-schema&gt;&quot;,
+  &quot;delivery&quot;: &quot;best-effort-at-least-once&quot;,
+  &quot;acknowledgement&quot;: &quot;per-courier-acceptance-v1&quot;,
+  &quot;cursor&quot;: &quot;&lt;catch-up-cursor-schema&gt;&quot;,
+  &quot;errorSchema&quot;: &quot;onym-message-errors-v1&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes semantic operations, address meaning, delivery guarantees,
+receipts, and errors. It does not select endpoints, wire framing, signing,
+operator, price, or UI.</p>
+<p>Two implementation profiles are compatible only when a conforming application
+can preserve the same inner envelope, logical address, retry identity, and
+delivery semantics. Both carrying bytes is not sufficient compatibility.</p>
+<h3 id="52-message-implementation-profile">5.2 Message Implementation Profile</h3>
+<p>A <code>MessageImplementationProfile</code> maps the abstract interface onto one wire
+technology:</p>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:message-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;messageProfileId&quot;: &quot;onym:message-profile:opaque-topic-inbox-v1&quot;,
+  &quot;wireProtocol&quot;: &quot;&lt;protocol-id&gt;&quot;,
+  &quot;wireMapping&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;connectionModel&quot;: &quot;&lt;declared-model&gt;&quot;,
+  &quot;outerIntegrity&quot;: &quot;&lt;integrity-or-signature-scheme&gt;&quot;,
+  &quot;authentication&quot;: [&quot;anonymous&quot;, &quot;scoped-access-key&quot;],
+  &quot;paymentRefusal&quot;: &quot;onym-payment-required-v1&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Wire types stay inside the adapter. The abstract application does not receive
+protocol event objects, socket handles, server filters, or authorization
+frames.</p>
+<h3 id="53-courier-manifest">5.3 Courier Manifest</h3>
+<p>A transport <code>ServiceManifest</code> binds an implementation profile to an operator:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;courier-id&gt;&quot;,
+  &quot;seat&quot;: &quot;transport.message&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;messageProfileId&quot;: &quot;onym:message-profile:opaque-topic-inbox-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:message-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;endpoints&quot;: [
+    {&quot;uri&quot;: &quot;&lt;technology-specific-endpoint&gt;&quot;, &quot;role&quot;: &quot;read-write&quot;}
+  ],
+  &quot;capabilities&quot;: [&quot;topic&quot;, &quot;inbox&quot;, &quot;scoped-auth&quot;],
+  &quot;limits&quot;: {
+    &quot;maximumOpaquePayloadBytes&quot;: &quot;&lt;operator-declared-limit&gt;&quot;,
+    &quot;maximumConcurrentSubscriptions&quot;: &quot;&lt;operator-declared-limit&gt;&quot;
+  },
+  &quot;retention&quot;: {&quot;class&quot;: &quot;best-effort&quot;, &quot;maximum&quot;: &quot;P30D&quot;},
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;offers&quot;: [&quot;courier-monthly-v1&quot;, &quot;courier-quota-v1&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The UI verifies the operator signature, both profiles, endpoint syntax,
+limits, validity, privacy declaration, and selected offer. A directory entry
+or friendly name is insufficient.</p>
+<p>Mutable health and load reports remain separate from signed policy. They must
+not replace an operator, endpoint, implementation profile, or offer.</p>
+<h3 id="54-message-route">5.4 Message Route</h3>
+<p>A <code>MessageRoute</code> is the user's or group's local courier selection:</p>
+<pre><code class="language-json">{
+  &quot;routeVersion&quot;: 1,
+  &quot;routeId&quot;: &quot;&lt;local-random-id&gt;&quot;,
+  &quot;messageProfileId&quot;: &quot;onym:message-profile:opaque-topic-inbox-v1&quot;,
+  &quot;components&quot;: [
+    &quot;onym:component:&lt;courier-a&gt;&quot;,
+    &quot;onym:component:&lt;courier-b&gt;&quot;
+  ],
+  &quot;writePolicy&quot;: {&quot;mode&quot;: &quot;fanout&quot;, &quot;minimumAcceptances&quot;: 1},
+  &quot;readPolicy&quot;: {&quot;mode&quot;: &quot;union-deduplicate&quot;},
+  &quot;catchUp&quot;: {&quot;policy&quot;: &quot;bounded-recent&quot;},
+  &quot;selectedBy&quot;: &quot;user&quot;,
+  &quot;selectedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p>The route is configuration, not identity or canonical group state. The UI
+preserves selection and warns when a change reduces redundancy, retention,
+privacy, compatibility, or paid coverage.</p>
+<p>Endpoint hints from another user are recommendations. They do not authorize
+the UI to add the hinted operator to a permanent local route.</p>
+<h3 id="55-topic-and-inbox-addresses">5.5 Topic and inbox addresses</h3>
+<p>The common port uses two opaque values:</p>
+<ul>
+<li><code>TransportTopic</code>: a many-to-many routing handle; and</li>
+<li><code>TransportInboxId</code>: a recipient-derived point-to-point routing handle.</li>
+</ul>
+<p>Opaque means the adapter does not infer identity or group policy from the
+value. It does not mean the value is secret from the courier. Each
+implementation profile states how addresses appear on the wire and what can be
+linked across publish, subscribe, retry, and catch-up.</p>
+<p>The application derives addresses. They should be scoped and rotatable where
+the application protocol permits. Global identity keys, human-readable group
+names, and association-registry names are not transport addresses.</p>
+<h3 id="56-outbound-operation">5.6 Outbound operation</h3>
+<p>The application passes an already sealed operation:</p>
+<pre><code class="language-json">{
+  &quot;operationVersion&quot;: 1,
+  &quot;operationId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;logicalMessageId&quot;: &quot;&lt;stable-application-message-id&gt;&quot;,
+  &quot;addressType&quot;: &quot;inbox&quot;,
+  &quot;address&quot;: &quot;&lt;opaque-inbox-id&gt;&quot;,
+  &quot;payload&quot;: &quot;&lt;base64-opaque-bytes&gt;&quot;,
+  &quot;contentType&quot;: &quot;application/onym-envelope&quot;,
+  &quot;expiresAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+}
+</code></pre>
+<p><code>operationId</code> tracks a transport attempt; <code>logicalMessageId</code> makes retry and
+multi-courier delivery idempotent at the application layer. Neither may embed
+an identity, group name, message text, attachment key, or billing transaction.</p>
+<h3 id="57-inbound-value">5.7 Inbound value</h3>
+<pre><code class="language-json">{
+  &quot;addressType&quot;: &quot;topic&quot;,
+  &quot;address&quot;: &quot;&lt;opaque-topic&gt;&quot;,
+  &quot;payload&quot;: &quot;&lt;base64-opaque-bytes&gt;&quot;,
+  &quot;transportMessageId&quot;: &quot;&lt;implementation-assigned-id&gt;&quot;,
+  &quot;componentId&quot;: &quot;onym:component:&lt;courier-id&gt;&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;cursor&quot;: &quot;&lt;implementation-neutral-cursor-or-null&gt;&quot;
+}
+</code></pre>
+<p><code>observedAt</code> is an observation, not a trusted application timestamp. The
+adapter verifies profile-required outer framing. The application independently
+authenticates, decrypts, orders, and authorizes the inner envelope.</p>
+<h3 id="58-publish-receipt">5.8 Publish receipt</h3>
+<pre><code class="language-json">{
+  &quot;operationId&quot;: &quot;&lt;same-random-id&gt;&quot;,
+  &quot;logicalMessageId&quot;: &quot;&lt;same-logical-message-id&gt;&quot;,
+  &quot;outcomes&quot;: [
+    {
+      &quot;componentId&quot;: &quot;onym:component:&lt;courier-a&gt;&quot;,
+      &quot;status&quot;: &quot;accepted&quot;,
+      &quot;transportMessageId&quot;: &quot;&lt;provider-id&gt;&quot;,
+      &quot;evidence&quot;: &quot;&lt;profile-defined-acknowledgement-or-null&gt;&quot;
+    },
+    {
+      &quot;componentId&quot;: &quot;onym:component:&lt;courier-b&gt;&quot;,
+      &quot;status&quot;: &quot;unreachable&quot;,
+      &quot;transportMessageId&quot;: null,
+      &quot;evidence&quot;: null
+    }
+  ]
+}
+</code></pre>
+<p>Valid provider outcome classes are:</p>
+<ul>
+<li><code>queued_locally</code>: bytes entered the adapter's bounded outgoing queue;</li>
+<li><code>sent</code>: bytes were handed to the network implementation;</li>
+<li><code>accepted</code>: the courier explicitly acknowledged its declared service;</li>
+<li><code>stored</code>: the courier supplied profile-defined retention evidence;</li>
+<li><code>rejected</code>: the courier explicitly refused;</li>
+<li><code>unreachable</code>: no meaningful courier response was obtained; and</li>
+<li><code>unknown</code>: the attempt may have succeeded, but its result cannot safely be
+determined.</li>
+</ul>
+<p>An aggregate <code>acceptedBy</code> count can be derived but is insufficient for retry,
+payment, or diagnosis. No provider outcome means the recipient processed the
+message. End-to-end delivery is represented by a separate encrypted
+application receipt.</p>
+<h2 id="6-common-message-surface">6. Common message surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect</code></td>
+<td>Verified route and scoped access context</td>
+<td>Per-courier connection state</td>
+</tr>
+<tr>
+<td><code>publish</code></td>
+<td>Sealed bytes, topic, IDs</td>
+<td>Per-courier outcomes</td>
+</tr>
+<tr>
+<td><code>subscribeTopic</code></td>
+<td>Topic and optional catch-up cursor</td>
+<td>Inbound stream</td>
+</tr>
+<tr>
+<td><code>sendInbox</code></td>
+<td>Sealed bytes, inbox, IDs</td>
+<td>Per-courier outcomes</td>
+</tr>
+<tr>
+<td><code>subscribeInbox</code></td>
+<td>Inbox and optional cursor</td>
+<td>Inbound stream</td>
+</tr>
+<tr>
+<td><code>unsubscribe</code></td>
+<td>Local subscription handle</td>
+<td>Local closure and best-effort remote close</td>
+</tr>
+<tr>
+<td><code>disconnect</code></td>
+<td>Courier or route</td>
+<td>Sticky closed connection intent</td>
+</tr>
+<tr>
+<td><code>queryOutcome</code></td>
+<td>Operation or transport message ID</td>
+<td>Outcome when supported</td>
+</tr>
+</tbody>
+</table></div><p><code>connect</code> is lifecycle intent, not proof that every endpoint is usable. The
+adapter reports each endpoint independently and continues according to route
+policy.</p>
+<p>Subscription streams are cancellable, bounded, and safe under reconnect.
+Cancellation of an older stream must not close a newer subscription to the
+same logical address.</p>
+<h2 id="7-uiapplication-obligations">7. UI/application obligations</h2>
+<p>A conforming frontend and application layer must:</p>
+<ol>
+<li>verify message and implementation profiles plus every selected manifest;</li>
+<li>preserve the user's route across UI, directory, and catalog updates;</li>
+<li>display operator, price, retention, limits, redundancy, and material
+metadata exposure before selection or purchase;</li>
+<li>authenticate and encrypt the inner envelope before invoking transport;</li>
+<li>keep plaintext, group secrets, BIP-39 material, attachment keys, notary
+witnesses, and global identity credentials outside message objects/logs;</li>
+<li>derive scoped topics, inbox handles, and access keys through narrow
+identity or application capabilities;</li>
+<li>reject oversized envelopes before expensive signing or connection work;</li>
+<li>preserve per-courier outcomes, refusal codes, and payment requirements;</li>
+<li>deduplicate by authenticated logical message ID across couriers, reconnects,
+and catch-up;</li>
+<li>treat provider timestamps, ordering, and retention statements as untrusted
+observations;</li>
+<li>verify inner sender, group authorization, revision, and replay rules after
+receipt;</li>
+<li>label <code>sent</code>, <code>accepted</code>, <code>stored</code>, and <code>delivered</code> accurately;</li>
+<li>retry with bounded backoff and stable logical message identity;</li>
+<li>query unknown outcomes before creating unnecessary duplicate attempts;</li>
+<li>stop reconnecting after explicit disconnect or endpoint removal;</li>
+<li>support route import/export and technology migration; and</li>
+<li>never redirect traffic merely to increase frontend commission.</li>
+</ol>
+<p>Courier notices, error text, manifest names, and endpoint URIs are untrusted
+input. They must not execute code, drive unsafe navigation, or become trusted
+payment links.</p>
+<h2 id="8-message-adapter-obligations">8. Message adapter obligations</h2>
+<p>A conforming adapter must:</p>
+<ol>
+<li>implement its mapping without leaking wire-specific objects through the
+common port;</li>
+<li>treat the inner payload as opaque;</li>
+<li>enforce canonical encoding and profile limits;</li>
+<li>validate inbound framing, outer integrity, size, and address match before
+application delivery;</li>
+<li>expose courier origin and per-courier outcomes;</li>
+<li>preserve subscription cancellation and sticky disconnect intent across
+reconnect races;</li>
+<li>use bounded queues, timeouts, retry, backoff, and inbound frame limits;</li>
+<li>prevent one courier's credential or entitlement from reaching another
+endpoint;</li>
+<li>normalize wire refusal into stable domain errors while preserving safe
+diagnostics;</li>
+<li>suppress obvious network duplicates before application dispatch;</li>
+<li>avoid logging payloads, complete routing handles, credentials, or signed
+authorization material; and</li>
+<li>remain replaceable without changing inner-envelope semantics.</li>
+</ol>
+<p>Outer integrity proves only what the implementation profile states. It does
+not establish group membership or inner sender authorization.</p>
+<h2 id="9-courier-operator-obligations">9. Courier operator obligations</h2>
+<p>A conforming operator publishes:</p>
+<ul>
+<li>a signed manifest and supported implementation profile;</li>
+<li>endpoint identifiers and normalization rules;</li>
+<li>supported address/operation capabilities;</li>
+<li>payload, connection, subscription, queue, and rate limits;</li>
+<li>access-control and entitlement-issuer policy;</li>
+<li>retention, deletion, backup, logging, and moderation policy;</li>
+<li>measurable availability or retention claims;</li>
+<li>stable machine-readable refusal behavior;</li>
+<li>seat offers and settlement terms when paid; and</li>
+<li>migration and shutdown notice policy.</li>
+</ul>
+<p>The operator must not claim that accepting ciphertext authenticates its inner
+sender, proves recipient delivery, or authorizes shared-state change.</p>
+<h2 id="10-delivery-and-consistency-semantics">10. Delivery and consistency semantics</h2>
+<p>The base message contract is best-effort, at-least-once delivery with
+application-level idempotency. It does not promise exactly-once delivery or
+permanent storage.</p>
+<ul>
+<li>Fan-out can produce the same message from several couriers.</li>
+<li>Reconnect and catch-up can replay an item already processed live.</li>
+<li>Timeout can occur after acceptance but before acknowledgement reaches the
+client.</li>
+<li>Explicit acceptance proves only the service stated by that provider/profile.</li>
+<li>Courier time does not establish authenticated order across devices.</li>
+<li>A courier may drop, delay, replay, retain, or selectively serve ciphertext.</li>
+<li>Catch-up can have gaps, truncation, expiry, or cursor incompatibility.</li>
+</ul>
+<p>Application envelopes therefore need stable IDs, replay protection, and their
+own authenticated ordering or epoch semantics. Adapter deduplication is an
+optimization; inner-envelope idempotency is the final defense.</p>
+<p>A paid offer may promise stronger retention or availability only through a
+measurable additive capability and evidence format.</p>
+<h2 id="11-access-control-and-payment">11. Access control and payment</h2>
+<p>Access control is separate from inner sender identity. A courier may require a
+component-scoped access key or capability to read or write. That key proves
+entitlement to service, not membership in an Onym group.</p>
+<p>The operator publishes a <code>SeatOffer</code>. A frontend sells it only through a
+compatible signed <code>ChannelOffer</code>; purchase validation, platform commission,
+taxes, refunds, and settlement remain outside message framing.</p>
+<pre><code class="language-text">UI/application -&gt; message adapter: publish or subscribe
+UI/application &lt;- message adapter: PaymentRequired(component + offer)
+UI -&gt; billing channel: purchase approved product
+UI -&gt; billing broker: validate purchase + component-scoped access key
+UI &lt;- billing broker: SeatEntitlement
+UI -&gt; courier control/auth path: register or prove entitlement
+UI/application -&gt; message adapter: retry original logical operation
+UI/application &lt;- message adapter: typed outcome
+</code></pre>
+<p>The retry preserves the logical message and encrypted bytes unless the
+implementation requires fresh outer framing. Payment interruption must not
+create a second logical chat message.</p>
+<p>Store evidence and global identity do not enter ordinary courier frames,
+routing addresses, or logs. Payment has no effect on inner authenticity or
+group authorization. An unpaid envelope may use another selected courier.</p>
+<h2 id="12-errors-and-state-machines">12. Errors and state machines</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">UI/application response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse and explain required adapter</td>
+</tr>
+<tr>
+<td><code>invalid_endpoint</code></td>
+<td>Manifest/configuration</td>
+<td>Refuse; never silently rewrite</td>
+</tr>
+<tr>
+<td><code>not_connected</code></td>
+<td>Local lifecycle</td>
+<td>Connect selected couriers or show offline state</td>
+</tr>
+<tr>
+<td><code>unreachable</code></td>
+<td>Network/provider</td>
+<td>Retry with bounded backoff or another selected courier</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td>Provider</td>
+<td>Complete component-scoped authentication</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>Provider</td>
+<td>Present referenced signed offer when supported</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td>Provider/broker</td>
+<td>Refresh without leaking another credential</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Provider</td>
+<td>Honor retry guidance; avoid fan-out amplification</td>
+</tr>
+<tr>
+<td><code>payload_too_large</code></td>
+<td>Client/provider</td>
+<td>Use blob transport or reject before retry</td>
+</tr>
+<tr>
+<td><code>publish_rejected</code></td>
+<td>Provider</td>
+<td>Preserve reason; try selected alternative if allowed</td>
+</tr>
+<tr>
+<td><code>partial_acceptance</code></td>
+<td>Route</td>
+<td>Report accepted providers and safely retry failures</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Network/provider</td>
+<td>Query outcome or deduplicate before resubmission</td>
+</tr>
+<tr>
+<td><code>invalid_frame</code></td>
+<td>Adapter</td>
+<td>Drop and optionally quarantine endpoint</td>
+</tr>
+<tr>
+<td><code>invalid_outer_integrity</code></td>
+<td>Adapter</td>
+<td>Drop; repeated failures indicate misbehavior</td>
+</tr>
+<tr>
+<td><code>cursor_invalid</code></td>
+<td>Adapter/provider</td>
+<td>Restart only under explicit catch-up policy</td>
+</tr>
+<tr>
+<td><code>retention_gap</code></td>
+<td>Provider/application</td>
+<td>Surface missing interval; do not claim completeness</td>
+</tr>
+</tbody>
+</table></div><p>Outbound state:</p>
+<pre><code class="language-text">draft
+  -&gt; sealed
+  -&gt; route_validated
+  -&gt; connecting
+  -&gt; auth_required? -&gt; authenticated
+  -&gt; payment_required? -&gt; entitled -&gt; authenticated
+  -&gt; submitted
+  -&gt; partially_accepted | accepted | rejected | unknown
+  -&gt; application_receipt? -&gt; delivered
+</code></pre>
+<p>Only an authenticated end-to-end application receipt produces <code>delivered</code>.</p>
+<p>Inbound state:</p>
+<pre><code class="language-text">wire_item
+  -&gt; bounded
+  -&gt; framing_verified
+  -&gt; address_matched
+  -&gt; transport_deduplicated
+  -&gt; inner_envelope_verified
+  -&gt; application_deduplicated
+  -&gt; application_dispatched
+</code></pre>
+<p>Failure at any verification stage drops or quarantines the item. Preferred or
+paid couriers do not receive weaker validation.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>Only sealed envelopes cross the boundary.</strong> Plaintext, group secrets,
+seed material, attachment keys, and notary witnesses never enter requests.</li>
+<li><strong>Routing is not identity.</strong> Topics, inboxes, outer keys, and access keys are
+scoped rather than human names or global identity identifiers.</li>
+<li><strong>Outer integrity is not group authorization.</strong> Valid framing cannot make an
+invalid inner envelope valid.</li>
+<li><strong>Acceptance is not delivery.</strong> Local send and provider acknowledgement are
+distinct from an end-to-end receipt.</li>
+<li><strong>Credentials are component-scoped.</strong> One courier never receives another's
+entitlement, token, key, or signed challenge.</li>
+<li><strong>Billing is separate from traffic.</strong> Store transactions and global billing
+identifiers do not enter messages, addresses, or ordinary logs.</li>
+<li><strong>Untrusted input is bounded.</strong> Frames, filters, queues, error text,
+decompression, and reconnect work have explicit limits.</li>
+<li><strong>Route changes are visible.</strong> Defaults, catalogs, payment failures, and
+commissions cannot silently redirect traffic.</li>
+<li><strong>Redundancy has a privacy cost.</strong> More couriers improve availability while
+exposing metadata to more operators; the UI discloses the tradeoff.</li>
+<li><strong>Transport cannot mutate notary state.</strong> Delivery, loss, refusal, or replay
+cannot authorize or roll back a transition.</li>
+<li><strong>Cancellation is sticky.</strong> Explicit disconnect cannot be undone by a
+delayed reconnect task.</li>
+<li><strong>Unknown outcome is not rejection.</strong> Retry preserves idempotency rather
+than silently generating another application message.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>MessageProfile</code> changes when operation, address, delivery, receipt, cursor,
+or error meaning changes.</li>
+<li><code>MessageImplementationProfile</code> changes when wire mapping, outer integrity,
+connection, authentication, or refusal mapping changes.</li>
+<li><code>ServiceManifest</code> changes when endpoints, limits, retention, capabilities,
+offers, or operator keys change.</li>
+<li>Unknown implementations are never inferred from an endpoint URI scheme.</li>
+<li>New defaults apply to new selection, not silently to existing routes.</li>
+<li>Legacy wire forms are explicit receive capabilities and are not emitted
+unless the selected implementation profile says so.</li>
+<li>Cross-platform fixtures cover canonical mapping, addresses, IDs, outer
+integrity, refusals, reconnects, cancellation, duplicates, cursors, limits,
+partial acceptance, and unknown outcomes.</li>
+<li>Paid and free providers of the same implementation remain technically
+compatible; entitlement enforcement is a declared access capability.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>The abstract boundary becomes executable only through a concrete profile. The
+current implementation is:</p>
+<ul>
+<li><a href="../message/UI-Message-Nostr.html">UI-Message-Nostr.md</a> — Nostr events and WebSockets,
+Onym event kinds/tags, ephemeral outer signing, multi-relay fan-out, NIP-42
+access control, and Nostr refusal mapping.</li>
+</ul>
+<p>Future profiles may use another courier technology while preserving the
+common port. They must use another implementation profile ID when wire,
+metadata, delivery, or receipt semantics differ.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The UI ↔ message boundary is successfully separated when:</p>
+<ol>
+<li>a third-party UI can send and receive opaque Onym envelopes using public
+profiles and conformance tests;</li>
+<li>the official UI can use a compatible third-party courier after manifest
+verification without application-flow changes;</li>
+<li>users can replace or combine couriers without changing identity, group
+state, or inner-envelope format;</li>
+<li>no wire event, socket, filter, tag, protocol key, or server error type leaks
+into the abstract domain port;</li>
+<li>plaintext and global identity keys never reach a courier adapter request or
+operator;</li>
+<li>every outcome states what each selected courier actually confirmed;</li>
+<li>payment refusal is distinct from authentication, rate limiting, invalid
+framing, and network failure;</li>
+<li>payment does not reveal store evidence or grant message/notary authority;</li>
+<li>duplicates, reconnect, cancellation, partial fan-out, catch-up gaps, and
+timeout-after-acceptance pass shared fixtures; and</li>
+<li>a second transport technology can implement the abstract suite without
+pretending to be the first.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>Separating UI from message transport lets people replace who presents a
+conversation without replacing who carries its ciphertext—and replace the
+courier without giving it ownership of identity, message meaning, or group
+rules.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/message/UI-Message.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

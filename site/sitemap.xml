@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://onym.foundation/</loc></url>
+  <url><loc>https://onym.foundation/seats.html</loc></url>
+  <url><loc>https://onym.foundation/governance.html</loc></url>
+  <url><loc>https://onym.foundation/transparency.html</loc></url>
+  <url><loc>https://onym.foundation/sponsors.html</loc></url>
+  <url><loc>https://onym.foundation/pledge.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/README.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/WHITEPAPER.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/identity/UI-Identity.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/identity/UI-Identity-BIP39.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/message/UI-Message.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/message/UI-Message-Nostr.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/blob/UI-Blob.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/blob/UI-Blob-Blossom.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/notary/UI-Notary.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/notary/UI-Notary-Stellar.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/audit/Audit.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/arbitration/Arbitration.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/charity/Charity.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/charity/UI-Charity.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/lead/Lead-Generation.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/lead/Lead-Generation-Telegram.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/acquisition/Acquisition.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/acquisition/Acquisition-App-Store.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/acquisition/Acquisition-Google-Play.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/recruitment/Recruitment.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/recovery/Recovery-Trustee.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/recovery/Recovery-Trustee-Cloud.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/recovery/Recovery-Trustee-Shamir.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/sponsor/Sponsor.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/sponsor/Sponsor-Onym.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/bank/UI-Bank.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/bank/UI-Bank-Stellar.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/association/Association-Naming.html</loc></url>
+</urlset>

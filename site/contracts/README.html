@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym System — Onym Foundation</title>
+<meta name="description" content="Onym System — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/README.html">
+<meta property="og:title" content="Onym System — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/README.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../index.html"><img src="../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../seats.html" aria-current="page">Seats</a>
+      <a href="../governance.html">Governance</a>
+      <a href="../transparency.html">Transparency</a>
+      <a class="pill accent" href="../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../index.html">← Foundation</a> · <a href="../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Repository guide</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/README.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-system">Onym System</h1>
+<p>Onym is a private messenger designed so that no single company owns it — and
+a protocol for growing that property beyond messaging. This repository holds
+the cross-repository <strong>architecture and economic design</strong>: the whitepaper and
+the contract documents that define each independently ownable role in the
+system. It contains no code.</p>
+<h2 id="the-idea-in-one-paragraph">The idea in one paragraph</h2>
+<p>Most online services concentrate four powers in one operator: naming the
+user, presenting the interface, carrying the data, and deciding whether a
+shared action is valid. Onym separates them. A user's <strong>identity</strong> is a set
+of keys only they control. The <strong>UI</strong> is a replaceable window, not an
+account authority. <strong>Couriers</strong> move encrypted envelopes and media without
+reading them. A <strong>notary</strong> verifies group-state transitions against
+zero-knowledge proofs without storing conversations or a readable member
+list. <strong>Association registries</strong> attach human-readable names as revocable,
+consent-bound claims — the name is never the identity. Around this core, an
+open set of service and institutional seats (banking, charity, audit,
+arbitration, growth, sponsorship, recruitment) can be operated by anyone,
+and each earns only when a user or group actually selects it. The governing
+rule for every seat:</p>
+<blockquote>
+<p>A component may exercise the minimum authority required for its role, and
+it may earn only when a user or group chooses it for that role.</p>
+</blockquote>
+<h2 id="what-is-in-this-repository">What is in this repository</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Document</th>
+<th scope="col">Defines</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="WHITEPAPER.html">WHITEPAPER.md</a></td>
+<td>The complete system model, design principles, economics, threat model, and roadmap</td>
+</tr>
+<tr>
+<td><a href="identity/UI-Identity.html">identity/</a></td>
+<td>The identity vault: key custody, capability requests, consent, rotation, recovery — with the current <a href="identity/UI-Identity-BIP39.html">BIP-39 profile</a></td>
+</tr>
+<tr>
+<td><a href="message/UI-Message.html">message/</a></td>
+<td>Small-message courier boundary — with the current <a href="message/UI-Message-Nostr.html">Nostr profile</a></td>
+</tr>
+<tr>
+<td><a href="blob/UI-Blob.html">blob/</a></td>
+<td>Encrypted media storage boundary — with the current <a href="blob/UI-Blob-Blossom.html">Blossom profile</a></td>
+</tr>
+<tr>
+<td><a href="notary/UI-Notary.html">notary/</a></td>
+<td>Group shared-state validation — with the current <a href="notary/UI-Notary-Stellar.html">Stellar/Soroban profile</a></td>
+</tr>
+<tr>
+<td><a href="charity/UI-Charity.html">charity/</a></td>
+<td>Charitable coordination as the first non-messaging application seat (<a href="charity/Charity.html">contract</a>)</td>
+</tr>
+<tr>
+<td><a href="audit/Audit.html">audit/</a></td>
+<td>Signed, expiring, revocable attestations about exact artifacts — audits, conformance runs, build provenance</td>
+</tr>
+<tr>
+<td><a href="arbitration/Arbitration.html">arbitration/</a></td>
+<td>Party-chosen dispute deciders whose authority is bounded to one order's escrowed stake</td>
+</tr>
+<tr>
+<td><a href="lead/Lead-Generation.html">lead/</a></td>
+<td>Paid distribution measured in aggregate, with no person-level install attribution (<a href="lead/Lead-Generation-Telegram.html">Telegram profile</a>)</td>
+</tr>
+<tr>
+<td><a href="acquisition/Acquisition.html">acquisition/</a></td>
+<td>Landing-to-store conversion services measured by store aggregates (<a href="acquisition/Acquisition-App-Store.html">App Store</a>, <a href="acquisition/Acquisition-Google-Play.html">Google Play</a>)</td>
+</tr>
+<tr>
+<td><a href="sponsor/Sponsor.html">sponsor/</a></td>
+<td>Foundation funding with bounded recognition and a capped governance path (<a href="sponsor/Sponsor-Onym.html">Onym Foundation profile</a>)</td>
+</tr>
+<tr>
+<td><a href="recruitment/Recruitment.html">recruitment/</a></td>
+<td>Openings and candidate-consented introductions for every seat, without candidate ownership</td>
+</tr>
+</tbody>
+</table></div><p>In review, not yet merged: a <strong>bank seat</strong> (accounts, custody classes, and
+payments against vault-held keys, with a Stellar profile) and an
+<strong>association naming seat</strong> (qualified names such as <code>alice@writers.tallinn</code>
+issued by competing registries). See open pull requests.</p>
+<h2 id="how-the-documents-work">How the documents work</h2>
+<p>Every seat follows the same two-layer pattern:</p>
+<ul>
+<li>an <strong>abstract contract boundary</strong> (<code>UI-X.md</code> or <code>X.md</code>) that fixes roles,
+authority limits, wire-neutral objects, obligations, error semantics, and
+privacy invariants — technology-free and implementation-independent; and</li>
+<li>one or more <strong>implementation profiles</strong> (<code>X-&lt;Technology&gt;.md</code>) that map the
+abstract contract onto a concrete stack (Nostr, Blossom, Stellar, BIP-39,
+Telegram, the app stores) and honestly record where current code falls
+short in a <em>Known gaps</em> section.</li>
+</ul>
+<p>Documents state what is <strong>implemented</strong>, what is a <strong>profile requirement</strong>,
+and what is a <strong>gap</strong>. The frontmatter header on each file tracks proposal
+status. Nothing here is a claim of production security: the system is
+alpha-grade, unaudited, and several load-bearing pieces (identity rotation,
+forward-secret messaging, conformance fixtures) are explicitly open work —
+see whitepaper §19–§22.</p>
+<h2 id="what-this-repository-is-not">What this repository is not</h2>
+<ul>
+<li><strong>Not code.</strong> Implementations live in the repositories below.</li>
+<li><strong>Not an investment prospectus.</strong> No token exists or is implied; seats
+earn service revenue, not protocol rent.</li>
+<li><strong>Not a certification authority.</strong> Anyone may implement any seat without
+permission. Directories and audits recommend; they never gate direct use.</li>
+</ul>
+<h2 id="related-repositories">Related repositories</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Repository</th>
+<th scope="col">Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/onymchat/onym-ios"><code>onym-ios</code></a> / <a href="https://github.com/onymchat/onym-android"><code>onym-android</code></a></td>
+<td>Native clients: local identity, messaging, service selection</td>
+</tr>
+<tr>
+<td><a href="https://github.com/onymchat/onym-sdk-swift"><code>onym-sdk-swift</code></a> / <a href="https://github.com/onymchat/onym-sdk-kotlin"><code>onym-sdk-kotlin</code></a></td>
+<td>Shared proof and cryptographic primitives</td>
+</tr>
+<tr>
+<td><a href="https://github.com/onymchat/onym-contracts"><code>onym-contracts</code></a></td>
+<td>Soroban group-governance contract family</td>
+</tr>
+<tr>
+<td><a href="https://github.com/onymchat/onym-relayer"><code>onym-relayer</code></a></td>
+<td>Fee-paying transaction relayer and discovery manifests</td>
+</tr>
+<tr>
+<td><a href="https://github.com/onymchat/onym-infra"><code>onym-infra</code></a></td>
+<td>One replaceable default deployment (Nostr, Blossom, relayer, TLS)</td>
+</tr>
+<tr>
+<td><a href="https://github.com/onymchat/onym-website"><code>onym-website</code></a> / <a href="https://github.com/onymchat/onym-papers"><code>onym-papers</code></a></td>
+<td>Public explanation; research papers and protocol proposals</td>
+</tr>
+</tbody>
+</table></div><h2 id="reading-order">Reading order</h2>
+<ol>
+<li><strong>Whitepaper §1–§4</strong> — the thesis and system model (15 minutes).</li>
+<li><strong>One seat pair end to end</strong> — <a href="message/UI-Message.html">message/UI-Message.md</a>
+then <a href="message/UI-Message-Nostr.html">message/UI-Message-Nostr.md</a> is the
+most complete example of the abstract/implementation discipline.</li>
+<li><strong>Whitepaper §16–§17</strong> — how seats publish offers and get paid.</li>
+<li>The seats your work touches, starting from their <em>Decision</em> and
+<em>Security and privacy invariants</em> sections.</li>
+</ol>
+<h2 id="proposing-changes">Proposing changes</h2>
+<p>Proposals follow whitepaper §18: a problem statement, wire-format changes,
+security and privacy effects, compatibility behavior, test vectors or a
+reference implementation, and an account of which seats gain or lose
+authority or revenue. Every new document takes the standard frontmatter
+header and the abstract-versus-implementation split. Existing groups remain
+governed by the exact contracts they selected; proposals cannot rewrite
+deployed authority retroactively.</p>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/README.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../governance.html">Governance</a><a href="../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../seats.html">Seats</a><a href="../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../governance.html#status">Status notice</a><a href="../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../main.js"></script>
+</body>
+</html>

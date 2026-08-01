@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Lead Generation: Telegram Implementation — Onym Foundation</title>
+<meta name="description" content="Onym Lead Generation: Telegram Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/lead/Lead-Generation-Telegram.html">
+<meta property="og:title" content="Onym Lead Generation: Telegram Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/lead/Lead-Generation-Telegram.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/lead/Lead-Generation-Telegram.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-lead-generation-telegram-implementation">Onym Lead Generation: Telegram Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>A Telegram promoter earns direct payment for the agreed increase in a
+channel post's view counter. A tracker-free landing page measures aggregate
+cold-to-hot intent, while the installed app learns nothing about the
+campaign or promoter.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../lead/Lead-Generation.html">Lead-Generation.md</a>. The abstract specification remains
+authoritative for ownership, privacy, stage meaning, payment calculation,
+evidence, and disputes. This document maps those concepts to Telegram channel
+posts, Telegram's MTProto view counter, an Onym landing route, and direct
+settlement.</p>
+<p>The landing operator may also implement the separately owned
+<a href="../acquisition/Acquisition.html">acquisition contract</a>. That optional contract
+can measure a shared order cohort at the app-store boundary without changing
+Telegram view settlement.</p>
+<p>This profile is proposed architecture. No current Onym repository implements
+the campaign, Telegram measurement, landing aggregation, or settlement
+components described here.</p>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Telegram mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Distribution surface</td>
+<td>Telegram broadcast channel</td>
+</tr>
+<tr>
+<td>Placement</td>
+<td>One channel post with approved creative and landing link</td>
+</tr>
+<tr>
+<td>Stable placement reference</td>
+<td>Numeric channel ID plus channel-scoped message ID</td>
+</tr>
+<tr>
+<td>Human locator</td>
+<td>Observed public <code>t.me/&lt;username&gt;/&lt;message-id&gt;</code> URL</td>
+</tr>
+<tr>
+<td>Cold-exposure counter</td>
+<td>Telegram channel-post <code>views</code> counter</td>
+</tr>
+<tr>
+<td>Cold snapshot source</td>
+<td>MTProto <code>messages.getMessagesViews</code> with <code>increment=false</code></td>
+</tr>
+<tr>
+<td>Optional corroboration</td>
+<td>Message <code>views</code> field, view updates, or authorized channel statistics</td>
+</tr>
+<tr>
+<td>Landing arrival</td>
+<td>Aggregate request to one order-scoped Onym route</td>
+</tr>
+<tr>
+<td>Hot lead</td>
+<td>Redemption of an anonymous landing intent capability</td>
+</tr>
+<tr>
+<td>Install attribution</td>
+<td>Deliberately absent</td>
+</tr>
+<tr>
+<td>Billable metric</td>
+<td>Eligible Telegram counter delta</td>
+</tr>
+<tr>
+<td>Payment</td>
+<td>Direct sponsor/escrow payment per view unit, capped by order</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:lead-implementation:telegram-channel-views-v1
+</code></pre>
+<p>It maps this portable profile:</p>
+<pre><code class="language-text">onym:lead-profile:aggregate-funnel-v1
+</code></pre>
+<p>Telegram describes each channel post as having a view counter. This profile
+pays for units in that platform counter. It does not reinterpret the count as
+unique humans, verified attention, landing visits, installs, accounts, or
+retained users.</p>
+<h2 id="2-trust-and-evidence-model">2. Trust and evidence model</h2>
+<p>Telegram is the source of the counter but does not issue a portable
+cryptographic receipt for each snapshot. An authorized MTProto session can
+query <code>messages.getMessagesViews</code>, and an Onym <code>TelegramViewObserver</code> signs the
+normalized result.</p>
+<p>The observer signature proves:</p>
+<ul>
+<li>which observer made the query;</li>
+<li>which channel and message it queried;</li>
+<li>that it requested non-incrementing observation;</li>
+<li>what counter it reported; and</li>
+<li>when and under which profile it reported it.</li>
+</ul>
+<p>It does not prove that Telegram's counter represents unique humans or that
+traffic was organic. Several observers can reduce one observer's ability to
+misreport, but they still depend on Telegram as a common upstream source.</p>
+<p>The campaign order chooses one of these evidence policies:</p>
+<ul>
+<li><strong>single designated observer:</strong> simplest and cheapest, with direct oracle
+trust;</li>
+<li><strong>sponsor and generator agreement:</strong> both sign the same snapshot;</li>
+<li><strong>threshold observers:</strong> a declared quorum signs an identical or
+tolerance-compatible value; or</li>
+<li><strong>escrow observer:</strong> the settlement provider queries and signs the value.</li>
+</ul>
+<p>Screenshots are useful dispute attachments but are not canonical counter
+evidence because they are easy to edit and difficult to normalize.</p>
+<h2 id="3-ownership-mapping">3. Ownership mapping</h2>
+<ul>
+<li>The <strong>campaign sponsor</strong> funds the budget, approves content and channels,
+operates or selects the landing page, and pays valid statements.</li>
+<li>The <strong>lead generator</strong> controls or is authorized to publish in the declared
+Telegram channel and supplies payout coordinates.</li>
+<li>The <strong>channel owner</strong> may be the generator or a separately consenting party.</li>
+<li>The <strong>Telegram view observer</strong> uses an MTProto user session to query public
+counter state without incrementing it.</li>
+<li>The <strong>landing operator</strong>, optionally an independent acquisition provider,
+counts only order aggregates and anonymous intent-capability redemption.</li>
+<li>The <strong>settlement provider or escrow</strong> reserves and releases the finite
+campaign budget.</li>
+<li><strong>Telegram</strong> operates the distribution network and counter semantics; it is
+not an Onym identity or settlement authority.</li>
+</ul>
+<p>Anyone can offer a channel placement. The sponsor remains free to accept or
+reject it under published campaign terms. Anyone can also promote Onym without
+an order, but unpaid organic promotion creates no retroactive claim.</p>
+<h2 id="4-physical-topology">4. Physical topology</h2>
+<pre><code class="language-text">sponsor                         lead generator
+  | signed offer                  | placement offer + channel control
+  +---------------+---------------+
+                  v
+           funded campaign order
+                  |
+                  v
+         Telegram channel post
+           |              |
+           | views        | shared order URL
+           v              v
+   MTProto view      tracker-free landing
+   observer          | arrival aggregate
+     |                | hot-intent aggregate
+     +--------+-------+
+              v
+       efficiency report
+              |
+              v
+   view-based settlement statement
+              |
+              v
+   direct sponsor/escrow payment to generator
+
+generic or shared-cohort store link -&gt; app receives no campaign identifier
+</code></pre>
+<p>View settlement does not depend on the landing operator being online. Landing
+failure makes the efficiency report incomplete but does not silently change
+the agreed view-based rate.</p>
+<h2 id="5-channel-and-placement-identity">5. Channel and placement identity</h2>
+<h3 id="51-eligible-channel">5.1 Eligible channel</h3>
+<p>The default profile uses a public Telegram broadcast channel so the placement
+and counter can be independently observed. A private channel may be allowed
+only when every designated observer has legitimate access and the order
+discloses the reduced auditability.</p>
+<p>The placement binds:</p>
+<pre><code class="language-json">{
+  &quot;platform&quot;: &quot;telegram&quot;,
+  &quot;channelId&quot;: &quot;&lt;numeric-channel-id&gt;&quot;,
+  &quot;usernameAtAcceptance&quot;: &quot;&lt;public-username-or-null&gt;&quot;,
+  &quot;messageId&quot;: 1042,
+  &quot;publicUrl&quot;: &quot;https://t.me/&lt;username&gt;/1042&quot;
+}
+</code></pre>
+<p>Telegram message IDs are scoped to a channel. A mutable username or public URL
+is not sufficient identity, so evidence binds the numeric channel ID and
+message ID. Session-specific access hashes and observer credentials are never
+published in Onym objects.</p>
+<h3 id="52-channel-control-evidence">5.2 Channel-control evidence</h3>
+<p>Before accepting an unknown generator, the sponsor verifies channel control
+through a profile-defined challenge. A typical flow is:</p>
+<ol>
+<li>sponsor issues a random order challenge;</li>
+<li>generator signs the challenge with its Onym campaign key;</li>
+<li>the channel publishes the challenge or a digest in a temporary or intended
+campaign post;</li>
+<li>one or more observers bind the Telegram channel ID to that challenge; and</li>
+<li>the final order records the evidence hash.</li>
+</ol>
+<p>Telegram does not cryptographically bind a channel to the generator's Onym
+key. The observed challenge establishes operational control at that time, not
+permanent legal ownership.</p>
+<h2 id="6-campaign-order-mapping">6. Campaign order mapping</h2>
+<p>A Telegram order adds these implementation fields to the abstract
+<code>CampaignOrder</code>:</p>
+<pre><code class="language-json">{
+  &quot;implementation&quot;: {
+    &quot;profileId&quot;: &quot;onym:lead-implementation:telegram-channel-views-v1&quot;,
+    &quot;channelId&quot;: &quot;&lt;numeric-channel-id&gt;&quot;,
+    &quot;usernameAtAcceptance&quot;: &quot;&lt;public-username&gt;&quot;,
+    &quot;messageId&quot;: &quot;&lt;assigned-after-publication-or-null&gt;&quot;,
+    &quot;placementMode&quot;: &quot;new-channel-post&quot;,
+    &quot;creativeHash&quot;: &quot;&lt;canonical-telegram-creative-hash&gt;&quot;,
+    &quot;landingUrl&quot;: &quot;https://onym.example/c/&lt;campaign-id&gt;/&lt;opaque-order-route-id&gt;&quot;,
+    &quot;viewCounter&quot;: &quot;telegram-channel-post-views&quot;,
+    &quot;forwardedViewPolicy&quot;: &quot;included-as-reported-by-telegram&quot;,
+    &quot;viewObservers&quot;: [&quot;onym:key:&lt;observer-a&gt;&quot;, &quot;onym:key:&lt;observer-b&gt;&quot;],
+    &quot;observerThreshold&quot;: 2,
+    &quot;snapshotToleranceSeconds&quot;: 60
+  },
+  &quot;window&quot;: {
+    &quot;baselineAt&quot;: &quot;2026-08-01T12:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T12:00:00Z&quot;,
+    &quot;finalSnapshotGraceSeconds&quot;: 60
+  },
+  &quot;settlement&quot;: {
+    &quot;rate&quot;: {&quot;minorUnits&quot;: 500, &quot;perViews&quot;: 1000},
+    &quot;maximumBillableViews&quot;: 100000,
+    &quot;maximumAmount&quot;: 50000,
+    &quot;currency&quot;: &quot;&lt;declared-currency-or-asset&gt;&quot;,
+    &quot;paymentRail&quot;: &quot;&lt;direct-rail-profile&gt;&quot;
+  }
+}
+</code></pre>
+<p>The order states whether Telegram-reported views arising from forwards are
+included. If the platform counter cannot separate them, a policy claiming to
+exclude them is not implementable and must not be offered.</p>
+<p>The rate is often displayed as cost per thousand views, but settlement uses
+integer rational arithmetic for the exact number of billable counter units.</p>
+<h2 id="7-creative-and-publication-evidence">7. Creative and publication evidence</h2>
+<p>The sponsor supplies a canonical creative bundle containing:</p>
+<ul>
+<li>exact text and text-entity representation;</li>
+<li>exact media bytes or content hash;</li>
+<li>required sponsorship label;</li>
+<li>the shared order landing URL;</li>
+<li>allowed preview and button behavior;</li>
+<li>language and material claims;</li>
+<li>edit policy; and</li>
+<li>minimum placement duration.</li>
+</ul>
+<p>The Telegram adapter derives <code>creativeHash</code> from that canonical bundle, not a
+screenshot. After publication, an observer verifies the post and emits:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:lead-implementation:telegram-channel-views-v1&quot;,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;telegram&quot;: {
+    &quot;channelId&quot;: &quot;&lt;numeric-channel-id&gt;&quot;,
+    &quot;username&quot;: &quot;&lt;observed-username&gt;&quot;,
+    &quot;messageId&quot;: 1042,
+    &quot;publishedAt&quot;: &quot;2026-08-01T11:59:45Z&quot;,
+    &quot;editDate&quot;: null
+  },
+  &quot;observedCreativeHash&quot;: &quot;&lt;matching-hash&gt;&quot;,
+  &quot;landingUrl&quot;: &quot;https://onym.example/c/&lt;campaign-id&gt;/&lt;opaque-order-route-id&gt;&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-01T12:00:00Z&quot;,
+  &quot;observer&quot;: &quot;onym:key:&lt;observer-id&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;observer-signature&gt;&quot;
+}
+</code></pre>
+<p>Material edits after the baseline stop eligibility until the sponsor approves
+a new creative hash and order amendment. Deletion, access restriction,
+moderation, or link replacement also stops new accrual. A cosmetic change may
+remain eligible only when the original order defines its canonicalization.</p>
+<h2 id="8-telegram-view-snapshots">8. Telegram view snapshots</h2>
+<h3 id="81-canonical-query">8.1 Canonical query</h3>
+<p>The observer uses Telegram's MTProto method:</p>
+<pre><code class="language-text">messages.getMessagesViews(
+  peer = &lt;channel InputPeer&gt;,
+  id = [&lt;message-id&gt;],
+  increment = false
+)
+</code></pre>
+<p>The method is available to Telegram user sessions rather than ordinary bots.
+The profile requires <code>increment=false</code>, so observation does not deliberately
+increase the counter. A Bot API integration may help publish or identify the
+post, but it does not replace the canonical view snapshot.</p>
+<p>The response supplies a <code>MessageViews</code> value containing the current <code>views</code>
+counter when available. The observer cross-checks channel ID, message ID,
+existence, content hash, and edit state before signing.</p>
+<h3 id="82-snapshot-object">8.2 Snapshot object</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:lead-implementation:telegram-channel-views-v1&quot;,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;telegram&quot;: {
+    &quot;channelId&quot;: &quot;&lt;numeric-channel-id&gt;&quot;,
+    &quot;messageId&quot;: 1042,
+    &quot;views&quot;: 18342
+  },
+  &quot;query&quot;: &quot;messages.getMessagesViews&quot;,
+  &quot;increment&quot;: false,
+  &quot;apiLayer&quot;: &quot;&lt;observed-MTProto-layer&gt;&quot;,
+  &quot;creativeHash&quot;: &quot;&lt;still-approved-hash&gt;&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-08T12:00:00Z&quot;,
+  &quot;observer&quot;: &quot;onym:key:&lt;observer-id&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;observer-signature&gt;&quot;
+}
+</code></pre>
+<p>The snapshot contains no Telegram user list, subscriber list, session token,
+phone number, IP address, or viewer identifier.</p>
+<h3 id="83-baseline-and-final-observation">8.3 Baseline and final observation</h3>
+<p>The baseline is captured only after the placement is verified and at the
+order's start boundary. A new campaign-specific post normally begins near
+zero, but the observed baseline remains authoritative. This permits an order
+to use an existing post without paying historical views.</p>
+<p>The final snapshot is taken at the end boundary within the declared tolerance.
+Because a cumulative counter cannot reveal the exact time of every increment,
+a late final snapshot may include post-window views and an early one may omit
+eligible views. The order's tolerance, grace, correction, and dispute policy
+must state how this uncertainty is handled; the observer cannot reconstruct
+per-view timestamps.</p>
+<p>Intermediate snapshots support budget monitoring and milestone settlement.
+They do not reset the platform counter.</p>
+<h2 id="9-billable-view-calculation">9. Billable-view calculation</h2>
+<p>For final settlement:</p>
+<pre><code class="language-text">rawCounterDelta       = max(0, finalViews - baselineViews)
+cumulativeBillable    = min(rawCounterDelta, maximumBillableViews)
+newBillableViews      = max(0, cumulativeBillable - alreadySettledViews)
+cumulativeGross       = floor(cumulativeBillable * rateMinorUnits / perViews)
+newGross              = max(0, cumulativeGross - previouslySettledGross)
+payableMinorUnits     = min(max(0, newGross + signedAdjustments),
+                            remainingBudgetMinorUnits)
+</code></pre>
+<p>For example:</p>
+<pre><code class="language-text">baseline views       = 342
+final views          = 18,342
+billable delta       = 18,000
+rate                 = 500 minor units per 1,000 views
+direct gross payment = 9,000 minor units
+</code></pre>
+<p>Every milestone statement records the counter and cumulative gross through
+which it settled. A later statement pays the cumulative entitlement less prior
+gross payment, so statement frequency cannot change rounding. Counter
+regression, overflow, conflicting threshold snapshots, missing creative, or
+exhausted budget opens a dispute rather than producing a guessed value.</p>
+<p>Landing arrivals and hot leads are not inputs to this formula. That protects
+the prospective user from install attribution and the generator from a payout
+rule based on data the contract intentionally refuses to collect.</p>
+<h2 id="10-tracker-free-telegram-landing">10. Tracker-free Telegram landing</h2>
+<h3 id="101-shared-route">10.1 Shared route</h3>
+<p>The approved post contains one order-scoped URL shared by all its viewers:</p>
+<pre><code class="language-text">https://onym.example/c/&lt;campaign-id&gt;/&lt;opaque-order-route-id&gt;
+</code></pre>
+<p>It contains no viewer, channel subscriber, Telegram account, device, or
+per-viewer referral token. The opaque route maps to one accepted placement
+order, so it supports aggregate per-generator comparison without identifying
+any person.</p>
+<p>Unexpected query parameters and fragments are discarded before counting. The
+page uses no Telegram Login, advertising identifier, analytics SDK, tracking
+pixel, fingerprint, third-party font, third-party script, cookie, or durable
+local storage.</p>
+<h3 id="102-arrival-count">10.2 Arrival count</h3>
+<p>The landing edge or origin increments an aggregate order/time-bucket count
+for eligible page responses. If a CDN is used, every cache-served response
+must reach the aggregate counter or caching is disabled for this route.</p>
+<p>The counter does not attempt to identify unique humans. Coarse protocol checks
+may exclude malformed or obviously automated requests only when declared.
+No exclusion rule may create or retain a visitor fingerprint.</p>
+<p>The HTTPS endpoint and network intermediaries necessarily see transient source
+address, timing, and request metadata while serving the page. The landing
+service does not retain or join those fields for campaign attribution. Any
+short-lived security log is separately declared, access-limited, excluded from
+reports, and deleted on a fixed maximum schedule.</p>
+<h3 id="103-hot-intent-count">10.3 Hot-intent count</h3>
+<p>The page presents an explicit action such as:</p>
+<pre><code class="language-text">Continue to install Onym
+</code></pre>
+<p>With the page response, the landing service creates a random, short-lived,
+unlinkable capability. The capability is:</p>
+<ul>
+<li>unrelated to network address, user agent, Telegram account, or Onym identity;</li>
+<li>held only in the page or form, not durable browser storage;</li>
+<li>accepted once for the declared hot action;</li>
+<li>retained only as an opaque spent/expiry record long enough to prevent replay;
+and</li>
+<li>deleted at expiry without entering the campaign report.</li>
+</ul>
+<p>Successful redemption increments only <code>eligibleHotLeads</code>. Reloading can obtain
+another capability, so the result is an intent-action count, not unique-person
+proof. Aggregate abuse controls may flag implausible traffic without tracking
+individual visitors.</p>
+<h3 id="104-outbound-install-path">10.4 Outbound install path</h3>
+<p>After the hot action, the visitor receives either a generic official store or
+project URL, or a link authorized by the separate Onym acquisition contract.
+An acquisition link may carry one opaque cohort shared by the entire order so
+the store can return a privacy-thresholded aggregate. It never carries a
+visitor-specific value and terminates at the store boundary. The page sets a
+strict <code>Referrer-Policy</code> such as <code>no-referrer</code>.</p>
+<p>The installed app does not read an install referrer, deferred deep link,
+clipboard token, campaign cookie, or broker record. It cannot report which
+Telegram view or campaign led to installation.</p>
+<h2 id="11-efficiency-report">11. Efficiency report</h2>
+<p>The landing operator signs one aggregate per order/window:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T12:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T12:00:00Z&quot;
+  },
+  &quot;landingArrivals&quot;: 1240,
+  &quot;hotIntentActions&quot;: 418,
+  &quot;hotAction&quot;: &quot;continue-to-install-v1&quot;,
+  &quot;visitorIdentifiersCollected&quot;: false,
+  &quot;installAttribution&quot;: false,
+  &quot;capabilityRetentionMaximum&quot;: &quot;PT30M&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;landing-operator&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>Combined with 18,000 billable Telegram views:</p>
+<pre><code class="language-text">view -&gt; landing rate = 1,240 / 18,000 = 6.888889%
+view -&gt; hot rate     =   418 / 18,000 = 2.322222%
+landing -&gt; hot rate  =   418 / 1,240  = 33.709677%
+cost per hot intent  = settled amount / 418
+</code></pre>
+<p>The report labels missing landing data as incomplete. It never estimates
+missing values from installs or app accounts. Small aggregate buckets may be
+suppressed according to the campaign privacy threshold.</p>
+<p>These measures can guide future campaign selection, creative testing, and
+budget allocation. Because aggregate counts can still be manipulated, they
+must not become an opaque automatic reputation score without declared fraud,
+confidence, and appeal rules.</p>
+<h2 id="12-direct-settlement">12. Direct settlement</h2>
+<p>The sponsor reserves the order's maximum amount before the campaign starts.
+After an evidence threshold is met, sponsor or escrow signs a canonical
+<code>SettlementStatement</code> and pays the generator through the declared direct rail.</p>
+<p>The payment rail may use a bank transfer, payment processor, Lightning,
+stable-value asset, or another agreed mechanism. If the generator exposes a
+blockchain receiving address through an Onym identity capability, only the
+address scoped to this settlement context is revealed. No native Onym token is
+required.</p>
+<p>The prospective user pays nothing and is not part of settlement. This is a
+business payment for distribution service, so StoreKit or Play Billing is not
+used merely because the advertised app is mobile.</p>
+<p>The order declares:</p>
+<ul>
+<li>gross rate and view unit;</li>
+<li>currency or asset;</li>
+<li>network and payout coordinate;</li>
+<li>fees, conversion, taxes, withholding, and invoice duties;</li>
+<li>confirmation/finality rule;</li>
+<li>milestone and final payout schedule;</li>
+<li>correction and overpayment handling;</li>
+<li>dispute period and arbitrator; and</li>
+<li>treatment of platform outage or campaign suspension.</li>
+</ul>
+<p>Neither sponsor nor escrow may withhold an undisputed view payment because the
+aggregate landing conversion was lower than hoped.</p>
+<h2 id="13-counter-abuse-and-disputes">13. Counter abuse and disputes</h2>
+<p>A Telegram view counter is useful but not fraud-proof. It can be affected by
+automated accounts, purchased traffic, repeated exposure, forwarding,
+platform bugs, API lag, or behavior not visible to Onym.</p>
+<p>Risk is bounded through contract design:</p>
+<ul>
+<li>finite prepaid budget and maximum billable views;</li>
+<li>a new, content-pinned campaign post where practical;</li>
+<li>baseline and end snapshots from declared observers;</li>
+<li>periodic snapshots and spend alerts;</li>
+<li>public or observer-accessible channel and post;</li>
+<li>declared minimum placement duration;</li>
+<li>aggregate-only anomaly checks such as impossible counter jumps relative to
+the accepted channel history;</li>
+<li>a bounded disputed increment rather than withholding all earned payment;</li>
+<li>independent re-observation during a dispute window; and</li>
+<li>signed manual adjustments with reasons and both parties' acceptance.</li>
+</ul>
+<p>Anomaly checks do not prove fraud. They open a dispute. They may not inspect
+viewer identities, demand subscriber lists, place tracking code, or correlate
+landing visitors with Telegram accounts.</p>
+<p>The generator can also dispute sponsor behavior such as a missing final
+snapshot, landing outage, depleted escrow contrary to the order, or refusal to
+settle an undisputed counter delta.</p>
+<h2 id="14-privacy-and-security-properties">14. Privacy and security properties</h2>
+<ol>
+<li>The Telegram observer reads a placement and aggregate counter, not viewer or
+subscriber identities.</li>
+<li>The post uses one order link shared by every viewer of that placement.</li>
+<li>Landing counters are order/time aggregates, not visitor event exports.</li>
+<li>Page capabilities are random, short-lived, unlinked, single-purpose, and
+absent from signed reports.</li>
+<li>The outbound store link is generic or contains only an order-shared
+acquisition cohort that terminates at the store.</li>
+<li>The app receives no campaign, acquisition cohort, Telegram, generator, or
+capability value.</li>
+<li>The lead generator receives view and settlement statements, not landing
+logs, install records, users, or later activity.</li>
+<li>The sponsor receives aggregate efficiency, not person-level journeys.</li>
+<li>Observer Telegram sessions and phone/account data never enter campaign
+evidence.</li>
+<li>Payout coordinates identify the generator for settlement only and are not
+attached to prospective users.</li>
+<li>A paid placement grants no Onym identity, naming, transport, notary, or
+governance authority.</li>
+<li>Creative, APIs, landing input, and payment references are untrusted and
+bounded.</li>
+</ol>
+<h2 id="15-error-mapping">15. Error mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract error</th>
+<th scope="col">Telegram implementation source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>surface_unverified</code></td>
+<td>Channel-control challenge not observed</td>
+</tr>
+<tr>
+<td><code>placement_missing</code></td>
+<td>Channel/message unavailable or deleted</td>
+</tr>
+<tr>
+<td><code>creative_mismatch</code></td>
+<td>Text, entities, media, disclosure, or URL changed</td>
+</tr>
+<tr>
+<td><code>counter_unavailable</code></td>
+<td>MTProto error, access loss, flood wait, or missing <code>views</code></td>
+</tr>
+<tr>
+<td><code>counter_regressed</code></td>
+<td>Later counter below accepted earlier snapshot</td>
+</tr>
+<tr>
+<td><code>evidence_conflict</code></td>
+<td>Observer values disagree beyond tolerance</td>
+</tr>
+<tr>
+<td><code>window_mismatch</code></td>
+<td>Snapshot outside the order boundary/tolerance</td>
+</tr>
+<tr>
+<td><code>traffic_suspected</code></td>
+<td>Aggregate anomaly exceeds declared policy</td>
+</tr>
+<tr>
+<td><code>landing_unavailable</code></td>
+<td>Campaign route or aggregate counter unavailable</td>
+</tr>
+<tr>
+<td><code>privacy_violation</code></td>
+<td>Tracking parameter, pixel, identifier, or app attribution detected</td>
+</tr>
+<tr>
+<td><code>budget_exhausted</code></td>
+<td>Maximum views or amount already accrued</td>
+</tr>
+<tr>
+<td><code>settlement_duplicate</code></td>
+<td>Statement overlaps paid counter interval</td>
+</tr>
+<tr>
+<td><code>payment_failed</code></td>
+<td>Direct rail rejected or remains unfinalized</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Placement/counter/payment result cannot be reconciled yet</td>
+</tr>
+</tbody>
+</table></div><p>Telegram rate limits such as flood-wait responses are availability conditions,
+not zero views. The observer retries within the declared snapshot tolerance
+and reports uncertainty when it cannot obtain evidence.</p>
+<h2 id="16-required-implementation-components">16. Required implementation components</h2>
+<p>A deployable reference implementation needs:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Component</th>
+<th scope="col">Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Campaign registry/API</td>
+<td>Signed offers, placement offers, orders, budgets, state</td>
+</tr>
+<tr>
+<td>Creative canonicalizer</td>
+<td>Telegram text/entity/media/link hash fixtures</td>
+</tr>
+<tr>
+<td>Telegram placement adapter</td>
+<td>Channel control and publication verification</td>
+</tr>
+<tr>
+<td>Telegram view observer</td>
+<td>Non-incrementing MTProto snapshots and signatures</td>
+</tr>
+<tr>
+<td>Landing service</td>
+<td>Tracker-free page, aggregate arrivals, intent capabilities</td>
+</tr>
+<tr>
+<td>Report calculator</td>
+<td>Canonical funnel rates and confidence annotations</td>
+</tr>
+<tr>
+<td>Settlement engine</td>
+<td>Integer view calculation, caps, statements, replay defense</td>
+</tr>
+<tr>
+<td>Optional escrow</td>
+<td>Budget reservation and direct payout</td>
+</tr>
+<tr>
+<td>Public audit log</td>
+<td>Offers, orders, aggregate evidence hashes, statements, corrections</td>
+</tr>
+</tbody>
+</table></div><p>Secrets are isolated: MTProto credentials stay in the observer, landing
+capabilities stay in the landing service, and payment keys stay in escrow or
+the settlement signer. No component needs all three.</p>
+<h2 id="17-conformance-tests">17. Conformance tests</h2>
+<p>A shared suite covers:</p>
+<ol>
+<li>canonical campaign, offer, order, placement, snapshot, report, and
+settlement signatures;</li>
+<li>Telegram channel/message identity and mutable username handling;</li>
+<li>creative canonicalization, edits, deleted posts, and changed links;</li>
+<li><code>messages.getMessagesViews</code> observation with <code>increment=false</code>;</li>
+<li>baseline, boundary tolerance, counter delta, cap, rational rate, rounding,
+overflow, milestone, and duplicate-settlement vectors;</li>
+<li>observer threshold agreement, conflict, outage, and correction;</li>
+<li>tracker-free landing headers, stripped parameters, and absence of
+third-party tracking;</li>
+<li>anonymous capability issue, single redemption, expiry, replay, and deletion;</li>
+<li>aggregate arrival/hot counts and zero-denominator calculations;</li>
+<li>proof that outbound links and app startup contain no campaign value;</li>
+<li>landing outage without loss of valid view payment;</li>
+<li>fraud dispute without person-level telemetry; and</li>
+<li>direct payment success, failure, finality, and idempotent retry.</li>
+</ol>
+<h2 id="18-acceptance-criteria">18. Acceptance criteria</h2>
+<p>The Telegram implementation conforms when:</p>
+<ol>
+<li>any channel controller can submit an offer using the public profile;</li>
+<li>an accepted generator can publish the approved post and receive direct,
+capped payment for the agreed Telegram view-counter delta;</li>
+<li>all canonical view observations use a non-incrementing MTProto query and
+identify observer, channel, post, time, creative, and counter;</li>
+<li>settlement never claims the counter represents unique humans or installs;</li>
+<li>the landing service reports aggregate view-to-arrival and view-to-hot
+efficiency without cookies, fingerprints, analytics pixels, or user IDs;</li>
+<li>the outbound app path contains no campaign information and the app performs
+no install-attribution callback;</li>
+<li>missing landing data cannot silently reduce an otherwise valid view payout;</li>
+<li>budget cap, view cap, counter interval, and settlement IDs prevent unlimited
+liability and double payment;</li>
+<li>observer conflict, platform outage, content edits, suspicious traffic, and
+payment failure enter explicit dispute states; and</li>
+<li>sponsor, generator, observer, landing operator, and settlement provider can
+be independently owned and replaced.</li>
+</ol>
+<h2 id="references">References</h2>
+<ol>
+<li>Abstract Onym lead-generation boundary:
+<a href="../lead/Lead-Generation.html">Lead-Generation.md</a></li>
+<li>Optional aggregate acquisition boundary:
+<a href="../acquisition/Acquisition.html">../acquisition/Acquisition.md</a></li>
+<li>Telegram channels and per-post view counters:
+<a href="https://core.telegram.org/api/channel">https://core.telegram.org/api/channel</a></li>
+<li>Telegram <code>messages.getMessagesViews</code>:
+<a href="https://core.telegram.org/method/messages.getMessagesViews">https://core.telegram.org/method/messages.getMessagesViews</a></li>
+<li>Telegram <code>MessageViews</code> type:
+<a href="https://core.telegram.org/type/MessageViews">https://core.telegram.org/type/MessageViews</a></li>
+<li>Telegram message <code>views</code> field:
+<a href="https://core.telegram.org/constructor/message">https://core.telegram.org/constructor/message</a></li>
+<li>Telegram channel statistics:
+<a href="https://core.telegram.org/api/stats">https://core.telegram.org/api/stats</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/lead/Lead-Generation-Telegram.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

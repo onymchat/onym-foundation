@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Recovery Trustee Seat — Onym Foundation</title>
+<meta name="description" content="Onym Recovery Trustee Seat — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/recovery/Recovery-Trustee.html">
+<meta property="og:title" content="Onym Recovery Trustee Seat — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/recovery/Recovery-Trustee.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Recovery trustee</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/recovery/Recovery-Trustee.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-recovery-trustee-seat">Onym Recovery Trustee Seat</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>A recovery trustee holds only the authority the identity holder enrolled.
+It can help satisfy a recovery policy; it does not become the identity.</p>
+</blockquote>
+<p>This document defines the technology-neutral contract surface for an Onym
+recovery trustee. A trustee may be a person, an organization, a hardware
+device, a hosted custody service, or an automated service. Anyone may publish
+a conforming offer, and an identity holder may combine trustees from different
+operators and trust domains.</p>
+<p>The first implementation profiles are:</p>
+<ul>
+<li><a href="../recovery/Recovery-Trustee-Cloud.html">Recovery-Trustee-Cloud.md</a>, a deliberately
+custodial single-provider service that stores an encrypted recovery artifact
+and can release the key after its recovery policy is satisfied; and</li>
+<li><a href="../recovery/Recovery-Trustee-Shamir.html">Recovery-Trustee-Shamir.md</a>, a threshold
+arrangement in which independently selected trustees hold Shamir shares and
+no one trustee can recover the protected secret.</li>
+</ul>
+<p>This boundary extends the recovery ceremony required by
+<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a>. It does not change
+the normal identity capability port and does not grant a trustee ordinary
+signing, decryption, messaging, group, banking, or notary authority.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym makes recovery an open, replaceable service seat rather than a hidden
+privilege of the UI publisher or identity-vault vendor.</p>
+<ul>
+<li>The <strong>identity holder</strong> chooses a recovery policy while the identity is
+healthy and can rotate or revoke it.</li>
+<li>The <strong>vault</strong> creates and consumes recovery artifacts locally. It never
+gives a requester ambient access to the root secret.</li>
+<li>A <strong>recovery trustee</strong> holds one declared recovery contribution and releases
+it only through the enrolled policy.</li>
+<li>A <strong>recovery coordinator</strong> transports session objects and trustee responses.
+It need not be trusted with plaintext recovery material.</li>
+<li>A <strong>recovery candidate</strong> controls the new destination device and asks the
+trustees to recover to that device.</li>
+<li>An <strong>implementation-profile author</strong> defines how artifacts and trustee
+contributions are protected and combined.</li>
+<li>A <strong>directory or UI publisher</strong> may recommend providers under its own
+policy, but cannot make direct use of a compatible trustee invalid.</li>
+</ul>
+<p>One party may occupy several roles, but their authority remains explicit. A
+cloud provider may be both coordinator and trustee. A family member may be a
+trustee through an app. A UI publisher may operate a default trustee, but it
+does not gain recovery authority unless the holder actually enrolls that
+component.</p>
+<p>Payment purchases the declared custody, availability, notification, or
+recovery service. It is not ownership of the identity, a permanent royalty on
+the recovered person, permission to inspect other identity activity, or a
+right to veto migration.</p>
+<h2 id="2-what-recovery-means">2. What recovery means</h2>
+<p>Every recovery profile must declare one of two materially different modes:</p>
+<ol>
+<li><strong>secret restoration</strong> returns the same root or recovery secret to a new
+vault. It preserves deterministic keys, but any undiscovered copy or prior
+compromise of that secret remains effective; or</li>
+<li><strong>authority migration</strong> authorizes a new root or operational key under a
+previously published recovery authority. It can retire the old key, but
+downstream groups, registries, seats, and chains follow only if their own
+protocols recognize the migration.</li>
+</ol>
+<p>Satisfying a trustee policy proves only that the enrolled recovery conditions
+were met. It does not prove a timeless fact about who the “real person” is.
+Trustees can be deceived, coerced, compromised, unavailable, or colluding.</p>
+<p>For either mode, successful recovery should lead immediately to:</p>
+<ul>
+<li>binding fresh device authenticators;</li>
+<li>revoking the recovery session and one-time factors;</li>
+<li>rotating the recovery enrollment and all trustee contributions;</li>
+<li>publishing any supported identity-key rotation or compromise record; and</li>
+<li>re-evaluating high-value financial and group relationships separately.</li>
+</ul>
+<p>Restoring a stolen mnemonic does not make it secret again. Where authority
+migration is unsupported, the UI must say that clearly rather than displaying
+“identity secured.”</p>
+<h2 id="3-scope-and-non-goals">3. Scope and non-goals</h2>
+<p>The seat provides:</p>
+<ol>
+<li>discovery of signed trustee manifests and offers;</li>
+<li>enrollment under a versioned recovery policy;</li>
+<li>durable storage of a provider- or share-specific contribution;</li>
+<li>policy-bound recovery sessions addressed to a fresh destination key;</li>
+<li>approval, refusal, timeout, cancellation, and notification;</li>
+<li>signed receipts sufficient to diagnose and dispute service behavior;</li>
+<li>rotation, revocation, export, and closure; and</li>
+<li>explicit payment, lapse, retention, and deletion semantics.</li>
+</ol>
+<p>The seat does not:</p>
+<ul>
+<li>continuously back up chats, attachments, app settings, or device state;</li>
+<li>silently escrow a mnemonic merely because a user installed a UI;</li>
+<li>decide who may control a group, registry name, bank account, or blockchain
+asset after identity recovery;</li>
+<li>guarantee legal succession, inheritance, incapacity, or death handling;</li>
+<li>make plaintext email, chat messages, or support tickets safe channels for a
+seed or trustee share;</li>
+<li>turn a checksum into proof that an honest trustee approved; or</li>
+<li>guarantee deletion from a custodian's historical backups.</li>
+</ul>
+<p>Succession and inheritance require a separate policy with jurisdiction,
+evidence, delay, challenge, and fiduciary rules. They must not be smuggled into
+ordinary device-loss recovery.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">healthy identity vault
+  |-- creates canonical RecoveryArtifact
+  |-- protects it under the selected implementation profile
+  |-- enrolls provider contribution(s)
+  `-- records signed enrollment receipt(s)
+
+later, on a new device
+  recovery candidate
+      | creates fresh destination key + random session ID
+      v
+  recovery coordinator (untrusted transport is allowed)
+      | forwards one bound RecoverySession
+      +----------------------+----------------------+
+      v                      v                      v
+   trustee A              trustee B              trustee N
+   verify policy          verify policy          verify policy
+   approve/refuse         approve/refuse         approve/refuse
+      +----------------------+----------------------+
+                             |
+                             | contribution encrypted to destination key
+                             v
+                    recovery vault on new device
+                    reconstructs or unwraps locally
+                    verifies artifact and identity
+                    rotates enrollment and keys
+</code></pre>
+<p>The coordinator may observe timing, trustee choices, network addresses, and
+session size. An implementation that claims coordinator blindness must define
+the routing and padding mechanism that provides it. End-to-end encryption of
+trustee contributions does not by itself hide this metadata.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-recovery-trustee-profile">5.1 Recovery Trustee Profile</h3>
+<p>A <code>RecoveryTrusteeProfile</code> fixes portable semantics without selecting a
+custody or threshold technology:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:recovery-profile:trustee-v1&quot;,
+  &quot;interface&quot;: &quot;onym-recovery-trustee-v1&quot;,
+  &quot;recoveryModes&quot;: [&quot;secret-restoration&quot;, &quot;authority-migration&quot;],
+  &quot;operations&quot;: [
+    &quot;enroll&quot;,
+    &quot;read-enrollment&quot;,
+    &quot;bootstrap-recovery&quot;,
+    &quot;begin-recovery&quot;,
+    &quot;contribute-recovery&quot;,
+    &quot;read-recovery&quot;,
+    &quot;cancel-recovery&quot;,
+    &quot;finalize-recovery&quot;,
+    &quot;rotate-enrollment&quot;,
+    &quot;revoke-enrollment&quot;,
+    &quot;export-enrollment&quot;,
+    &quot;close-enrollment&quot;
+  ],
+  &quot;policySchema&quot;: &quot;onym-recovery-policy-v1&quot;,
+  &quot;sessionSchema&quot;: &quot;onym-recovery-session-v1&quot;,
+  &quot;receiptSchema&quot;: &quot;onym-recovery-receipt-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym-recovery-errors-v1&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Two implementations conform to the same abstract profile only if they preserve
+the operation meanings, holder controls, destination binding, state changes,
+receipts, and failure semantics below. Both storing something called a
+“backup” is not compatibility.</p>
+<h3 id="52-recovery-implementation-profile">5.2 Recovery Implementation Profile</h3>
+<p>A <code>RecoveryImplementationProfile</code> maps the abstract surface to one concrete
+construction:</p>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;recoveryProfileId&quot;: &quot;onym:recovery-profile:trustee-v1&quot;,
+  &quot;custodyClass&quot;: &quot;&lt;single-provider-custodial-or-threshold&gt;&quot;,
+  &quot;recoveryModes&quot;: [&quot;&lt;supported-mode&gt;&quot;],
+  &quot;artifactProtection&quot;: &quot;&lt;content-addressed-cryptographic-suite&gt;&quot;,
+  &quot;contributionFormat&quot;: &quot;&lt;content-addressed-format&gt;&quot;,
+  &quot;destinationBinding&quot;: &quot;&lt;content-addressed-protocol&gt;&quot;,
+  &quot;verification&quot;: &quot;&lt;integrity-and-authenticity-rules&gt;&quot;,
+  &quot;rotation&quot;: &quot;&lt;implemented-rotation-semantics&gt;&quot;,
+  &quot;testVectors&quot;: &quot;&lt;content-addressed-fixture-set&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>An implementation profile must state exactly which combinations of parties
+can recover, deny recovery, or destroy availability. “Encrypted” and
+“decentralized” are not custody descriptions.</p>
+<h3 id="53-trustee-service-manifest">5.3 Trustee Service Manifest</h3>
+<p>Each operator publishes a signed manifest:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;trustee-id&gt;&quot;,
+  &quot;seat&quot;: &quot;identity.recovery-trustee&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;recoveryProfileId&quot;: &quot;onym:recovery-profile:trustee-v1&quot;,
+  &quot;implementationProfileIds&quot;: [
+    &quot;onym:recovery-implementation:&lt;technology&gt;-v1&quot;
+  ],
+  &quot;endpoints&quot;: [&quot;&lt;enrollment-and-recovery-endpoint&gt;&quot;],
+  &quot;trustDomain&quot;: &quot;&lt;operator-declared-administrative-domain&gt;&quot;,
+  &quot;jurisdiction&quot;: &quot;&lt;operator-declared-jurisdiction-or-none&gt;&quot;,
+  &quot;retention&quot;: &quot;&lt;content-addressed-retention-policy&gt;&quot;,
+  &quot;recoveryFactors&quot;: [&quot;&lt;supported-factor-classes&gt;&quot;],
+  &quot;notificationChannels&quot;: [&quot;&lt;supported-independent-channels&gt;&quot;],
+  &quot;offers&quot;: [&quot;&lt;seat-offer-id&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p><code>trustDomain</code> is a provider assertion used to help users avoid accidental
+concentration; it is not proof of independence. A directory may verify
+corporate control, infrastructure, audits, insurance, jurisdiction, or
+incident history under a separately published listing policy.</p>
+<h3 id="54-recovery-policy">5.4 Recovery Policy</h3>
+<p>The holder approves a canonical, versioned policy before enrollment:</p>
+<pre><code class="language-json">{
+  &quot;policyVersion&quot;: 1,
+  &quot;policyId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;recoveryMode&quot;: &quot;secret-restoration&quot;,
+  &quot;identityBindingCommitment&quot;: &quot;&lt;enrollment-scoped-opaque-commitment&gt;&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;trustees&quot;: [
+    {
+      &quot;componentId&quot;: &quot;onym:component:&lt;trustee-id&gt;&quot;,
+      &quot;slot&quot;: &quot;&lt;opaque-slot&gt;&quot;,
+      &quot;authorizationPublicKey&quot;: &quot;&lt;trustee-scoped-public-key&gt;&quot;
+    }
+  ],
+  &quot;approvalRule&quot;: &quot;&lt;implementation-defined-rule&gt;&quot;,
+  &quot;candidateFactors&quot;: [&quot;&lt;pre-enrolled-factor-requirements&gt;&quot;],
+  &quot;cooldown&quot;: &quot;P2D&quot;,
+  &quot;sessionLifetime&quot;: &quot;P7D&quot;,
+  &quot;maximumAttempts&quot;: 3,
+  &quot;notifications&quot;: [&quot;&lt;independent-destination-references&gt;&quot;],
+  &quot;holderVeto&quot;: &quot;&lt;veto-method-and-deadline&gt;&quot;,
+  &quot;lapsePolicy&quot;: &quot;&lt;grace-export-destruction-rule&gt;&quot;,
+  &quot;createdAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;authorization&quot;: &quot;&lt;healthy-vault-authorization-from-recovery-scoped-key&gt;&quot;
+}
+</code></pre>
+<p>The policy is part of the security boundary. An operator cannot substitute a
+shorter delay, weaker factors, different destination rule, different
+trustees, lower threshold, or later policy version during recovery. More
+protective emergency action—such as refusing after detecting fraud—is allowed
+only under a predeclared rule and must produce a reasoned receipt.</p>
+<p>The canonical policy, including the complete <code>trustees</code> array, is holder-
+private by default. A single-custodian profile may send the full policy to its
+only trustee. A multi-trustee profile instead sends each trustee a signed
+<code>TrusteeEnrollmentAuthorization</code> containing only the common parameters and
+that trustee's slot and enforcement terms:</p>
+<pre><code class="language-json">{
+  &quot;authorizationVersion&quot;: 1,
+  &quot;recoveryProfileId&quot;: &quot;onym:recovery-profile:trustee-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;digest-of-canonical-private-policy&gt;&quot;,
+  &quot;identityBindingCommitment&quot;: &quot;&lt;opaque-commitment-from-policy&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;digest-of-protected-artifact&gt;&quot;,
+  &quot;recoveryMode&quot;: &quot;secret-restoration&quot;,
+  &quot;trustee&quot;: {
+    &quot;componentId&quot;: &quot;onym:component:&lt;this-trustee-id&gt;&quot;,
+    &quot;slot&quot;: &quot;&lt;this-opaque-slot&gt;&quot;
+  },
+  &quot;trusteeChallenge&quot;: &quot;&lt;fresh-single-use-challenge-issued-for-this-slot&gt;&quot;,
+  &quot;contributionParameters&quot;: &quot;&lt;profile-defined-threshold-or-custody-parameters&gt;&quot;,
+  &quot;trusteePolicy&quot;: {
+    &quot;candidateFactors&quot;: [&quot;&lt;this-trustee-factor-bindings&gt;&quot;],
+    &quot;cooldown&quot;: &quot;P2D&quot;,
+    &quot;sessionLifetime&quot;: &quot;P7D&quot;,
+    &quot;maximumAttempts&quot;: 3,
+    &quot;notifications&quot;: [&quot;&lt;this-trustee-destination-references&gt;&quot;],
+    &quot;holderVeto&quot;: &quot;&lt;this-trustee-veto-method-and-deadline&gt;&quot;,
+    &quot;lapsePolicy&quot;: &quot;&lt;this-trustee-grace-export-destruction-rule&gt;&quot;
+  },
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;authorizationPublicKey&quot;: &quot;&lt;this-trustee-scoped-public-key-from-private-policy&gt;&quot;,
+  &quot;holderAuthorization&quot;: &quot;&lt;signature-over-canonical-object-with-this-field-omitted&gt;&quot;
+}
+</code></pre>
+<p>The trustee verifies this signature, its own component and slot, the current
+enrollment sequence, the profile and artifact bindings, and the exact local
+policy it must enforce. It also consumes an unexpired, single-use challenge
+that it issued after accepting the invitation or authenticating an authorized
+service enrollment; possession of its published encryption key alone cannot
+create an accepted record. It treats <code>policyDigest</code> as an opaque binding
+because it cannot recompute the private full-policy digest. The holder and
+recovering vault verify the full policy and require every contribution to bind
+the same digest. A directory, coordinator, or trustee receives no other
+trustee entry merely to validate one slot.</p>
+<p>The healthy vault authorizes each enrollment slot with a distinct trustee-
+scoped key recorded in the private policy. Separate trustees therefore do not
+receive a shared authorization key that trivially links them. A provider need
+not learn the root public identity. The subject commitment uses a random
+binding salt held inside the encrypted artifact, so providers cannot use it as
+a stable cross-enrollment identity tag. That healthy authorization is not
+required to begin recovery, because recovery handles loss of the old signing
+ability.</p>
+<h3 id="55-recovery-artifact">5.5 Recovery Artifact</h3>
+<p>A <code>RecoveryArtifact</code> is a canonical vault export consumed only by a recovery
+implementation:</p>
+<pre><code class="language-json">{
+  &quot;artifactVersion&quot;: 1,
+  &quot;artifactId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;recoveryMode&quot;: &quot;secret-restoration&quot;,
+  &quot;identitySubject&quot;: &quot;onym:key:&lt;self-certifying-id&gt;&quot;,
+  &quot;descriptorDigest&quot;: &quot;&lt;digest-of-enrollment-descriptor&gt;&quot;,
+  &quot;identityBindingSalt&quot;: &quot;&lt;random-256-bit-value&gt;&quot;,
+  &quot;payloadSchema&quot;: &quot;&lt;vault-export-schema&gt;&quot;,
+  &quot;payload&quot;: &quot;&lt;root-secret-or-migration-authority-inside-encryption-only&gt;&quot;,
+  &quot;createdAt&quot;: &quot;2026-08-01T00:00:00Z&quot;
+}
+</code></pre>
+<p>The plaintext form never crosses the recovery boundary. The vault serializes
+it canonically and immediately protects it under the implementation profile.
+The portable network/storage form is a <code>ProtectedRecoveryArtifact</code>:</p>
+<pre><code class="language-json">{
+  &quot;protectedArtifactVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;digest-of-canonical-private-policy&gt;&quot;,
+  &quot;identityBindingCommitment&quot;: &quot;&lt;opaque-commitment-from-policy&gt;&quot;,
+  &quot;recoveryMode&quot;: &quot;secret-restoration&quot;,
+  &quot;artifactId&quot;: &quot;&lt;same-random-256-bit-id-as-plaintext-artifact&gt;&quot;,
+  &quot;protectionParameters&quot;: &quot;&lt;profile-defined-suite-nonce-and-version&gt;&quot;,
+  &quot;ciphertext&quot;: &quot;&lt;authenticated-encryption-of-RecoveryArtifact&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;digest-over-canonical-object-with-this-field-omitted&gt;&quot;
+}
+</code></pre>
+<p>Every field needed to reconstruct the implementation profile's associated
+data is outside the ciphertext in this object. The values are not secret keys,
+but they are private recovery metadata and are disclosed only through an
+authorized bootstrap path or opaque artifact location. After decryption, the
+vault requires the internal <code>artifactId</code>, recovery mode, subject commitment,
+and descriptor binding to match the protected header.</p>
+<p>The vault computes the policy's subject commitment from a domain separator,
+<code>identityBindingSalt</code>, <code>identitySubject</code>, and <code>descriptorDigest</code>. A recovering
+vault recomputes it after authenticated decryption; a trustee treats the
+commitment as an opaque enrollment binding.</p>
+<p>Profiles should protect a random recovery-unlock key and use that key to
+AEAD-encrypt the artifact, instead of applying ad hoc encryption directly to
+a human mnemonic. This gives the client a uniform integrity check and keeps
+the trustee construction independent of the vault's seed format.</p>
+<h3 id="56-recovery-enrollment">5.6 Recovery Enrollment</h3>
+<pre><code class="language-json">{
+  &quot;enrollmentVersion&quot;: 1,
+  &quot;enrollmentId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;policy&quot;: &quot;&lt;canonical-RecoveryPolicy&gt;&quot;,
+  &quot;artifactId&quot;: &quot;&lt;same-id-as-ProtectedRecoveryArtifact&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;digest-of-encrypted-artifact-and-associated-data&gt;&quot;,
+  &quot;artifactLocators&quot;: [&quot;&lt;opaque-content-location&gt;&quot;],
+  &quot;contributions&quot;: [
+    {
+      &quot;componentId&quot;: &quot;onym:component:&lt;trustee-id&gt;&quot;,
+      &quot;slot&quot;: &quot;&lt;opaque-slot&gt;&quot;,
+      &quot;contributionDigest&quot;: &quot;&lt;digest-of-sealed-contribution&gt;&quot;
+    }
+  ],
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;createdAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;holderAuthorization&quot;: &quot;&lt;healthy-vault-authorization-from-recovery-scoped-key&gt;&quot;,
+  &quot;trusteeReceipts&quot;: [&quot;&lt;signed-enrollment-receipt&gt;&quot;]
+}
+</code></pre>
+<p>The random enrollment ID, policy digest, sequence, artifact digest, and
+trustee slot are bound into every contribution. This prevents an old share,
+old artifact, or response for another identity from being silently accepted.
+Public discovery should not expose enrollment IDs or trustee relationships.</p>
+<p>An enrollment is active only after the client has verified enough signed
+receipts to satisfy the implementation's availability rule. “Upload
+succeeded” is not equivalent to a recoverable enrollment.</p>
+<h3 id="57-recovery-session">5.7 Recovery Session</h3>
+<p>A new device has no enrollment state from which to construct a session. Every
+implementation profile therefore defines an authorized bootstrap mechanism
+that returns this private <code>RecoveryBootstrap</code> object before <code>begin-recovery</code>:</p>
+<pre><code class="language-json">{
+  &quot;bootstrapVersion&quot;: 1,
+  &quot;recoveryProfileId&quot;: &quot;onym:recovery-profile:trustee-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;enrollmentLocator&quot;: &quot;&lt;opaque-account-offline-or-trustee-lookup-token&gt;&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;current-enrollment-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;current-private-policy-digest&gt;&quot;,
+  &quot;artifactId&quot;: &quot;&lt;current-artifact-id&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;current-protected-artifact-digest&gt;&quot;,
+  &quot;protectedArtifact&quot;: &quot;&lt;ProtectedRecoveryArtifact-or-authorized-private-locator&gt;&quot;,
+  &quot;trusteeDiscovery&quot;: &quot;&lt;profile-defined-private-routes-or-provider-reference&gt;&quot;,
+  &quot;issuedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;bootstrapProof&quot;: &quot;&lt;provider-signature-or-enrollment-time-holder-signed-map-proof&gt;&quot;
+}
+</code></pre>
+<p>The bootstrap path may be an authenticated provider-account lookup, an
+encrypted offline recovery map, or trustee-side resolution of an opaque token.
+It must define enumeration resistance, rate limits, privacy, rollback
+protection, and how the candidate obtains the current sequence and protected
+artifact without the old identity key. If every bootstrap copy and lookup path
+is lost, private trustee discovery may be impossible even when all shares
+still exist; the enrollment ceremony must test and disclose that failure mode.</p>
+<pre><code class="language-json">{
+  &quot;sessionVersion&quot;: 1,
+  &quot;sessionId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;opaque-enrollment-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;expected-private-policy-digest&gt;&quot;,
+  &quot;artifactId&quot;: &quot;&lt;expected-artifact-id&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;expected-digest&gt;&quot;,
+  &quot;destination&quot;: {
+    &quot;encryptionSuite&quot;: &quot;&lt;profile-defined-public-key-encryption-suite&gt;&quot;,
+    &quot;encryptionPublicKey&quot;: &quot;&lt;fresh-recovery-destination-public-key&gt;&quot;,
+    &quot;proofSuite&quot;: &quot;&lt;profile-defined-signature-suite&gt;&quot;,
+    &quot;proofPublicKey&quot;: &quot;&lt;fresh-session-proof-public-key&gt;&quot;
+  },
+  &quot;candidateEvidence&quot;: [&quot;&lt;policy-permitted-factor-presentations&gt;&quot;],
+  &quot;requestedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2026-08-08T00:00:00Z&quot;,
+  &quot;candidateProof&quot;: &quot;&lt;signature-by-fresh-proof-key-over-canonical-request-with-this-field-omitted&gt;&quot;
+}
+</code></pre>
+<p>Both destination keys are generated on the recovering device for this
+session. The proof signature demonstrates control of the request without
+pretending to authenticate the old identity; the encryption key receives the
+sealed contribution. Every trustee contribution is cryptographically bound to
+the exact session, enrollment sequence, policy digest, artifact ID and digest,
+and both destination keys. A coordinator or support agent must not receive
+plaintext recovery material.</p>
+<p>Trustees evaluate the enrolled factors and policy, apply rate limits and the
+cooldown, notify the holder or designees through independent channels, and
+then contribute, refuse, or allow the session to expire. A code copied into a
+website or sent manually is not phishing-resistant merely because it expires.</p>
+<h3 id="58-trustee-contribution">5.8 Trustee Contribution</h3>
+<pre><code class="language-json">{
+  &quot;contributionVersion&quot;: 1,
+  &quot;sessionId&quot;: &quot;&lt;same-session-id&gt;&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;same-enrollment-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;same-policy-digest&gt;&quot;,
+  &quot;artifactId&quot;: &quot;&lt;same-artifact-id&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;same-artifact-digest&gt;&quot;,
+  &quot;componentId&quot;: &quot;onym:component:&lt;trustee-id&gt;&quot;,
+  &quot;slot&quot;: &quot;&lt;opaque-slot&gt;&quot;,
+  &quot;decision&quot;: &quot;approved&quot;,
+  &quot;destinationKeysDigest&quot;: &quot;&lt;digest-of-both-session-destination-keys&gt;&quot;,
+  &quot;sealedContribution&quot;: &quot;&lt;encrypted-only-to-session-destination&gt;&quot;,
+  &quot;decidedAt&quot;: &quot;2026-08-03T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2026-08-08T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;trustee-signature&gt;&quot;
+}
+</code></pre>
+<p>The signature proves which component made the contribution and what session
+it addressed. It does not reveal the contribution. Refusals use the same
+object with a bounded reason code and no <code>sealedContribution</code>.</p>
+<h3 id="59-recovery-receipt">5.9 Recovery Receipt</h3>
+<p>Every state-changing operation returns a signed receipt containing:</p>
+<ul>
+<li>operation and unique request ID;</li>
+<li>component, enrollment, sequence, and session references as applicable;</li>
+<li>accepted policy and implementation-profile digests;</li>
+<li>old and new state;</li>
+<li>time, expiry, and bounded result or refusal code;</li>
+<li>evidence digest without secret or candidate factor values; and</li>
+<li>operator signature.</li>
+</ul>
+<p>Receipts prove what a component asserted. They do not prove secure erasure,
+honest human review, correct backup replication, or that an operator retained
+no undeclared copy.</p>
+<h2 id="6-common-contract-surface">6. Common contract surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Caller and input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enroll</code></td>
+<td>Healthy vault; policy, protected artifact, trustee contribution</td>
+<td>Active or pending enrollment plus signed receipt</td>
+</tr>
+<tr>
+<td><code>read-enrollment</code></td>
+<td>Holder or authorized recovery client; enrollment reference</td>
+<td>Current sequence, status, policy digest, expiry, and service health</td>
+</tr>
+<tr>
+<td><code>bootstrap-recovery</code></td>
+<td>Candidate; profile-defined account, offline map, or trustee lookup evidence</td>
+<td>Private current <code>RecoveryBootstrap</code> or non-enumerating refusal</td>
+</tr>
+<tr>
+<td><code>begin-recovery</code></td>
+<td>Candidate; fresh destination key and permitted factors</td>
+<td>Pending session with cooldown and notification state</td>
+</tr>
+<tr>
+<td><code>contribute-recovery</code></td>
+<td>Enrolled trustee; session decision</td>
+<td>Destination-bound sealed contribution or refusal</td>
+</tr>
+<tr>
+<td><code>read-recovery</code></td>
+<td>Candidate or trustee; session reference</td>
+<td>Non-secret session state and contribution receipts</td>
+</tr>
+<tr>
+<td><code>cancel-recovery</code></td>
+<td>Holder veto or authorized candidate</td>
+<td>Cancelled terminal session</td>
+</tr>
+<tr>
+<td><code>finalize-recovery</code></td>
+<td>Recovering vault; artifact verification evidence</td>
+<td>Final receipt; never plaintext secret</td>
+</tr>
+<tr>
+<td><code>rotate-enrollment</code></td>
+<td>Healthy or just-recovered vault; new sequence and contributions</td>
+<td>New active enrollment; old sequence superseded</td>
+</tr>
+<tr>
+<td><code>revoke-enrollment</code></td>
+<td>Healthy vault or profile-defined recovery authority</td>
+<td>Enrollment can no longer approve new sessions</td>
+</tr>
+<tr>
+<td><code>export-enrollment</code></td>
+<td>Holder ceremony</td>
+<td>Portable encrypted artifact, policy, and receipts where supported</td>
+</tr>
+<tr>
+<td><code>close-enrollment</code></td>
+<td>Holder under retention policy</td>
+<td>Closed state and deletion schedule/receipt</td>
+</tr>
+</tbody>
+</table></div><p>Operations are idempotent by request ID. Retrying cannot create a second
+enrollment, shorten a delay, count the same trustee twice, or produce multiple
+billable recoveries.</p>
+<h2 id="7-state-machines">7. State machines</h2>
+<h3 id="71-enrollment">7.1 Enrollment</h3>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Current state</th>
+<th scope="col">Event or operation</th>
+<th scope="col">Next state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draft</code></td>
+<td>First trustee accepts</td>
+<td><code>pending_receipts</code></td>
+</tr>
+<tr>
+<td><code>draft</code> or <code>pending_receipts</code></td>
+<td>Holder cancels/closes</td>
+<td><code>closed</code></td>
+</tr>
+<tr>
+<td><code>pending_receipts</code></td>
+<td>Activation rule and bootstrap test succeed</td>
+<td><code>active</code></td>
+</tr>
+<tr>
+<td><code>active</code></td>
+<td>Holder starts a fully authorized replacement sequence</td>
+<td><code>rotating</code></td>
+</tr>
+<tr>
+<td><code>rotating</code></td>
+<td>Replacement sequence becomes active</td>
+<td><code>superseded</code></td>
+</tr>
+<tr>
+<td><code>rotating</code></td>
+<td>Replacement is abandoned before activation</td>
+<td><code>active</code></td>
+</tr>
+<tr>
+<td><code>rotating</code></td>
+<td>Holder invokes <code>close-enrollment</code></td>
+<td><code>closed</code></td>
+</tr>
+<tr>
+<td><code>active</code></td>
+<td>Revocation authority invokes <code>revoke-enrollment</code></td>
+<td><code>revoked</code></td>
+</tr>
+<tr>
+<td><code>active</code></td>
+<td>Declared term ends without renewal</td>
+<td><code>expired</code></td>
+</tr>
+<tr>
+<td><code>active</code></td>
+<td>Holder invokes <code>close-enrollment</code></td>
+<td><code>closed</code></td>
+</tr>
+<tr>
+<td><code>superseded</code>, <code>revoked</code>, or <code>expired</code></td>
+<td>Holder/provider records logical closure and deletion schedule</td>
+<td><code>closed</code></td>
+</tr>
+</tbody>
+</table></div><p>Only one sequence is current. A client refuses rollback to a lower sequence,
+even when a trustee presents a valid old signature. Rotation creates fresh
+cryptographic contributions; renaming an old share is not rotation. Entering
+<code>closed</code> blocks new recovery contributions immediately even when physical
+deletion continues under a declared retention schedule.</p>
+<h3 id="72-recovery-session">7.2 Recovery session</h3>
+<pre><code class="language-text">requested -&gt; cooling_down -&gt; collecting -&gt; threshold_satisfied -&gt; finalized
+     |             |             |                 |
+     +-------------+-------------+-----------------+--&gt; cancelled
+                   +-------------+--------------------&gt; expired
+                                 +--------------------&gt; refused
+</code></pre>
+<p><code>threshold_satisfied</code> means enough implementation-specific contributions are
+available to the destination client. It is not permission for a server to log
+or display the recovered secret.</p>
+<h2 id="8-holder-and-ui-obligations">8. Holder and UI obligations</h2>
+<p>A conforming vault and UI must:</p>
+<ol>
+<li>enroll recovery only in a dedicated holder-facing ceremony while the vault
+is healthy;</li>
+<li>show the custody class in plain language, including exactly who can recover
+alone and how many trustees can collude or disappear before failure;</li>
+<li>require the holder to verify enough trustee receipts before declaring the
+identity recoverable;</li>
+<li>keep recovery artifacts, keys, shares, mnemonics, candidate factors, and
+trustee relationships out of analytics, logs, screenshots, clipboard
+history, and crash reports;</li>
+<li>generate fresh destination encryption and proof keys for every session and
+keep both private keys on the recovering device;</li>
+<li>verify profile, manifest, policy, enrollment sequence, artifact digest,
+destination binding, trustee signatures, distinct slots, expiry, and final
+artifact integrity before import;</li>
+<li>display cooldown, notifications, outstanding approvals, refusal, expiry,
+and cancellation honestly;</li>
+<li>support rotation, provider replacement, export where promised, and closure
+without an ordinary capability requester observing the ceremony;</li>
+<li>warn that exact-secret restoration cannot neutralize another surviving
+copy of that secret; and</li>
+<li>after success, bind fresh local authentication and guide the holder through
+recovery rotation and downstream compromise review.</li>
+</ol>
+<p>The UI must not describe a 1-of-1 provider as threshold recovery, a group of
+brands under common control as independent, or an artifact stored in several
+backups under one key as multi-trustee custody.</p>
+<h2 id="9-trustee-obligations">9. Trustee obligations</h2>
+<p>A conforming trustee must:</p>
+<ol>
+<li>verify the selected profile, enrollment sequence, contribution binding,
+and either the holder-signed full policy or its signed trustee-specific
+enrollment authorization before accepting custody;</li>
+<li>authenticate state-changing requests over a protected channel and prevent
+replay;</li>
+<li>protect its contribution according to the implementation profile and keep
+it out of routine operator access, logs, support tools, and backups not
+covered by the declared controls;</li>
+<li>evaluate only pre-enrolled recovery factors and policy—support discretion
+cannot silently replace the policy;</li>
+<li>bind an approval to both fresh destination keys, one session, artifact
+digest, enrollment sequence, and expiry;</li>
+<li>notify every enrolled independent channel at the declared lifecycle events;</li>
+<li>enforce attempt limits, cooldown, veto, expiry, and terminal session state;</li>
+<li>issue signed receipts without publishing identity, factor, or social-graph
+data;</li>
+<li>disclose incidents, key/control changes, outages, subcontractors, and
+retention changes that affect the offer;</li>
+<li>support rotation, revocation, lapse, export, and closure exactly as
+declared; and</li>
+<li>never condition emergency export or migration on an undisclosed fee,
+identity disclosure, product purchase, or future royalty.</li>
+</ol>
+<p>A trustee may lawfully refuse under its declared policy or applicable law. It
+must represent this censorship and jurisdiction risk in its offer; protocol
+conformance cannot remove it.</p>
+<h2 id="10-privacy-boundary">10. Privacy boundary</h2>
+<p>Trustee recovery necessarily exposes some relationship metadata. Depending on
+the profile, a provider may learn that:</p>
+<ul>
+<li>one opaque enrollment exists and remains active;</li>
+<li>a recovery attempt occurred at a time and network location;</li>
+<li>particular factors or trustee approvals were presented;</li>
+<li>a recovery reached a terminal state; and</li>
+<li>payment for the seat was made, lapsed, reversed, or refunded.</li>
+</ul>
+<p>The minimum public evidence is an operator manifest. Enrollments, trustee
+sets, recovery sessions, notifications, receipts, and payment links remain
+private to their participants unless disclosure is required for a dispute.
+They must not be placed on a public notary or blockchain by default.</p>
+<p>Trustee-specific pseudonymous keys and opaque slot identifiers should be used
+so separate providers cannot trivially join the holder's other seat activity.
+Payment credentials must not be placed in recovery artifacts or identity
+descriptors. A directory or billing broker does not receive candidate factors
+or recovery contributions.</p>
+<h2 id="11-security-invariants-and-threats">11. Security invariants and threats</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Invariant or threat</th>
+<th scope="col">Required treatment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trustee self-appointment</td>
+<td>Only a holder-authorized enrollment sequence grants a slot</td>
+</tr>
+<tr>
+<td>Coordinator compromise</td>
+<td>Contributions are encrypted to the fresh destination; coordinator cannot combine them</td>
+</tr>
+<tr>
+<td>Replay or rollback</td>
+<td>Bind every object to random IDs, sequence, artifact digest, destination, and expiry</td>
+</tr>
+<tr>
+<td>Trustee collusion</td>
+<td>UI states the exact collusion threshold; profiles cannot claim to eliminate it</td>
+</tr>
+<tr>
+<td>Trustee unavailability</td>
+<td>UI states the exact availability threshold and encourages independent failure domains</td>
+</tr>
+<tr>
+<td>Candidate phishing</td>
+<td>Prefer session-bound cryptographic factors; manual codes are not labelled phishing-resistant</td>
+</tr>
+<tr>
+<td>Malicious contribution</td>
+<td>Verify signatures and final artifact integrity; profile declares whether individual shares are verifiable</td>
+</tr>
+<tr>
+<td>Artifact substitution</td>
+<td>AEAD associated data binds identity, policy, enrollment, mode, sequence, and artifact ID; <code>artifactDigest</code> commits to the protected header and ciphertext</td>
+</tr>
+<tr>
+<td>Root compromise</td>
+<td>Same-secret restoration cannot revoke an attacker's copy; migrate authority where supported</td>
+</tr>
+<tr>
+<td>Silent policy downgrade</td>
+<td>Client compares the enrolled canonical policy and refuses weaker recovery behavior</td>
+</tr>
+<tr>
+<td>Metadata correlation</td>
+<td>Keep enrollment/session records private and use scoped identifiers and minimal receipts</td>
+</tr>
+<tr>
+<td>Provider shutdown or lapse</td>
+<td>Predeclare grace, export, migration, retention, and terminal deletion behavior</td>
+</tr>
+<tr>
+<td>Deletion claim</td>
+<td>Receipt is an operator assertion; backups and compelled copies remain disclosed risks</td>
+</tr>
+</tbody>
+</table></div><p>No recovery scheme protects against a malicious vault that steals the secret
+before it is protected or after it is reconstructed. Endpoint integrity remains
+decisive.</p>
+<h2 id="12-offers-payment-and-open-participation">12. Offers, payment, and open participation</h2>
+<p>Anyone may offer a trustee seat directly or through competing directories. A
+<code>SeatOffer</code> may charge:</p>
+<ul>
+<li>once per enrollment or rotation;</li>
+<li>periodically for custody and availability;</li>
+<li>per initiated or completed recovery;</li>
+<li>for higher assurance, independent notifications, hardware protection, or
+audited operations; or</li>
+<li>nothing, including reciprocal or family trustees.</li>
+</ul>
+<p>The offer must declare at least:</p>
+<ul>
+<li>custody and recovery service being purchased;</li>
+<li>price, rail, term, renewal, refund, taxes, and settlement recipient;</li>
+<li>recovery fees and caps known before enrollment;</li>
+<li>grace period and exact behavior after lapse;</li>
+<li>export and migration rights;</li>
+<li>retention and deletion schedule;</li>
+<li>operator jurisdiction and complaint path; and</li>
+<li>any UI publisher, billing broker, directory, or other disclosed split.</li>
+</ul>
+<p>Each provider receives only its selected offer revenue after disclosed channel
+fees, taxes, refunds, and agreed splits. It acquires no claim on future UI,
+transport, bank, charity, notary, or identity revenue. A trustee may not sell
+or transfer its enrolled role to a new operator without the holder-authorized
+rotation required by the policy.</p>
+<p>Open participation means permissionless compatibility, not automatic trust.
+A UI or directory may require audits, legal identity, insurance, hardware
+controls, uptime, incident response, or conformance tests before recommending
+a provider. A holder remains free to import a compatible manifest directly.</p>
+<h2 id="13-portability-and-replacement">13. Portability and replacement</h2>
+<p>Replaceability depends on custody class:</p>
+<ul>
+<li>In a <strong>single-provider custodial</strong> profile, export requires the provider to
+release or rewrap material. The service is therefore technically capable of
+refusing migration; this is a disclosed custody risk, not abstracted away.</li>
+<li>In a <strong>threshold</strong> profile, the holder can migrate when enough trustees
+cooperate. A single old trustee is replaceable only through a fresh
+re-sharing ceremony; copying one old share into a renamed slot is not safe
+rotation.</li>
+<li>In a <strong>holder-second-factor</strong> profile, both the service and holder factor may
+be necessary. Losing either can make export and recovery impossible.</li>
+</ul>
+<p>Portable export contains no plaintext secret. It includes the protected
+artifact, canonical policy, implementation profile, enrollment sequence,
+necessary private receipts, and declared contribution envelopes. Import into
+another implementation is allowed only when that implementation understands
+the exact cryptographic format and custody semantics.</p>
+<h2 id="14-conformance">14. Conformance</h2>
+<p>An implementation claiming <code>onym:recovery-profile:trustee-v1</code> must publish
+fixtures that test at least:</p>
+<ol>
+<li>canonical object encoding and signatures;</li>
+<li>enrollment receipt and activation thresholds;</li>
+<li>authorized fresh-device bootstrap, current-sequence discovery, privacy,
+enumeration resistance, and bootstrap-loss behavior;</li>
+<li>stale sequence and artifact substitution refusal;</li>
+<li>duplicate trustee/slot rejection;</li>
+<li>fresh destination-key binding;</li>
+<li>retry idempotency and replay refusal;</li>
+<li>cooldown, veto, notification, attempt limit, expiry, and cancellation;</li>
+<li>successful recovery and corrupted-artifact failure;</li>
+<li>rotation and inability to use superseded contributions;</li>
+<li>lapse, export, closure, and declared retention outcomes; and</li>
+<li>redaction of secrets and factors from errors, logs, telemetry, and
+receipts.</li>
+</ol>
+<p>Security review must evaluate the concrete implementation profile. Passing
+the abstract state-machine tests does not validate cryptography, operational
+custody, human trustee judgment, or cloud controls.</p>
+<h2 id="15-errors">15. Errors</h2>
+<p>At minimum, implementations normalize failures to:</p>
+<ul>
+<li><code>unsupported_profile</code></li>
+<li><code>invalid_manifest</code></li>
+<li><code>invalid_policy</code></li>
+<li><code>invalid_enrollment</code></li>
+<li><code>enrollment_pending</code></li>
+<li><code>enrollment_expired</code></li>
+<li><code>enrollment_revoked</code></li>
+<li><code>stale_enrollment_sequence</code></li>
+<li><code>artifact_mismatch</code></li>
+<li><code>invalid_destination</code></li>
+<li><code>bootstrap_unavailable</code></li>
+<li><code>invalid_candidate_factor</code></li>
+<li><code>recovery_cooling_down</code></li>
+<li><code>recovery_rate_limited</code></li>
+<li><code>recovery_vetoed</code></li>
+<li><code>recovery_refused</code></li>
+<li><code>recovery_expired</code></li>
+<li><code>insufficient_contributions</code></li>
+<li><code>invalid_contribution</code></li>
+<li><code>payment_required</code></li>
+<li><code>service_lapsed</code></li>
+<li><code>export_unavailable</code></li>
+<li><code>temporarily_unavailable</code></li>
+</ul>
+<p>Errors reveal no mnemonic, share, recovery code, factor value, candidate
+evidence, trustee-set membership, or existence of an enrollment to an
+unauthorized caller.</p>
+<h2 id="16-status">16. Status</h2>
+<p>This contract surface and both initial implementation profiles are proposals.
+They do not claim that current Onym clients, vaults, providers, or identities
+already implement recoverable enrollment. No production UI should advertise
+the seat until canonical encodings, cryptographic test vectors, independent
+review, incident procedures, and end-to-end recovery/rotation drills exist.</p>
+<h2 id="references">References</h2>
+<ol>
+<li>Adi Shamir, “How to Share a Secret,” <em>Communications of the ACM</em> 22(11),
+1979: <a href="https://doi.org/10.1145/359168.359176">https://doi.org/10.1145/359168.359176</a></li>
+<li>SatoshiLabs, “SLIP-0039: Shamir's Secret-Sharing for Mnemonic Codes”:
+<a href="https://github.com/satoshilabs/slips/blob/master/slip-0039.md">https://github.com/satoshilabs/slips/blob/master/slip-0039.md</a></li>
+<li>NIST SP 800-63B-4, “Authentication and Authenticator Management,” account
+recovery and notification requirements:
+<a href="https://pages.nist.gov/800-63-4/sp800-63b.html">https://pages.nist.gov/800-63-4/sp800-63b.html</a></li>
+<li>IETF RFC 9180, “Hybrid Public Key Encryption”:
+<a href="https://www.rfc-editor.org/rfc/rfc9180">https://www.rfc-editor.org/rfc/rfc9180</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/recovery/Recovery-Trustee.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

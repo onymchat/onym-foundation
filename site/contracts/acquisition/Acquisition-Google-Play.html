@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Acquisition: Google Play Implementation — Onym Foundation</title>
+<meta name="description" content="Onym Acquisition: Google Play Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/acquisition/Acquisition-Google-Play.html">
+<meta property="og:title" content="Onym Acquisition: Google Play Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/acquisition/Acquisition-Google-Play.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/acquisition/Acquisition-Google-Play.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-acquisition-google-play-implementation">Onym Acquisition: Google Play Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>One acquisition order uses one shared UTM campaign value. A publisher-
+authorized oracle reports only Google Play's aggregate store-acquisition
+result; the Onym app never reads an install referrer.</p>
+</blockquote>
+<p>This document implements <a href="../acquisition/Acquisition.html">Acquisition.md</a> with a UTM-tagged
+Google Play store-listing link and aggregate Play Console reports. The
+abstract contract remains authoritative for ownership, privacy, offer,
+settlement, and dispute behavior.</p>
+<p>This profile is proposed architecture. It has not been implemented in the
+current Onym repositories.</p>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Google Play mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Application reference</td>
+<td>Android package name and Play developer commitment</td>
+</tr>
+<tr>
+<td>Shared store cohort</td>
+<td>One opaque <code>utm_campaign</code> value per order</td>
+</tr>
+<tr>
+<td>Source class</td>
+<td>Fixed non-personal <code>utm_source</code> such as <code>onym-acquisition</code></td>
+</tr>
+<tr>
+<td>Store destination</td>
+<td>Google Play app store-listing URL</td>
+</tr>
+<tr>
+<td>Preferred acquisition event</td>
+<td><code>Store listing acquisitions</code></td>
+</tr>
+<tr>
+<td>Legacy compatible event</td>
+<td><code>Installers</code>, only under a separately pinned legacy report profile</td>
+</tr>
+<tr>
+<td>Evidence source</td>
+<td>Play Console Statistics/export or supported acquisition CSV</td>
+</tr>
+<tr>
+<td>Privacy behavior</td>
+<td>Low-volume UTM values may be grouped as <code>Other</code></td>
+</tr>
+<tr>
+<td>Evidence oracle</td>
+<td>Publisher or delegated private report-bucket reader</td>
+</tr>
+<tr>
+<td>App install-referrer read</td>
+<td>Prohibited</td>
+</tr>
+</tbody>
+</table></div><p>Implementation profile identifier:</p>
+<pre><code class="language-text">onym:acquisition-implementation:google-play-utm-store-acquisition-v1
+</code></pre>
+<p>Google Play's metric definition and reporting surface are evolving. From July
+2026 its main store-performance reporting emphasizes unique install/open/
+pre-registration button clicks rather than successful acquisition outcomes.
+Google states that Store listing acquisitions remain available in Statistics
+and exports, while legacy acquisition CSVs continue to support their original
+metrics. An order must pin one exact report and event definition; it cannot
+mix click and acquisition counters.</p>
+<h2 id="2-exact-event-meaning">2. Exact event meaning</h2>
+<p>The preferred v1 output is Google's <code>Store listing acquisitions</code> metric:</p>
+<blockquote>
+<p>the aggregate number of users who visited the store listing and installed
+the app while not already having it installed on another device, as defined
+by the current Play Console report.</p>
+</blockquote>
+<p>This is stronger than an install-button click, but it is still a proprietary
+store-defined acquisition. It is not proof of a retained installation, app
+launch, Onym identity, unique device for all time, or later activity.</p>
+<p>If the preferred metric cannot be broken down by the authorized UTM cohort in
+the pinned report, the result is <code>unsupported</code> or <code>unavailable</code>. The oracle
+must not substitute Unique user Install Clicks or a global app-install total.</p>
+<p>A legacy profile may instead use the acquisition report's <code>Installers</code> field.
+That requires a different implementation-profile ID because the cohort,
+window, availability, and uniqueness semantics differ.</p>
+<h2 id="3-store-link-construction">3. Store-link construction</h2>
+<p>The publisher authorizes a link based on Google's store-listing format:</p>
+<pre><code class="language-text">https://play.google.com/store/apps/details?id=&lt;package-name&gt;&amp;utm_source=onym-acquisition&amp;utm_campaign=&lt;opaque-order-cohort&gt;
+</code></pre>
+<p>The final URL is validated against Google's current link and reporting rules.
+All visitors in the order receive the same <code>utm_source</code> and <code>utm_campaign</code>.</p>
+<ul>
+<li><code>id</code> is the advertised application package.</li>
+<li><code>utm_source</code> identifies this protocol/source class, not a visitor.</li>
+<li><code>utm_campaign</code> is the opaque acquisition-order cohort.</li>
+<li>the link contains no <code>referrer</code> parameter and no visitor-specific value.</li>
+</ul>
+<p>The order commits to the package name, normalized destination hash, source,
+and campaign-value hash. A provider cannot swap the application, append its
+own referral value, or create a child cohort.</p>
+<h2 id="4-install-referrer-is-outside-the-privacy-profile">4. Install Referrer is outside the privacy profile</h2>
+<p>Google's Play Install Referrer API can let an installed Android application
+retrieve referral content plus click and installation timestamps. That is
+precisely an app-facing cross-boundary attribution path.</p>
+<p>This profile therefore requires that the Onym Android build:</p>
+<ol>
+<li>does not include the Play Install Referrer client for acquisition;</li>
+<li>never calls the Install Referrer service;</li>
+<li>never reads or uploads a referrer URL or click/install timestamp;</li>
+<li>never maps a UTM value to an Onym identity, key, account, or device; and</li>
+<li>has no post-install campaign callback.</li>
+</ol>
+<p>Whether Google Play internally retains referral information is part of the
+store's operation. Onym does not retrieve it into the application or export
+it through this contract.</p>
+<h2 id="5-landing-behavior">5. Landing behavior</h2>
+<p>The provider serves one shared route:</p>
+<pre><code class="language-text">https://&lt;provider-origin&gt;/a/&lt;opaque-acquisition-route&gt;
+</code></pre>
+<p>After the declared hot-lead action, it opens the authorized UTM-tagged Play
+listing. The provider:</p>
+<ul>
+<li>uses no cookies, persistent browser storage, fingerprint, advertising ID,
+analytics pixel, login requirement, or per-visitor parameter;</li>
+<li>does not embed <code>utm_campaign</code> in an Onym deep link;</li>
+<li>does not use forced redirects or misleading install UI;</li>
+<li>expires any in-memory landing capability quickly;</li>
+<li>records only aggregate hot-lead and store-intent counters; and</li>
+<li>never receives a callback from the installed app.</li>
+</ul>
+<p>Google receives the shared UTM cohort and normal store request/account/device
+data under its own terms. The provider and sponsor receive only the normalized
+aggregate report.</p>
+<h2 id="6-publisher-authorization">6. Publisher authorization</h2>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:acquisition-implementation:google-play-utm-store-acquisition-v1&quot;,
+  &quot;packageName&quot;: &quot;&lt;android-package&gt;&quot;,
+  &quot;playDeveloperIdHash&quot;: &quot;&lt;publisher-commitment&gt;&quot;,
+  &quot;utmSource&quot;: &quot;onym-acquisition&quot;,
+  &quot;utmCampaignHash&quot;: &quot;&lt;order-cohort-commitment&gt;&quot;,
+  &quot;destinationUrlHash&quot;: &quot;&lt;normalized-url-hash&gt;&quot;,
+  &quot;authorizedWindow&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;publisher&quot;: &quot;onym:key:&lt;application-publisher&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Publisher authorization proves that the package and reporting cohort belong
+to the order. It does not give the landing provider access to Play Console.</p>
+<h2 id="7-evidence-retrieval">7. Evidence retrieval</h2>
+<p>The order pins one currently supported source:</p>
+<h3 id="71-statistics-or-store-performance-export">7.1 Statistics or Store Performance export</h3>
+<p>The oracle selects the order's UTM source/campaign and reads Store listing
+acquisitions for the declared window. Because Google Play's primary 2026 UI
+now emphasizes store-intent clicks, the oracle must record the metric name and
+must reject a result containing only <code>Unique user Install Clicks</code> when the
+order bills acquisitions.</p>
+<h3 id="72-private-cloud-storage-report">7.2 Private Cloud Storage report</h3>
+<p>Google Play makes aggregate reports available in a private Cloud Storage
+bucket for the developer account. Current documentation says data is captured
+daily and monthly CSV files are posted after a delay, commonly three to seven
+days. Supported acquisition exports include UTM source/campaign dimensions and
+installer or store-listing-acquisition fields depending on report generation.</p>
+<p>A publisher may grant a service account access to the report bucket. The
+recommended Onym oracle runs behind a publisher-controlled gateway because a
+bucket can contain unrelated applications, cohorts, and commercially
+sensitive metrics. The gateway emits only an order aggregate.</p>
+<p>The normalized source record includes:</p>
+<ul>
+<li>report family and file/schema version;</li>
+<li>package name;</li>
+<li>report month, row date/window, and processing time;</li>
+<li>acquisition metric name;</li>
+<li>UTM source and campaign commitment;</li>
+<li>exact count or grouping/suppression status;</li>
+<li>source object checksum; and</li>
+<li>documented reporting delay or correction status.</li>
+</ul>
+<h2 id="8-normalized-snapshot">8. Normalized snapshot</h2>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;id&gt;&quot;,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;applicationReference&quot;: &quot;google-play:&lt;android-package&gt;&quot;,
+  &quot;store&quot;: &quot;google-play&quot;,
+  &quot;storeCohortIdHash&quot;: &quot;&lt;utm-campaign-hash&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;eventName&quot;: &quot;google-play-store-listing-acquisition&quot;,
+  &quot;eventCount&quot;: 151,
+  &quot;reportingStatus&quot;: &quot;final&quot;,
+  &quot;minimumReportableCohort&quot;: 20,
+  &quot;utmGroupedAsOther&quot;: false,
+  &quot;source&quot;: {
+    &quot;report&quot;: &quot;&lt;pinned-statistics-or-export-report&gt;&quot;,
+    &quot;schemaVersion&quot;: &quot;&lt;observed-version&gt;&quot;,
+    &quot;contentHash&quot;: &quot;&lt;normalized-source-hash&gt;&quot;
+  },
+  &quot;observedAt&quot;: &quot;2026-08-15T00:00:00Z&quot;,
+  &quot;oracle&quot;: &quot;onym:key:&lt;google-play-evidence-oracle&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;oracle-signature&gt;&quot;
+}
+</code></pre>
+<p>If Google groups the UTM value into <code>Other</code>, <code>eventCount</code> is omitted and
+<code>reportingStatus</code> is <code>grouped</code>. If the report is unfinished, status is
+<code>pending</code>; if the selected report no longer exposes the metric/dimension pair,
+status is <code>unsupported</code>. None is equivalent to zero.</p>
+<h2 id="9-efficiency-and-settlement">9. Efficiency and settlement</h2>
+<p>For one final compatible window:</p>
+<pre><code class="language-text">hotToPlayAcquisitionRate = playStoreListingAcquisitions / eligibleHotLeads
+intentToPlayAcquisitionRate = playStoreListingAcquisitions / eligibleStoreIntents
+costPerPlayAcquisition = settledAcquisitionAmount / playStoreListingAcquisitions
+</code></pre>
+<p>A <code>Unique user Install Clicks</code> report can be included as an intermediate store
+intent metric. It cannot settle an order whose billable metric is Store
+listing acquisitions.</p>
+<p>Small UTM cohorts may become <code>Other</code>, making exact per-provider acquisition
+settlement impossible. The order therefore chooses before activation whether
+to:</p>
+<ul>
+<li>wait for a wider compatible reporting window;</li>
+<li>use a fixed hosting component;</li>
+<li>pay from a declared reportable tier; or</li>
+<li>close the performance component after a bounded timeout.</li>
+</ul>
+<p>The parties must not subtract global totals or adjacent UTM cohorts to infer a
+hidden count. Corrections are signed append-only evidence and follow the
+order's declared reconciliation policy.</p>
+<h2 id="10-privacy-and-security-properties">10. Privacy and security properties</h2>
+<ol>
+<li>Every order visitor receives the same UTM campaign value.</li>
+<li>The app neither links the Install Referrer library nor queries its service.</li>
+<li>No UTM/referrer data is stored with an Onym identity.</li>
+<li>Only aggregate Play Console/export evidence leaves the publisher gateway.</li>
+<li>Low-volume <code>Other</code> grouping is preserved.</li>
+<li>A store click is distinguished from a store acquisition.</li>
+<li>The report reader receives the minimum feasible bucket access and never
+exposes credentials or unrelated rows.</li>
+<li>Landing metadata is not joined to Play account, device, or install data.</li>
+</ol>
+<p>The app's absence of Install Referrer behavior should be testable from source,
+dependency manifests, binaries, and observed network traffic. A written
+promise alone is insufficient for a default curated directory.</p>
+<h2 id="11-failure-and-dispute-mapping">11. Failure and dispute mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Condition</th>
+<th scope="col">Required outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Package or UTM authorization absent</td>
+<td>Order cannot activate</td>
+</tr>
+<tr>
+<td>Landing redirects to wrong package</td>
+<td>Suspend and dispute</td>
+</tr>
+<tr>
+<td>Provider adds per-visitor referrer</td>
+<td>Privacy violation</td>
+</tr>
+<tr>
+<td>App calls Install Referrer</td>
+<td>Privacy violation and profile nonconformance</td>
+</tr>
+<tr>
+<td>Report contains clicks but not acquisitions</td>
+<td><code>unsupported</code> for acquisition billing</td>
+</tr>
+<tr>
+<td>UTM campaign grouped as <code>Other</code></td>
+<td><code>grouped</code>, not zero</td>
+</tr>
+<tr>
+<td>Export not posted yet</td>
+<td><code>pending</code></td>
+</tr>
+<tr>
+<td>Metric/dimension removed</td>
+<td><code>unsupported</code>; apply timeout policy</td>
+</tr>
+<tr>
+<td>Report corrected</td>
+<td>Append corrected snapshot</td>
+</tr>
+<tr>
+<td>Shared link copied elsewhere</td>
+<td>Quarantine disputed aggregate</td>
+</tr>
+<tr>
+<td>Oracle bucket access fails</td>
+<td><code>unavailable</code>; never assume zero</td>
+</tr>
+<tr>
+<td>Oracles normalize different rows</td>
+<td>Freeze performance settlement</td>
+</tr>
+</tbody>
+</table></div><h2 id="12-required-implementation-components">12. Required implementation components</h2>
+<ol>
+<li>Publisher-controlled UTM cohort authorizer;</li>
+<li>order-scoped tracker-free landing host;</li>
+<li>Play URL and package validator;</li>
+<li>private report-bucket or export gateway;</li>
+<li>versioned Store listing acquisitions normalizer;</li>
+<li>explicit detector for click-only, <code>Other</code>, pending, and unavailable data;</li>
+<li>signed evidence and append-only correction store;</li>
+<li>deterministic efficiency and settlement engine; and</li>
+<li>build-time and runtime checks proving the app does not read Install
+Referrer data.</li>
+</ol>
+<h2 id="13-conformance-tests">13. Conformance tests</h2>
+<p>A conforming implementation proves that:</p>
+<ol>
+<li>all test visitors receive identical UTM source/campaign values;</li>
+<li>visitor-specific values and <code>referrer</code> parameters are rejected;</li>
+<li>the destination binds the publisher-authorized package;</li>
+<li>the Android app has no acquisition Install Referrer dependency or calls;</li>
+<li>no UTM value enters identity, account, message, or app analytics state;</li>
+<li>Store listing acquisitions and install-button clicks cannot be confused;</li>
+<li><code>Other</code>, pending, unsupported, and unavailable outcomes do not become zero;</li>
+<li>report credentials and unrelated rows cannot be recovered from evidence;</li>
+<li>corrections and duplicate snapshots cannot double-pay; and</li>
+<li>a change in Google metric semantics requires a new pinned profile.</li>
+</ol>
+<h2 id="14-official-references">14. Official references</h2>
+<ul>
+<li>Google, <a href="https://support.google.com/googleplay/android-developer/answer/9859173?hl=en-EN">Understand and grow your app's user base</a></li>
+<li>Google, <a href="https://support.google.com/googleplay/android-developer/answer/6135870?hl=en">Download and export monthly reports</a></li>
+<li>Android Developers, <a href="https://developer.android.com/distribute/marketing-tools/linking-to-google-play">Linking to Google Play</a></li>
+<li>Android Developers, <a href="https://developer.android.com/google/play/installreferrer">Google Play Install Referrer</a></li>
+</ul>
+<p>These pages are external platform specifications and may change. Production
+orders must pin the observed report, schema, metric, and attribution semantics.</p>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/acquisition/Acquisition-Google-Play.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Identity: BIP-39 Implementation — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Identity: BIP-39 Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/identity/UI-Identity-BIP39.html">
+<meta property="og:title" content="Onym UI ↔ Identity: BIP-39 Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/identity/UI-Identity-BIP39.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/identity/UI-Identity-BIP39.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-identity-bip-39-implementation">Onym UI ↔ Identity: BIP-39 Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This profile maps the technology-neutral Onym identity boundary onto a
+locally generated BIP-39 mnemonic, domain-separated multi-curve derivation,
+and platform secure storage as shipped in the current mobile clients.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../identity/UI-Identity.html">UI-Identity.md</a>. The abstract specification remains
+authoritative for capability semantics, consent, descriptor meaning,
+rotation, disclosure, and payment isolation. This document defines the
+BIP-39 root, the derived key domains, and records where the present iOS,
+Android, and SDK code does not yet implement the complete boundary.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>implemented behavior</strong>, which exists in the current Onym repositories;</li>
+<li><strong>profile requirements</strong>, which are required for a conforming BIP-39 vault
+implementation; and</li>
+<li><strong>gaps</strong>, where current code still needs to converge on the profile.</li>
+</ul>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">BIP-39 mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Root secret</td>
+<td>Twelve-word BIP-39 mnemonic generated locally, per identity</td>
+</tr>
+<tr>
+<td>Root import</td>
+<td>Mnemonic re-entry through the recovery flow</td>
+</tr>
+<tr>
+<td>Derivation tree</td>
+<td>Deterministic, domain-separated derivation from the BIP-39 seed</td>
+</tr>
+<tr>
+<td>Key domain: event operations</td>
+<td>secp256k1 key with Schnorr signing (Nostr-compatible)</td>
+</tr>
+<tr>
+<td>Key domain: membership proofs</td>
+<td>BLS12-381 key for private group trees and proof witnesses</td>
+</tr>
+<tr>
+<td>Key domain: ledger authorization</td>
+<td>Ed25519 key and its Stellar account ID</td>
+</tr>
+<tr>
+<td>Key domain: sealed delivery</td>
+<td>X25519 key for inbox envelopes and invitations</td>
+</tr>
+<tr>
+<td>Key domain: transport discovery</td>
+<td>Derived inbox tag, no readable account name</td>
+</tr>
+<tr>
+<td>Storage and unlock</td>
+<td>Hardware-backed platform keystore and OS-level authentication</td>
+</tr>
+<tr>
+<td>Identity descriptor</td>
+<td>Not yet published (gap; see §8)</td>
+</tr>
+<tr>
+<td>Capability port</td>
+<td>Informal in-process boundaries (gap; see §7)</td>
+</tr>
+<tr>
+<td>Seat keys</td>
+<td>Not yet derived (gap; see §10)</td>
+</tr>
+<tr>
+<td>Rotation and revocation</td>
+<td>None; root is fixed for the identity's lifetime (see §9)</td>
+</tr>
+<tr>
+<td>Recovery</td>
+<td>Full re-derivation from the mnemonic on a new device</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:identity-implementation:bip39-multikey-v1
+</code></pre>
+<p>It maps this portable profile:</p>
+<pre><code class="language-text">onym:identity-profile:vault-capability-v1
+</code></pre>
+<p>The derivation domains, compatibility constants, and inbox-tag construction
+are Onym conventions. They are not implied by generic BIP-39 support: another
+wallet reading the same mnemonic produces none of these keys unless it
+implements this exact tree. A vault claims this implementation profile rather
+than inferring compatibility from a twelve-word phrase.</p>
+<h2 id="2-ownership-mapping">2. Ownership mapping</h2>
+<ul>
+<li>The <strong>identity holder</strong> generates the mnemonic on their own device and is
+the only party that ever sees it.</li>
+<li>The <strong>vault implementation author</strong> is currently the mobile-client author:
+the identity code ships inside <code>onym-ios</code> and <code>onym-android</code>, backed by
+shared primitives in <code>onym-sdk-swift</code> and <code>onym-sdk-kotlin</code>.</li>
+<li>The <strong>custody provider</strong> is the device platform: the OS keystore and its
+hardware protections hold secrets at rest.</li>
+<li><strong>Capability requesters</strong> are today the in-process messaging, group,
+invitation, and contract flows of the same applications.</li>
+<li><strong>Association registries and external applications</strong> do not yet integrate;
+nothing outside the client requests capabilities in the current code.</li>
+</ul>
+<p>This concentration—UI publisher and vault author being the same party—is the
+implementation's largest ownership deviation from the abstract boundary. The
+profile exists so that this can become a separation of components rather than
+a permanent identity of them.</p>
+<h2 id="3-physical-topology">3. Physical topology</h2>
+<pre><code class="language-text">UI flow / repository
+  |-- identity store: create, unlock, select identity
+  `-- domain flows: chat, groups, invitations, contracts
+            |
+            | in-process key requests (informal port)
+            v
+      Identity core (client + SDK)
+            |
+            |-- BIP-39 mnemonic -&gt; seed
+            |-- domain-separated derivation
+            |     |-- secp256k1/Schnorr  (events)
+            |     |-- BLS12-381          (membership proofs)
+            |     |-- Ed25519/Stellar    (ledger authorization)
+            |     |-- X25519             (sealed inbox)
+            |     `-- inbox tag          (transport discovery)
+            v
+      Platform secure storage
+      (hardware-backed keystore, OS unlock)
+</code></pre>
+<p>The clients support multiple local identities; each has its own mnemonic,
+derivation state, and encrypted local records. Selecting an identity selects
+which derivation root serves subsequent flows.</p>
+<h2 id="4-root-secret">4. Root secret</h2>
+<h3 id="41-generation">4.1 Generation</h3>
+<p>A new identity generates a twelve-word BIP-39 mnemonic locally using the
+platform's cryptographically secure random source. The mnemonic-to-seed step
+follows BIP-39. BIP-39 is a seed-encoding standard, not an identity protocol:
+it makes the root portable and recoverable, and nothing more.</p>
+<p>Profile requirements:</p>
+<ol>
+<li>generation happens on-device; no network call, log, analytics event, or
+backup service observes the mnemonic or seed;</li>
+<li>the checksum is validated on import, and invalid mnemonics are refused
+rather than silently corrected; and</li>
+<li>the mnemonic is displayed only in dedicated holder-facing backup and
+recovery flows, per the abstract boundary's ceremony rule.</li>
+</ol>
+<h3 id="42-storage-and-unlock">4.2 Storage and unlock</h3>
+<p>Derived key material and identity state are protected by hardware-backed
+platform storage where the device provides it, gated by OS authentication.
+The mnemonic exists to be written down by the holder; the running vault
+operates from stored derived material and does not require mnemonic re-entry
+per session.</p>
+<p>A conforming implementation must not silently fall back to weaker storage
+when hardware protection is unavailable; the abstract <code>storage_unavailable</code>
+error applies.</p>
+<h2 id="5-derivation-tree-and-key-domains">5. Derivation tree and key domains</h2>
+<p>From one seed, the implementation deterministically derives one key per
+declared purpose, using domain separation so no two purposes share a key:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Domain</th>
+<th scope="col">Algorithm</th>
+<th scope="col">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event operations</td>
+<td>secp256k1, Schnorr (BIP-340)</td>
+<td>Outer Nostr-compatible event signing and identity-level event operations</td>
+</tr>
+<tr>
+<td>Membership proofs</td>
+<td>BLS12-381</td>
+<td>Private group-membership trees and zero-knowledge proof witnesses</td>
+</tr>
+<tr>
+<td>Ledger authorization</td>
+<td>Ed25519</td>
+<td>Stellar-facing authorization; the public key doubles as the Stellar account ID representation</td>
+</tr>
+<tr>
+<td>Sealed delivery</td>
+<td>X25519</td>
+<td>Sealed inbox envelopes and invitation delivery</td>
+</tr>
+<tr>
+<td>Transport discovery</td>
+<td>Derived tag</td>
+<td>Inbox discovery on couriers without a readable account name</td>
+</tr>
+</tbody>
+</table></div><p>Profile requirements:</p>
+<ol>
+<li>the derivation of every domain is deterministic and identical across
+platforms: the same mnemonic must produce byte-identical keys on iOS,
+Android, and any future implementation claiming this profile;</li>
+<li>domain separation is structural—removing or compromising one domain's key
+must not reveal another's; and</li>
+<li>the exact derivation paths, domain-separation constants, and encodings are
+normative parts of this profile and must be published as test vectors
+(see §12); prose is not sufficient to implement them.</li>
+</ol>
+<p>The current constants include compatibility values inherited from the first
+clients. They are frozen by this profile: changing any of them is a new
+implementation profile ID, because it changes which identity a mnemonic
+denotes.</p>
+<h3 id="51-what-this-tree-deliberately-does-not-provide">5.1 What this tree deliberately does not provide</h3>
+<ul>
+<li><strong>No general chain fan-out.</strong> A BIP-39 seed can root many chain-specific
+keys, but this profile derives only the domains above. &quot;Any blockchain
+address&quot; requires a chain adapter with its own versioned derivation rule,
+address encoding, proof-of-control format, and vectors, per the abstract
+boundary and the whitepaper's chain-adapter requirements.</li>
+<li><strong>No per-context sub-addresses yet.</strong> The abstract
+<code>derive-context-address</code> capability expects fresh, unlinkable addresses per
+context. The current tree derives one key per domain, so contexts within a
+domain are presently linkable (gap 6).</li>
+</ul>
+<h2 id="6-capability-mapping">6. Capability mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract capability</th>
+<th scope="col">Current mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sign-transaction</code></td>
+<td>Ed25519 signing for Stellar-facing operations inside contract and relayer flows</td>
+</tr>
+<tr>
+<td><code>prove-membership</code></td>
+<td>Client-side BLS witness and zero-knowledge proof generation for the group contracts</td>
+</tr>
+<tr>
+<td><code>decrypt-envelope</code></td>
+<td>X25519 unsealing of inbox envelopes and invitations</td>
+</tr>
+<tr>
+<td><code>derive-context-address</code></td>
+<td>Not implemented; one key per domain (gap)</td>
+</tr>
+<tr>
+<td><code>prove-address-control</code></td>
+<td>Implicit in Stellar operations; no standalone proof format (gap)</td>
+</tr>
+<tr>
+<td><code>prove-credential</code></td>
+<td>Not implemented; no credential support yet (gap)</td>
+</tr>
+<tr>
+<td><code>derive-seat-key</code></td>
+<td>Not implemented (gap; see §10)</td>
+</tr>
+</tbody>
+</table></div><p>Today these operations execute in-process where the flows need them, with OS
+unlock as the effective consent gate. The typed request/grant/consent objects
+of the abstract boundary do not exist yet; §7 records this as the profile's
+central structural gap.</p>
+<h2 id="7-capability-port-status">7. Capability port status</h2>
+<p>The abstract boundary requires a capability port: typed requests, named
+requesters, per-request consent for value-bearing operations, grants, and
+secret-free typed results.</p>
+<p>Current state:</p>
+<ul>
+<li>key use is mediated by internal interfaces of the clients and SDKs, which
+do keep raw seed material inside identity code paths;</li>
+<li>there is no requester identity, no grant store, no per-capability consent
+prompt, and no canonical intent binding for signatures; and</li>
+<li>nothing external to the client can request a capability at all, which
+incidentally enforces &quot;no third-party custody&quot; by offering no third-party
+surface.</li>
+</ul>
+<p>For a messenger whose only requesters are its own flows this is coherent,
+but every proposed extension—charity, payments, registries, paid seats—
+depends on the port existing. Implementing it is prerequisite work for the
+application layer, not polish.</p>
+<h2 id="8-descriptor-mapping">8. Descriptor mapping</h2>
+<p>No <code>IdentityDescriptor</code> is published today. Public keys reach counterparties
+ad hoc: invitations and group flows carry the key material the recipient
+needs, and the inbox tag makes delivery discoverable without a name.</p>
+<p>Consequences, which a conforming implementation must not misrepresent:</p>
+<ol>
+<li>there is no descriptor chain, so there is no rollback detection, no
+rotation signal, and no standard way for a verifier to learn a key was
+replaced or revoked;</li>
+<li>there is no standard resolution path from a self-certifying identifier to
+current verification methods; and</li>
+<li>address claims and service hints have no signed, versioned carrier.</li>
+</ol>
+<p>When the descriptor is implemented, its <code>verificationMethods</code> must cover the
+domains of §5, and its distribution must not turn the descriptor into the
+public dossier the abstract boundary forbids: publishing remains selective
+and per-context.</p>
+<h2 id="9-rotation-revocation-recovery-and-compromise">9. Rotation, revocation, recovery, and compromise</h2>
+<p>This profile currently implements the simplest possible answers, and states
+them plainly per the abstract boundary's honesty rule:</p>
+<ul>
+<li><strong>Rotation: none.</strong> Every domain key is fixed by the mnemonic. There is no
+operational/recovery key split, no successor mechanism, and no way to
+replace one domain's key while keeping the identity.</li>
+<li><strong>Revocation: none.</strong> No signed revocation record exists and no verifier
+checks for one.</li>
+<li><strong>Recovery: full re-derivation.</strong> Entering the mnemonic on a new device
+reproduces every domain key. Local state not otherwise synchronized or
+re-derivable does not return by itself.</li>
+<li><strong>Compromise: total.</strong> Anyone holding the mnemonic is the identity in
+every domain—messages, group membership witnesses, and ledger
+authorization simultaneously. There is no partial containment.</li>
+</ul>
+<p>Clients must therefore treat the mnemonic as catastrophically sensitive in
+every flow and must not describe backups in language implying revocability.
+The abstract boundary's graduated model (device-specific operational keys
+under an offline recovery authority, threshold options, post-quantum
+migration) is the successor design; it will be a new implementation profile,
+because it changes recovery semantics.</p>
+<h2 id="10-seat-keys">10. Seat keys</h2>
+<p>The abstract <code>derive-seat-key</code> capability—deterministic, component-scoped,
+mutually unlinkable access keys for paid or authenticated seats—is not
+implemented. The courier profile's NIP-42 authentication and the entitlement
+model in the payment specifications assume it exists.</p>
+<p>Until it does, any interim use of a long-lived domain key (for example the
+secp256k1 event key) as a relay access key would let providers correlate one
+person across seats and across roles. This profile forbids that shortcut:
+implementing paid access requires implementing seat keys first.</p>
+<h2 id="11-current-implementation-mapping">11. Current implementation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Boundary role</th>
+<th scope="col">Current implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vault + derivation</td>
+<td>Identity modules of <code>onym-ios</code> and <code>onym-android</code></td>
+</tr>
+<tr>
+<td>Shared cryptographic primitives</td>
+<td><code>onym-sdk-swift</code> and <code>onym-sdk-kotlin</code></td>
+</tr>
+<tr>
+<td>Proof generation (BLS witnesses)</td>
+<td>Client-side paths over the shared SDK primitives</td>
+</tr>
+<tr>
+<td>Ledger authorization consumer</td>
+<td>Contract flows targeting <code>onym-contracts</code> via <code>onym-relayer</code></td>
+</tr>
+<tr>
+<td>Secure storage</td>
+<td>Platform keystores with hardware backing where available</td>
+</tr>
+<tr>
+<td>Recovery flow</td>
+<td>Mnemonic display at creation; mnemonic entry on restore</td>
+</tr>
+</tbody>
+</table></div><p>Implemented today on both platforms:</p>
+<ul>
+<li>local twelve-word mnemonic generation and restore;</li>
+<li>deterministic, cross-platform derivation of the five domains in §5;</li>
+<li>multiple local identities with per-identity encrypted local state;</li>
+<li>hardware-backed storage of identity material; and</li>
+<li>in-app use of event signing, membership proof generation, sealed inbox
+decryption, and Stellar-facing authorization.</li>
+</ul>
+<p>The exact file- and class-level mapping belongs to the repositories' own
+documentation; this profile pins behavior, constants, and vectors rather
+than source layout.</p>
+<h2 id="12-known-gaps">12. Known gaps</h2>
+<p>Current code is not yet a complete conforming implementation:</p>
+<ol>
+<li>the derivation tree, domain-separation constants, compatibility values,
+and encodings are implemented but not published as a frozen normative
+specification with cross-platform test vectors—the single highest-priority
+gap, since every other identity commitment builds on it;</li>
+<li>no capability port exists: no typed requests, requester identities,
+grants, consent prompts, or canonical intent binding for signatures;</li>
+<li>no <code>IdentityDescriptor</code> is published, so verification methods, rotation
+signals, and address claims have no signed carrier and no rollback
+detection;</li>
+<li>rotation and revocation are absent; root compromise is total and this is
+currently a property, not a bug, of the profile;</li>
+<li>seat keys are not derived, blocking conforming paid-seat authentication
+(§10);</li>
+<li>per-context addresses within a domain are not supported, so activity
+inside one domain is linkable by default;</li>
+<li><code>prove-address-control</code> and <code>prove-credential</code> have no standalone
+formats;</li>
+<li>chain adapters beyond the Stellar-facing Ed25519 domain are unspecified;</li>
+<li>there is no holder-visible record of key uses, and no grant store to
+review or revoke;</li>
+<li>export is equivalent to knowing the mnemonic; there is no richer
+migration ceremony carrying local state between conforming vaults; and</li>
+<li>conformance relies on the two clients mirroring each other rather than a
+fixture suite a third implementation could pass.</li>
+</ol>
+<p>These gaps are specification and security work, not alternate semantics that
+third parties should copy.</p>
+<h2 id="13-conformance-tests">13. Conformance tests</h2>
+<p>A shared fixture suite covers, at minimum:</p>
+<ol>
+<li>mnemonic → seed vectors, including checksum-invalid inputs that must be
+refused;</li>
+<li>seed → per-domain key vectors for all five domains, byte-exact across
+platforms, including the frozen compatibility constants;</li>
+<li>inbox-tag construction vectors;</li>
+<li>Schnorr, Ed25519, and X25519 operation vectors (sign/verify, seal/unseal)
+against the derived keys;</li>
+<li>BLS witness and proof-input vectors consistent with the notary profile's
+verification fixtures;</li>
+<li>Stellar account-ID encoding vectors for the Ed25519 domain;</li>
+<li>multiple-identity isolation: two mnemonics never produce overlapping
+keys, tags, or storage keys;</li>
+<li>restore round-trip: mnemonic re-entry reproduces every vector-pinned
+value; and</li>
+<li>negative vectors: cross-domain key reuse, truncated seeds, wrong-curve
+material, and mismatched constants must fail loudly.</li>
+</ol>
+<p>Once the capability port, descriptor, and seat keys exist, their request,
+grant, chaining, and unlinkability fixtures extend this suite per the
+abstract boundary.</p>
+<h2 id="14-acceptance-criteria">14. Acceptance criteria</h2>
+<p>This BIP-39 profile satisfies the abstract boundary when:</p>
+<ol>
+<li>a third-party vault can re-implement it from the published tree and
+vectors alone, and a holder can move a mnemonic between the two vaults
+with identical results;</li>
+<li>every domain key derives deterministically and identically on all
+platforms, and no two domains share key material;</li>
+<li>mnemonic and seed material appear only in generation, backup, and restore
+ceremonies, and never cross any in-process or network surface;</li>
+<li>all client key use flows through the typed capability port, with intent
+binding for value-bearing signatures;</li>
+<li>a published descriptor lets verifiers resolve, chain, and reject rolled
+back verification methods;</li>
+<li>seat keys authenticate paid access without linking seats to each other or
+to domain keys;</li>
+<li>documentation and UI state the profile's compromise model exactly as §9
+defines it; and</li>
+<li>successor profiles (rotation-capable, hardware-rooted, post-quantum) can
+import an identity from this profile through a declared holder ceremony.</li>
+</ol>
+<h2 id="references">References</h2>
+<ol>
+<li>Abstract Onym identity boundary: <a href="../identity/UI-Identity.html">UI-Identity.md</a></li>
+<li>Onym iOS client: <a href="https://github.com/onymchat/onym-ios">https://github.com/onymchat/onym-ios</a></li>
+<li>Onym Android client: <a href="https://github.com/onymchat/onym-android">https://github.com/onymchat/onym-android</a></li>
+<li>Onym Swift SDK: <a href="https://github.com/onymchat/onym-sdk-swift">https://github.com/onymchat/onym-sdk-swift</a></li>
+<li>Onym Kotlin SDK: <a href="https://github.com/onymchat/onym-sdk-kotlin">https://github.com/onymchat/onym-sdk-kotlin</a></li>
+<li>Bitcoin Improvement Proposal 39, “Mnemonic code for generating
+deterministic keys”:
+<a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki</a></li>
+<li>Bitcoin Improvement Proposal 340, “Schnorr Signatures for secp256k1”:
+<a href="https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki">https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki</a></li>
+<li>IETF RFC 7748, “Elliptic Curves for Security” (X25519):
+<a href="https://www.rfc-editor.org/rfc/rfc7748">https://www.rfc-editor.org/rfc/rfc7748</a></li>
+<li>IETF RFC 8032, “Edwards-Curve Digital Signature Algorithm (EdDSA)”:
+<a href="https://www.rfc-editor.org/rfc/rfc8032">https://www.rfc-editor.org/rfc/rfc8032</a></li>
+<li>Stellar developer documentation, “Accounts”:
+<a href="https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts">https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/identity/UI-Identity-BIP39.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

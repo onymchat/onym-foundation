@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Identity Vault Boundary — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Identity Vault Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/identity/UI-Identity.html">
+<meta property="og:title" content="Onym UI ↔ Identity Vault Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/identity/UI-Identity.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Identity — not a seat; stays with the person</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/identity/UI-Identity.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-identity-vault-boundary">Onym UI ↔ Identity Vault Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>The identity vault holds the keys. The UI presents choices. Applications
+request narrow operations. None of them becomes the owner of the person.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary between an Onym
+frontend, its applications, and the identity vault that controls a user's
+root secret and purpose-specific keys. It does not require a particular
+mnemonic standard, derivation function, curve set, storage hardware, custody
+arrangement, or recovery ceremony.</p>
+<p>A concrete implementation may use a locally generated mnemonic, a hardware
+wallet, an operating-system keystore, a threshold custody service, or another
+mechanism that satisfies the profile's custody, derivation, consent,
+disclosure, and rotation semantics. The current BIP-39 implementation is
+specified separately in <a href="../identity/UI-Identity-BIP39.html">UI-Identity-BIP39.md</a>.
+Optional external recovery custody is a separate open seat defined in
+<a href="../recovery/Recovery-Trustee.html">../recovery/Recovery-Trustee.md</a>; enrolling a
+trustee does not add it to this normal capability port.</p>
+<p>Here <strong>UI</strong> means the frontend application layer, not a screen calling a key
+store. Views send intent to flows, view-models, repositories, or interactors.
+Those components request typed capabilities from the vault; they do not read
+key bytes and re-implement cryptography beside it.</p>
+<p>Message delivery is a separate boundary defined in
+<a href="../message/UI-Message.html">../message/UI-Message.md</a>. Encrypted media storage
+is defined in <a href="../blob/UI-Blob.html">../blob/UI-Blob.md</a>. Shared-state
+validation is defined in <a href="../notary/UI-Notary.html">../notary/UI-Notary.md</a>.
+Names and credentials issued about an identity are association-registry
+claims, not vault contents.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the identity holder, vault implementation, custody hardware,
+capability requesters, and association registries as independently owned
+components joined by versioned interfaces.</p>
+<ul>
+<li>The <strong>identity holder</strong> owns the identity by controlling its root secret
+and recovery material. Every other party acts only through capabilities the
+holder grants.</li>
+<li>The <strong>vault implementation author</strong> publishes software that generates,
+stores, derives, and uses key material under local policy and consent. It
+does not thereby acquire the identities created with it.</li>
+<li>The <strong>custody or hardware provider</strong>, when present, owns its device or
+service and its security claims. It executes operations; it does not become
+the identity.</li>
+<li>The <strong>capability requester</strong>—a chat flow, seat adapter, billing
+coordinator, or external application—owns its own product and legal duties.
+It receives typed results, never key material.</li>
+<li>The <strong>association registry</strong> owns its namespace and issuance policy. It
+asserts names and credentials about an identity without controlling it.</li>
+<li>The <strong>UI publisher</strong> presents identities, consent prompts, and route
+choices. It is a window, not an account authority.</li>
+</ul>
+<p>One organization may occupy several roles, but their authorities remain
+separate. A user can change UI without re-creating identity. An application
+can be revoked without rotating the root secret. A vault implementation can
+be replaced through holder-controlled export and recovery, not through a
+provider's decision.</p>
+<p>The boundary has two interfaces:</p>
+<ol>
+<li>the local <strong>UI/application ↔ vault</strong> capability port, which carries typed
+requests, consent decisions, and typed results; and</li>
+<li>the public <strong>identity ↔ verifier</strong> surface, which carries the signed
+identity descriptor, proofs, and signatures that third parties verify.</li>
+</ol>
+<p>Neither interface may expose the root secret, recovery material, derived
+private keys, or the derivation state that reconstructs them.</p>
+<h2 id="2-what-the-identity-vault-does">2. What the identity vault does</h2>
+<p>The vault provides custody and controlled use of key material:</p>
+<ol>
+<li>generate or import a root secret and derive purpose-specific keys under
+declared, versioned derivation domains;</li>
+<li>authenticate the holder locally before use;</li>
+<li>publish and update a signed public identity descriptor;</li>
+<li>evaluate capability requests against local policy and explicit consent;</li>
+<li>execute narrow operations—sign, decrypt, prove, derive—and return typed
+results;</li>
+<li>maintain per-context and per-seat keys that are unlinkable by default;</li>
+<li>record grants and support their revocation; and</li>
+<li>perform rotation, recovery, and compromise procedures defined by its
+implementation profile.</li>
+</ol>
+<p>It does not send messages, store conversations, resolve human names, decide
+group membership rules, validate purchases, or evaluate the honesty of the
+application whose request the holder approves.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-it-prevents-every-application-from-becoming-a-custodian">3.1 It prevents every application from becoming a custodian</h3>
+<p>If a chat flow, wallet feature, or third-party extension reads the mnemonic
+or a raw private key even once, the holder's security reduces to the most
+careless component that ever touched it. A capability port makes &quot;uses the
+identity&quot; and &quot;holds the identity&quot; different powers.</p>
+<h3 id="32-it-prevents-the-ui-from-becoming-the-account-authority">3.2 It prevents the UI from becoming the account authority</h3>
+<p>Screens and domain flows should not know curves, derivation paths, seed
+formats, or storage locations. A narrow port allows another vault—hardware,
+threshold, or future post-quantum—without rewriting identity, chat, and
+payment flows, and prevents any single UI build from being technically
+indispensable.</p>
+<h3 id="33-it-makes-disclosure-reviewable">3.3 It makes disclosure reviewable</h3>
+<p>A cryptographic identity is a root of control, not a public dossier. Each
+capability names what a requester learns: one signature, one address, one
+membership proof. A named profile must state which values cross the boundary
+so cross-context correlation is a reviewable decision rather than an
+accident of shared keys.</p>
+<h3 id="34-it-bounds-the-blast-radius-of-compromise">3.4 It bounds the blast radius of compromise</h3>
+<p>When operational keys, seat keys, and context addresses are separated from
+the recovery root, one stolen device or one malicious requester compromises a
+declared scope. Rotation and revocation then repair that scope without
+abandoning every relationship the identity has.</p>
+<h3 id="35-it-keeps-names-and-identities-separable">3.5 It keeps names and identities separable</h3>
+<p>Registries, directories, and applications attach meaning to an identity. The
+vault boundary guarantees the reverse never holds: losing a name, a registry,
+or an application does not lose the identity, and no issuer can rotate,
+freeze, or transfer keys it never held.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">┌──────────────────────────────────────────────────────────────────────┐
+│ UI process                                                           │
+│                                                                      │
+│ View / Composable                                                    │
+│        │ user intent                                                 │
+│        v                                                             │
+│ Flow / ViewModel                                                     │
+│        │ application command                                         │
+│        v                                                             │
+│ Repository / Interactor ──────────────┐                              │
+│        │ typed capability request     │ sealed envelopes, proofs,    │
+│        v                              │ signatures (results only)    │
+│ ┌──────────────────────────┐          │                              │
+│ │ Identity vault           │──────────┘                              │
+│ │ root secret · derivation │                                         │
+│ │ policy · consent · log   │                                         │
+│ └──────────┬───────────────┘                                         │
+│            │ optional custody operations                             │
+└────────────┼─────────────────────────────────────────────────────────┘
+             v
+   ┌───────────────────────┐        ┌────────────────────────────┐
+   │ Hardware / custody    │        │ Public verifiers           │
+   │ keystore · signer     │        │ descriptor · signatures ·  │
+   │ threshold service     │        │ proofs · address claims    │
+   └───────────────────────┘        └────────────────────────────┘
+</code></pre>
+<p>The vault is inside the holder's trust boundary; requesters are not, even
+when they run in the same process. A capability result is evidence of one
+approved operation—not a session of ambient authority, and not proof that
+the requesting application is honest.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-identity-profile">5.1 Identity Profile</h3>
+<p>An <code>IdentityProfile</code> defines the portable interface independently of a
+mnemonic standard, curve set, or storage technology:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:identity-profile:vault-capability-v1&quot;,
+  &quot;interface&quot;: &quot;onym-identity-v1&quot;,
+  &quot;capabilities&quot;: [
+    &quot;sign-transaction&quot;,
+    &quot;prove-address-control&quot;,
+    &quot;decrypt-envelope&quot;,
+    &quot;prove-credential&quot;,
+    &quot;derive-context-address&quot;,
+    &quot;prove-membership&quot;,
+    &quot;derive-seat-key&quot;
+  ],
+  &quot;descriptorSchema&quot;: &quot;onym-identity-descriptor-v1&quot;,
+  &quot;consentModel&quot;: &quot;explicit-per-request-or-scoped-grant-v1&quot;,
+  &quot;derivationDisclosure&quot;: &quot;&lt;content-addressed-domain-catalog&gt;&quot;,
+  &quot;rotationModel&quot;: &quot;&lt;declared-rotation-and-revocation-semantics&gt;&quot;,
+  &quot;recoveryModel&quot;: &quot;&lt;declared-recovery-semantics&gt;&quot;,
+  &quot;errorSchema&quot;: &quot;onym-identity-errors-v1&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes capability semantics, descriptor meaning, consent
+requirements, and rotation behavior. It does not select a seed format,
+key-derivation function, storage hardware, or UI.</p>
+<p>Two implementation profiles are compatible only when a conforming requester
+receives the same capability semantics, result formats, and disclosure
+guarantees from both. Both deriving keys from a seed is not sufficient
+compatibility.</p>
+<h3 id="52-identity-implementation-profile">5.2 Identity Implementation Profile</h3>
+<p>An <code>IdentityImplementationProfile</code> maps the abstract interface onto one
+concrete custody and derivation technology:</p>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:identity-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;identityProfileId&quot;: &quot;onym:identity-profile:vault-capability-v1&quot;,
+  &quot;rootSecret&quot;: &quot;&lt;generation-and-import-rule&gt;&quot;,
+  &quot;derivationTree&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;keyDomains&quot;: [&quot;&lt;declared-purpose-key-descriptors&gt;&quot;],
+  &quot;storage&quot;: &quot;&lt;declared-storage-and-unlock-model&gt;&quot;,
+  &quot;testVectors&quot;: &quot;&lt;content-addressed-fixture-set&gt;&quot;,
+  &quot;rotation&quot;: &quot;&lt;implemented-rotation-behavior-or-none&gt;&quot;,
+  &quot;recovery&quot;: &quot;&lt;implemented-recovery-behavior&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Seed bytes, derivation paths, curve operations, and storage handles stay
+inside the vault. The abstract application receives capability results, never
+the material that produced them.</p>
+<h3 id="53-identity-descriptor">5.3 Identity Descriptor</h3>
+<p>The public face of an identity is a signed, versioned <code>IdentityDescriptor</code>:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;subject&quot;: &quot;onym:key:&lt;self-certifying-id&gt;&quot;,
+  &quot;sequence&quot;: 7,
+  &quot;validFrom&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;verificationMethods&quot;: [&quot;&lt;public-key-descriptor&gt;&quot;],
+  &quot;services&quot;: [&quot;&lt;encrypted-inbox-or-resolution-hint&gt;&quot;],
+  &quot;addressClaims&quot;: [&quot;&lt;optional-chain-address-proof&gt;&quot;],
+  &quot;previous&quot;: &quot;&lt;hash-of-prior-descriptor&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;identity-signature&gt;&quot;
+}
+</code></pre>
+<p>The subject identifier is self-certifying: it is derived from key material,
+so a descriptor proves its own control chain without a registry. A descriptor
+contains or references only public keys, addresses, endpoints, and signed
+claims. It never contains secrets, and omission is meaningful: keys,
+addresses, and relationships the holder has not published are not implied by
+the ones it has.</p>
+<p><code>sequence</code> and <code>previous</code> order descriptor updates so a verifier can detect
+rollback. How descriptors are distributed and how freshness is proven are
+implementation-profile concerns; the abstract rule is that an old descriptor
+is evidence of a past state, not the current one.</p>
+<h3 id="54-capability-request">5.4 Capability request</h3>
+<p>Every use of the identity is a typed request:</p>
+<pre><code class="language-json">{
+  &quot;requestVersion&quot;: 1,
+  &quot;requestId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;requester&quot;: &quot;onym:component:&lt;requester-id&gt;&quot;,
+  &quot;capability&quot;: &quot;sign-transaction&quot;,
+  &quot;context&quot;: &quot;onym:context:&lt;derivation-domain-or-seat&gt;&quot;,
+  &quot;intent&quot;: {
+    &quot;display&quot;: &quot;&lt;human-readable-summary-shown-to-holder&gt;&quot;,
+    &quot;payload&quot;: &quot;&lt;canonical-bytes-or-structured-operation&gt;&quot;,
+    &quot;chain&quot;: &quot;&lt;chain-and-network-id-when-applicable&gt;&quot;
+  },
+  &quot;grantRef&quot;: &quot;&lt;existing-grant-id-or-null&gt;&quot;,
+  &quot;expiresAt&quot;: &quot;2026-08-01T00:05:00Z&quot;
+}
+</code></pre>
+<p><code>intent.display</code> and <code>intent.payload</code> must describe the same operation; a
+vault signs what it displayed, not what a requester substituted. Requests
+name their context so the vault selects the scoped key; a requester cannot
+address &quot;whatever key is most linkable.&quot;</p>
+<h3 id="55-capability-grant">5.5 Capability grant</h3>
+<p>A holder may pre-approve a bounded scope for a requester:</p>
+<pre><code class="language-json">{
+  &quot;grantVersion&quot;: 1,
+  &quot;grantId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;requester&quot;: &quot;onym:component:&lt;requester-id&gt;&quot;,
+  &quot;capabilities&quot;: [&quot;decrypt-envelope&quot;],
+  &quot;contexts&quot;: [&quot;onym:context:&lt;specific-domain&gt;&quot;],
+  &quot;constraints&quot;: {&quot;maximumOperations&quot;: 1000, &quot;requireUnlockedSession&quot;: true},
+  &quot;issuedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;revocable&quot;: true
+}
+</code></pre>
+<p>Grants are local policy objects. They are narrower than the identity, bound
+to named contexts, individually revocable, and never a substitute for
+per-operation consent where the profile requires it (signing value-bearing
+transactions always does). Revoking a grant must not require rotating the
+root secret unless a key was actually compromised.</p>
+<h3 id="56-capability-result">5.6 Capability result</h3>
+<pre><code class="language-json">{
+  &quot;requestId&quot;: &quot;&lt;same-random-id&gt;&quot;,
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;capability&quot;: &quot;sign-transaction&quot;,
+  &quot;context&quot;: &quot;onym:context:&lt;same-context&gt;&quot;,
+  &quot;result&quot;: &quot;&lt;signature-proof-plaintext-or-derived-public-value&gt;&quot;,
+  &quot;resultSchema&quot;: &quot;&lt;capability-defined-format&gt;&quot;,
+  &quot;executedAt&quot;: &quot;2026-08-01T00:00:03Z&quot;
+}
+</code></pre>
+<p>The result carries exactly the value the capability defines: a signature, a
+decrypted payload, a proof, a fresh public address, a scoped public key. It
+never carries the private key that produced it, a sibling key, or derivation
+material. A result is single-use evidence; possession of a past result grants
+no future authority.</p>
+<h3 id="57-seat-keys">5.7 Seat keys</h3>
+<p>Paid or authenticated seats require an access key that must not be the
+holder's long-lived identity key. The <code>derive-seat-key</code> capability returns a
+pseudonymous public key scoped to one <code>componentId</code>:</p>
+<ul>
+<li>the same component always resolves to the same seat key, so entitlements
+survive reinstall and recovery;</li>
+<li>two components' seat keys are unlinkable without the vault; and</li>
+<li>a seat key signs access challenges and entitlement subjects, never group
+operations or descriptor updates.</li>
+</ul>
+<p>This is the identity-side half of the entitlement model in the courier,
+blob, and notary boundaries: providers authenticate a customer, not a
+person's whole identity.</p>
+<h3 id="58-rotation-and-revocation-records">5.8 Rotation and revocation records</h3>
+<p>Rotation replaces a verification method or operational key under the
+authority of the descriptor chain; revocation declares a key invalid from a
+stated time. Both are signed records referenced by descriptor updates:</p>
+<pre><code class="language-json">{
+  &quot;recordVersion&quot;: 1,
+  &quot;type&quot;: &quot;revocation&quot;,
+  &quot;subject&quot;: &quot;onym:key:&lt;self-certifying-id&gt;&quot;,
+  &quot;method&quot;: &quot;&lt;public-key-descriptor&gt;&quot;,
+  &quot;effectiveFrom&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;reason&quot;: &quot;compromise-suspected&quot;,
+  &quot;successor&quot;: &quot;&lt;replacement-method-or-null&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;authorized-identity-signature&gt;&quot;
+}
+</code></pre>
+<p>An implementation profile states which authority may sign rotation (the same
+key, an offline recovery root, a threshold), how verifiers learn of it, and
+what happens to group memberships, seat keys, and address claims that
+referenced the rotated method. A profile without rotation must say so
+explicitly rather than implying it.</p>
+<h2 id="6-common-identity-surface">6. Common identity surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>create</code></td>
+<td>Implementation profile, local policy</td>
+<td>New identity and initial descriptor</td>
+</tr>
+<tr>
+<td><code>import</code></td>
+<td>Recovery material via profile-defined ceremony</td>
+<td>Restored identity</td>
+</tr>
+<tr>
+<td><code>unlock</code></td>
+<td>Local authentication</td>
+<td>Bounded unlocked session</td>
+</tr>
+<tr>
+<td><code>descriptor</code></td>
+<td>Identity reference</td>
+<td>Current signed <code>IdentityDescriptor</code></td>
+</tr>
+<tr>
+<td><code>request</code></td>
+<td><code>CapabilityRequest</code></td>
+<td>Consent flow, then <code>CapabilityResult</code></td>
+</tr>
+<tr>
+<td><code>grant</code></td>
+<td>Requester, capabilities, contexts, constraints</td>
+<td>Stored <code>CapabilityGrant</code></td>
+</tr>
+<tr>
+<td><code>revokeGrant</code></td>
+<td>Grant ID</td>
+<td>Grant invalidation</td>
+</tr>
+<tr>
+<td><code>listGrants</code></td>
+<td>Identity reference</td>
+<td>Active grants for holder review</td>
+</tr>
+<tr>
+<td><code>rotate</code></td>
+<td>Method, successor, authority per profile</td>
+<td>Rotation record and descriptor update</td>
+</tr>
+<tr>
+<td><code>revoke</code></td>
+<td>Method, effective time, authority per profile</td>
+<td>Revocation record and descriptor update</td>
+</tr>
+<tr>
+<td><code>export</code></td>
+<td>Holder-only ceremony per profile</td>
+<td>Migration material, never via a requester</td>
+</tr>
+<tr>
+<td><code>wipe</code></td>
+<td>Holder confirmation</td>
+<td>Local destruction of secrets and state</td>
+</tr>
+</tbody>
+</table></div><p><code>unlock</code> is a local session, not a capability: an unlocked vault still
+evaluates every request against policy, grants, and consent. <code>export</code> and
+<code>wipe</code> are holder ceremonies that no capability requester can invoke,
+reference, or observe.</p>
+<h2 id="7-uiapplication-obligations">7. UI/application obligations</h2>
+<p>A conforming frontend and application layer must:</p>
+<ol>
+<li>verify the identity and implementation profiles of the vault it embeds or
+connects to;</li>
+<li>route every key use through the capability port; no component beside the
+vault may hold, cache, derive, or log private key material;</li>
+<li>render consent prompts from the vault's canonical intent, naming the
+requester, capability, context, and human-readable effect;</li>
+<li>never re-word, pre-approve, auto-accept, or replay a consent decision, and
+never present a signing request while obscuring its display;</li>
+<li>keep recovery ceremonies (creation, backup confirmation, import, export)
+in dedicated holder-facing flows that no requester can trigger or watch;</li>
+<li>request the narrowest capability and context that satisfies the task, and
+request fresh context addresses rather than reusing linkable ones;</li>
+<li>treat every requester—including the publisher's own features—as scoped:
+first-party code receives no ambient bypass of grants or consent;</li>
+<li>surface active grants, their usage, and one-step revocation to the holder;</li>
+<li>present rotation, revocation, and compromise flows without burying them
+behind support channels;</li>
+<li>propagate descriptor updates it learns of and treat stale descriptors as
+stale, not invalid;</li>
+<li>never place identity identifiers, seat-key linkages, or descriptor
+history into analytics, crash reports, store metadata, or ordinary logs;
+and</li>
+<li>warn before any action that publicly links two previously unlinked
+contexts, addresses, or names.</li>
+</ol>
+<p>Requester names, intent text, and descriptor service endpoints are untrusted
+input. They must not execute code, drive unsafe navigation, or impersonate
+consent UI.</p>
+<h2 id="8-vault-implementation-obligations">8. Vault implementation obligations</h2>
+<p>A conforming vault must:</p>
+<ol>
+<li>generate root secrets with a cryptographically secure source and store
+them under the strongest local protection the platform provides;</li>
+<li>implement the declared derivation tree with domain separation such that
+no two declared purposes share a key, and publish that tree with test
+vectors;</li>
+<li>return capability results only after policy, grant, and consent checks
+bound to the specific request;</li>
+<li>bind every signature to the intent that was displayed, using canonical
+encodings that a requester cannot ambiguate;</li>
+<li>enforce context scoping so a requester cannot obtain a key, address, or
+proof outside its named context;</li>
+<li>derive seat keys deterministically per component while revealing no
+linkage between them, or to the identity, without holder action;</li>
+<li>keep secrets out of results, errors, logs, backups it does not encrypt,
+memory it does not zero, and interprocess surfaces;</li>
+<li>rate-limit and bound capability execution so a compromised requester
+cannot silently drain signatures or decryptions;</li>
+<li>maintain an append-only local record of grants, uses, rotations, and
+revocations that the holder can inspect;</li>
+<li>implement its declared rotation, revocation, recovery, and wipe
+semantics exactly, and refuse operations its profile does not declare;</li>
+<li>fail closed: an unverifiable request, unknown requester, or ambiguous
+intent is refused, not guessed at; and</li>
+<li>remain replaceable: holder-ceremony export produces material sufficient
+to restore the identity in another conforming implementation.</li>
+</ol>
+<p>Custody hardware and platform keystores are implementation details behind
+these obligations; delegating storage does not delegate consent.</p>
+<h2 id="9-capability-requester-obligations">9. Capability requester obligations</h2>
+<p>A conforming requester—seat adapter, application module, or extension—must:</p>
+<ol>
+<li>identify itself stably and declare, per the extension contract, the
+capabilities it requests and the information it will learn;</li>
+<li>submit intents whose display and payload match, with canonical payload
+encoding;</li>
+<li>request per-context material rather than engineering cross-context
+correlation;</li>
+<li>treat results as single-use evidence and re-request rather than replaying
+or stockpiling signatures, proofs, or plaintext;</li>
+<li>tolerate refusal: <code>consent_denied</code> and <code>policy_refused</code> are outcomes, not
+errors to retry until the holder relents;</li>
+<li>never request export, recovery display, raw keys, or a capability broader
+than its declared purpose; and</li>
+<li>handle rotation and revocation by re-resolving the descriptor, not by
+caching verification methods indefinitely.</li>
+</ol>
+<p>A requester that receives plaintext or a signature owns its subsequent legal
+and privacy duties for that value. The vault boundary limits what leaves; it
+cannot police what a recipient does afterward.</p>
+<h2 id="10-rotation-recovery-and-compromise">10. Rotation, recovery, and compromise</h2>
+<p>The abstract boundary requires every implementation profile to answer, not
+necessarily to solve identically:</p>
+<ul>
+<li><strong>Operational separation.</strong> Which keys are used daily, and which authority
+can replace them? A profile should place routine use below a recovery
+authority that is used rarely and stored more safely.</li>
+<li><strong>Rotation reach.</strong> When a method rotates, which relationships follow
+automatically (descriptor verifiers), which need re-proof (address claims,
+registry credentials), and which need group operations (memberships)?</li>
+<li><strong>Recovery ceremony.</strong> What restores the identity after device loss—one
+secret, social shares, hardware, a threshold—and what can an attacker with
+partial material do?</li>
+<li><strong>Compromise declaration.</strong> How does a holder revoke, from what timestamp
+are past signatures still meaningful, and how do verifiers learn?</li>
+<li><strong>Catastrophic scope.</strong> What is lost when the root itself is exposed? A
+profile must state this plainly; &quot;restore from backup&quot; is not an answer to
+theft.</li>
+</ul>
+<p>An implementation that supports external trustees uses the
+<a href="../recovery/Recovery-Trustee.html">Recovery Trustee boundary</a>. It declares
+whether the ceremony restores the same secret or authorizes a replacement,
+and it keeps trustee enrollment, shares, release factors, and reconstruction
+outside the ordinary requester interface.</p>
+<p>Until a profile implements graduated rotation, its documentation must state
+that root compromise is total and unrecoverable, and clients must present
+recovery material accordingly.</p>
+<h2 id="11-payment-at-the-identity-boundary">11. Payment at the identity boundary</h2>
+<p>The vault itself is normally holder-owned software with no per-operation
+fee. Payment appears at this boundary in three bounded ways:</p>
+<ol>
+<li><strong>Custody services.</strong> A hardware vendor or threshold custodian sells its
+product under its own seat offer. Its payment buys custody service, never
+co-ownership of the identity or a veto on migration.</li>
+<li><strong>Seat entitlements.</strong> Other seats authenticate purchased access against
+vault-derived seat keys. Store evidence, broker identity, and entitlement
+state stay in the billing flow; they never enter descriptors, contexts, or
+capability results.</li>
+<li><strong>Registry and application fees.</strong> Issuers and applications charge for
+their own services. A paid name or paid feature obtains no capability the
+holder did not grant.</li>
+</ol>
+<p>No payment, subscription lapse, refund, or provider dispute can lock, seize,
+rotate, or destroy an identity. An identity with zero paid services remains a
+complete identity.</p>
+<h2 id="12-errors-and-state-machine">12. Errors and state machine</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">UI/application response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Vault/client</td>
+<td>Refuse and explain required implementation</td>
+</tr>
+<tr>
+<td><code>locked</code></td>
+<td>Vault session</td>
+<td>Prompt local authentication; never queue silent retries</td>
+</tr>
+<tr>
+<td><code>consent_denied</code></td>
+<td>Holder</td>
+<td>Accept the decision; no re-prompt loops</td>
+</tr>
+<tr>
+<td><code>policy_refused</code></td>
+<td>Vault policy</td>
+<td>Explain the constraint; do not disguise as failure</td>
+</tr>
+<tr>
+<td><code>unknown_requester</code></td>
+<td>Vault</td>
+<td>Refuse; registration precedes capability use</td>
+</tr>
+<tr>
+<td><code>unknown_context</code></td>
+<td>Vault</td>
+<td>Refuse; contexts come from the declared catalog</td>
+</tr>
+<tr>
+<td><code>intent_mismatch</code></td>
+<td>Vault validation</td>
+<td>Drop request; repeated mismatch indicates hostile requester</td>
+</tr>
+<tr>
+<td><code>grant_expired</code></td>
+<td>Vault</td>
+<td>Re-request grant through holder-visible flow</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Vault</td>
+<td>Back off; investigate requester behavior</td>
+</tr>
+<tr>
+<td><code>rotation_in_progress</code></td>
+<td>Vault</td>
+<td>Retry after descriptor update</td>
+</tr>
+<tr>
+<td><code>method_revoked</code></td>
+<td>Vault/verifier</td>
+<td>Re-resolve descriptor; never pin revoked methods</td>
+</tr>
+<tr>
+<td><code>recovery_required</code></td>
+<td>Vault</td>
+<td>Enter holder recovery ceremony</td>
+</tr>
+<tr>
+<td><code>storage_unavailable</code></td>
+<td>Platform</td>
+<td>Surface plainly; never fall back to weaker storage silently</td>
+</tr>
+</tbody>
+</table></div><p>Capability flow:</p>
+<pre><code class="language-text">request
+  -&gt; requester_verified
+  -&gt; profile_and_context_validated
+  -&gt; policy_checked
+  -&gt; grant_matched | consent_prompted
+  -&gt; approved | consent_denied
+  -&gt; executed
+  -&gt; result_returned (typed, secret-free)
+</code></pre>
+<p>Identity lifecycle:</p>
+<pre><code class="language-text">created | imported
+  -&gt; provisioned (descriptor published)
+  -&gt; active &lt;-&gt; locked
+  -&gt; rotating -&gt; active
+  -&gt; compromised? -&gt; revoked methods -&gt; active | superseded
+  -&gt; exported (holder ceremony) | wiped
+</code></pre>
+<p>Failure at any validation stage refuses the request. A trusted, first-party,
+or frequently approved requester does not receive weaker validation.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>The root never crosses the boundary.</strong> Mnemonics, seeds, derived private
+keys, and derivation state do not appear in requests, results, errors,
+logs, descriptors, or backups the vault did not encrypt.</li>
+<li><strong>Every use is a typed capability.</strong> There is no &quot;get key&quot; operation, no
+generic signing oracle, and no ambient authority from an unlocked session.</li>
+<li><strong>Consent binds to displayed intent.</strong> What the holder saw is what was
+signed; canonical encoding makes substitution detectable.</li>
+<li><strong>Contexts are unlinkable by default.</strong> Distinct purposes, seats, and
+applications receive distinct keys and addresses; linking them is an
+explicit holder act.</li>
+<li><strong>The descriptor is a disclosure, not an inventory.</strong> Publishing an
+identity publishes chosen public facts, never the existence of undisclosed
+keys, addresses, or relationships.</li>
+<li><strong>Grants are narrower than the identity.</strong> Scoped, constrained, expiring,
+individually revocable—and revocation does not require root rotation.</li>
+<li><strong>Names are claims, not control.</strong> No registry, directory, or application
+holds authority over keys by virtue of naming or paying.</li>
+<li><strong>Rotation has declared reach.</strong> Every profile states what a rotation
+repairs, what it re-proves, and what it cannot fix.</li>
+<li><strong>Recovery is a holder ceremony.</strong> No capability requester can trigger,
+observe, or intercept export, backup, or import flows.</li>
+<li><strong>Compromise scope is honest.</strong> A profile that cannot rotate says so; a
+result of &quot;your identity is gone&quot; is stated, not softened.</li>
+<li><strong>Billing stays outside identity.</strong> Store evidence and entitlement state
+never enter descriptors, contexts, or capability results; seat keys keep
+providers from correlating a person across roles.</li>
+<li><strong>The vault is replaceable.</strong> The holder can migrate to another
+conforming implementation; no vendor, registry, or payment failure can
+prevent it.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>IdentityProfile</code> changes when capability semantics, descriptor meaning,
+consent requirements, or error meaning changes.</li>
+<li><code>IdentityImplementationProfile</code> changes when root-secret generation,
+derivation tree, key domains, storage model, rotation, or recovery
+behavior changes.</li>
+<li><code>IdentityDescriptor</code> versions are ordered by <code>sequence</code> and <code>previous</code>;
+verifiers reject forks and rollbacks they can detect.</li>
+<li>New derivation domains are additive capabilities; changing an existing
+domain's meaning requires a new implementation profile, not a silent remap.</li>
+<li>Unknown implementations are never inferred from a mnemonic word count or
+address format.</li>
+<li>Cross-platform fixtures cover derivation vectors, descriptor signing and
+chaining, capability request/result encodings, intent binding, consent
+refusal, grant expiry, seat-key determinism and unlinkability, rotation
+records, and recovery round-trips.</li>
+<li>A vault, a requester, and a verifier from three different authors must
+interoperate using only published profiles and fixtures.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>The abstract boundary becomes executable only through a concrete profile.
+The current implementation is:</p>
+<ul>
+<li><a href="../identity/UI-Identity-BIP39.html">UI-Identity-BIP39.md</a> — locally generated BIP-39
+mnemonic, domain-separated derivation of secp256k1/Schnorr, BLS12-381,
+Ed25519/Stellar, and X25519 key material, platform secure storage, and the
+current mobile recovery model.</li>
+</ul>
+<p>Future profiles may use hardware-rooted keys, threshold custody, or
+post-quantum algorithms while preserving the capability port. They must use
+another implementation profile ID when derivation, custody, rotation, or
+recovery semantics differ.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The UI ↔ identity boundary is successfully separated when:</p>
+<ol>
+<li>a third-party application can obtain signatures, proofs, decryptions, and
+context addresses using only published profiles and the capability port;</li>
+<li>no component outside the vault—first-party or third-party—can read,
+derive, or reconstruct private key material;</li>
+<li>the holder can review and revoke any requester's grant without rotating
+the root secret or losing unrelated relationships;</li>
+<li>two seats, two applications, or two contexts cannot correlate the same
+holder through keys or addresses the vault issued them;</li>
+<li>every signature a verifier accepts corresponds to an intent the holder
+was shown;</li>
+<li>descriptors chain, rotate, and revoke such that verifiers detect rollback
+and stop honoring revoked methods;</li>
+<li>a holder can restore the identity on a new device, and existing grants,
+seat entitlements, and memberships behave exactly as the profile declared;</li>
+<li>replacing the vault implementation preserves the identity through a
+holder-controlled ceremony;</li>
+<li>no payment state can lock or seize an identity; and</li>
+<li>a second custody technology can implement the abstract suite without
+pretending to be the first.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>Separating the UI and its applications from the identity vault lets a
+person use one identity everywhere without any app, seat, registry, or
+vendor ever holding it—so every other Onym boundary can assume keys that
+no one but their owner controls.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/identity/UI-Identity.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

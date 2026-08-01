@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Acquisition Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Acquisition Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/acquisition/Acquisition.html">
+<meta property="og:title" content="Onym Acquisition Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/acquisition/Acquisition.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Acquisition</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/acquisition/Acquisition.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-acquisition-contract-boundary">Onym Acquisition Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>An acquisition provider may host a landing experience and earn for a
+declared conversion outcome. Onym measures only an order-sized aggregate;
+it does not tell the installed app who acquired the user.</p>
+</blockquote>
+<p>This document defines the technology-neutral contract between an Onym
+campaign sponsor, an independent acquisition provider, and the publisher of
+the advertised application. It starts with an aggregate hot lead and ends
+with the strongest privacy-preserving acquisition event a selected app store
+can report.</p>
+<p>The contract does not require a particular landing-page stack, app store,
+analytics vendor, payment rail, settlement currency, or campaign sponsor. The
+first store mappings are specified in
+<a href="../acquisition/Acquisition-App-Store.html">Acquisition-App-Store.md</a> and
+<a href="../acquisition/Acquisition-Google-Play.html">Acquisition-Google-Play.md</a>.</p>
+<p>This is proposed architecture. No current Onym repository implements this
+contract, its store evidence adapters, or its settlement flow.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym permits aggregate acquisition measurement but rejects person-level
+install attribution.</p>
+<ul>
+<li>Anyone may publish an acquisition-provider offer and host a conforming
+landing page.</li>
+<li>A sponsor chooses whether to accept the offer, reserves a finite budget,
+and authorizes one acquisition order.</li>
+<li>Every visitor in an order uses the same landing route and the same
+store-campaign cohort token. Neither value identifies a visitor.</li>
+<li>The app store may internally connect a store visit with a download or
+acquisition under its own published rules.</li>
+<li>Only a delayed, thresholded aggregate leaves the store boundary.</li>
+<li>The installed app receives no acquisition-order, landing-provider,
+campaign, referral, advertising, or visitor identifier.</li>
+<li>Payment follows the metric and uncertainty rules fixed by the order. It
+creates no ownership interest in an acquired user or their future activity.</li>
+</ul>
+<p>This is privacy-preserving attribution, not a claim that the app store
+observes nothing. Apple or Google necessarily handles account, device,
+network, and download data to operate its store. The Onym guarantee is that
+the acquisition protocol does not export or reconstruct a person-level join
+between the landing visit, store event, and app identity.</p>
+<h2 id="2-division-of-ownership">2. Division of ownership</h2>
+<ul>
+<li>The <strong>campaign sponsor</strong> defines the goal, approves the experience, accepts
+an offer, and funds a capped order.</li>
+<li>The <strong>acquisition provider</strong> owns or lawfully operates the landing origin,
+presents the approved experience, and routes hot leads to the selected
+store.</li>
+<li>The <strong>application publisher</strong> controls the store listing and authorizes a
+shared campaign cohort for the order.</li>
+<li>The <strong>store evidence oracle</strong> reads privacy-preserving aggregate reports
+under delegated publisher authority and signs a normalized snapshot.</li>
+<li>The <strong>settlement provider or escrow</strong>, when used, reserves and pays the
+order without receiving visitor or app-user records.</li>
+<li>The <strong>prospective user</strong> may arrive, continue, download, install, launch, or
+leave without becoming an Onym attribution record.</li>
+<li>The <strong>app store</strong> defines the observable acquisition event, attribution
+window, reporting delay, privacy threshold, suppression, correction, and
+counter semantics.</li>
+</ul>
+<p>One party may hold several roles, but evidence must continue to identify the
+authority behind each statement. Anyone can host a page; only the application
+publisher or its delegated oracle can obtain authoritative store aggregates
+for that application. Open participation does not bypass store ownership or
+grant access to a publisher's console.</p>
+<h2 id="3-boundary-with-lead-generation">3. Boundary with lead generation</h2>
+<p>The lead-generation contract produces aggregate cold exposure, landing, and
+hot-intent evidence. Its declared hot-lead action—normally “Continue to
+install”—is the acquisition contract's input.</p>
+<pre><code class="language-text">lead-generation seat                         acquisition seat
+
+cold exposure -&gt; landing arrival -&gt; hot lead | -&gt; store listing
+                                             | -&gt; store acquisition aggregate
+                                             | -&gt; capped settlement
+                                             |
+                                             `-&gt; installed app gets no cohort
+</code></pre>
+<p>The acquisition provider may also be the landing operator used by the lead
+contract. That does not merge the two payment obligations:</p>
+<ul>
+<li>the lead generator is paid under the lead order's delivery metric;</li>
+<li>the acquisition provider is paid under its own offer and order; and</li>
+<li>neither receives a continuing royalty attached to a person.</li>
+</ul>
+<p>The two reports may share <code>campaignId</code>, compatible windows, and a signed
+handoff aggregate. They never share a visitor-level event or capability.</p>
+<h2 id="4-what-can-and-cannot-be-measured">4. What can and cannot be measured</h2>
+<h3 id="41-portable-stages">4.1 Portable stages</h3>
+<p>The abstract funnel contains these aggregates:</p>
+<ul>
+<li><strong>eligible hot leads:</strong> valid redemptions of the lead contract's declared
+landing intent action;</li>
+<li><strong>store intents:</strong> eligible outbound selections of a store link, when this
+is distinct from the hot-lead action;</li>
+<li><strong>store listing events:</strong> store-defined product-page visits, impressions,
+or install-button selections, when available; and</li>
+<li><strong>store acquisitions:</strong> the selected store profile's acquisition event,
+such as a first-time download or store-listing acquisition.</li>
+</ul>
+<p>An implementation must use the store's exact term. <code>storeAcquisition</code> is a
+portable category, not permission to relabel a download, button click,
+redownload, device installation, launch, account creation, or retained user as
+the same thing.</p>
+<h3 id="42-why-exact-universal-install-counting-is-unavailable">4.2 Why exact universal install counting is unavailable</h3>
+<p>An exact hot-lead-to-device-install join normally requires a shared token to
+reach the installed app, an advertising identifier, a device fingerprint, a
+receipt correlation, or a platform attribution postback. Those mechanisms
+either create person/device-level linkage or rely on a platform-specific
+privacy system with materially different semantics.</p>
+<p>The portable Onym baseline therefore accepts store-reported aggregate
+acquisition evidence. It can answer:</p>
+<blockquote>
+<p>How many acquisitions did the store attribute to this shared order cohort?</p>
+</blockquote>
+<p>It cannot answer:</p>
+<blockquote>
+<p>Which visitor installed, which Onym identity they became, or what they did
+after installation?</p>
+</blockquote>
+<h3 id="43-efficiency">4.3 Efficiency</h3>
+<p>For compatible aggregates and one measurement window:</p>
+<pre><code class="language-text">hotToStoreIntentRate = eligibleStoreIntents / eligibleHotLeads
+hotToAcquisitionRate = eligibleStoreAcquisitions / eligibleHotLeads
+intentToAcquisitionRate = eligibleStoreAcquisitions / eligibleStoreIntents
+costPerAcquisition = settledAcquisitionAmount / eligibleStoreAcquisitions
+</code></pre>
+<p>Division by zero or a suppressed denominator yields <code>undefined</code>. A report
+must also be <code>incomplete</code> when the store has not finalized the window, the
+cohort is below its privacy threshold, required data is grouped as “Other,”
+or the store no longer supports the pinned breakdown.</p>
+<h2 id="5-privacy-profiles">5. Privacy profiles</h2>
+<h3 id="51-aggregate-cohort-profile">5.1 Aggregate cohort profile</h3>
+<p>The baseline profile requires:</p>
+<ol>
+<li>one opaque acquisition-order route shared by every visitor in the order;</li>
+<li>one store-campaign cohort token shared by the whole order;</li>
+<li>no visitor-specific query parameter, cookie, storage identifier, pixel,
+fingerprint, advertising ID, email, account, or device identifier;</li>
+<li>no deferred deep link or install-referrer value delivered to the app;</li>
+<li>no clipboard, receipt, login, or network-timing correlation;</li>
+<li>aggregate store evidence only;</li>
+<li>delayed release and suppression below the declared privacy threshold;</li>
+<li>no attempt to subtract overlapping reports to reveal a small cohort;</li>
+<li>a generic application launch with no campaign callback; and</li>
+<li>deletion of ephemeral landing capabilities after redemption or expiry.</li>
+</ol>
+<p>The order token may be visible to the store because the store needs a cohort
+label. It must not be unique per person and must terminate at the store
+reporting boundary.</p>
+<h3 id="52-network-observation-limitation">5.2 Network-observation limitation</h3>
+<p>A directly visited landing host and network intermediaries can observe
+connection metadata while serving the page. A conforming provider commits not
+to retain, export, enrich, or join that metadata for acquisition measurement.
+Necessary security logs must have declared fields, access, and maximum
+retention and must never enter campaign evidence.</p>
+<p>This commitment is auditable policy, not a cryptographic guarantee against a
+malicious host. A stronger implementation may place an oblivious HTTP relay,
+trusted privacy proxy, or equivalent separation in front of the provider so
+the page operator does not receive the visitor's network address. Such a
+profile must state what the relay learns and must remain replaceable.</p>
+<h3 id="53-small-cohort-protection">5.3 Small-cohort protection</h3>
+<p>An order declares <code>minimumReportableCohort</code>. The effective threshold is the
+maximum of:</p>
+<ul>
+<li>the contract's declared minimum;</li>
+<li>the store's applicable threshold; and</li>
+<li>any higher threshold selected by the evidence oracle.</li>
+</ul>
+<p>Below that threshold, evidence reports <code>suppressed</code>; it does not disclose an
+exact zero or positive count. The order must choose in advance whether a
+suppressed cohort rolls into a wider time bucket, combines with compatible
+orders for analytics only, earns a fixed fee, or remains non-settleable.
+Combining cohorts must not be used to allocate hidden individual conversions
+back to providers.</p>
+<h2 id="6-contract-objects">6. Contract objects</h2>
+<h3 id="61-acquisition-profile">6.1 Acquisition Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:acquisition-profile:aggregate-store-v1&quot;,
+  &quot;interface&quot;: &quot;onym-acquisition-v1&quot;,
+  &quot;inputStage&quot;: &quot;hot-lead&quot;,
+  &quot;outputStage&quot;: &quot;store-acquisition&quot;,
+  &quot;privacy&quot;: &quot;shared-cohort-no-app-attribution-v1&quot;,
+  &quot;evidenceSchema&quot;: &quot;onym:acquisition-evidence-v1&quot;,
+  &quot;settlementSchema&quot;: &quot;onym:acquisition-settlement-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym:acquisition-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="62-store-implementation-profile">6.2 Store Implementation Profile</h3>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:acquisition-implementation:&lt;store&gt;-v1&quot;,
+  &quot;acquisitionProfileId&quot;: &quot;onym:acquisition-profile:aggregate-store-v1&quot;,
+  &quot;storeEvent&quot;: &quot;&lt;exact-store-defined-event&gt;&quot;,
+  &quot;cohortParameter&quot;: &quot;&lt;store-specific-shared-token&gt;&quot;,
+  &quot;attributionWindow&quot;: &quot;&lt;store-defined-or-order-bounded-window&gt;&quot;,
+  &quot;reportingDelay&quot;: &quot;&lt;store-defined-delay&gt;&quot;,
+  &quot;privacyThreshold&quot;: &quot;&lt;store-defined-and-order-minimum&gt;&quot;,
+  &quot;evidenceSource&quot;: &quot;&lt;store-report-and-version&gt;&quot;,
+  &quot;oracleModel&quot;: &quot;&lt;delegated-reader-and-signature-policy&gt;&quot;,
+  &quot;appReceivesCohort&quot;: false,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="63-provider-offer">6.3 Provider Offer</h3>
+<p>Anyone may publish a signed <code>AcquisitionProviderOffer</code>:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;offerId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;provider&quot;: &quot;onym:key:&lt;acquisition-provider&gt;&quot;,
+  &quot;landingOrigin&quot;: &quot;https://&lt;provider-origin&gt;&quot;,
+  &quot;supportedProfiles&quot;: [&quot;onym:acquisition-profile:aggregate-store-v1&quot;],
+  &quot;supportedStores&quot;: [&quot;&lt;implementation-profile-id&gt;&quot;],
+  &quot;experienceBundle&quot;: &quot;&lt;content-addressed-template-or-capabilities&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;shared-cohort-no-app-attribution-v1&quot;,
+  &quot;retentionPolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;paymentModels&quot;: [&quot;fixed-window&quot;, &quot;per-hot-lead&quot;, &quot;per-store-intent&quot;, &quot;per-store-acquisition&quot;],
+  &quot;payoutCoordinates&quot;: &quot;&lt;payment-rail-specific-reference&gt;&quot;,
+  &quot;validUntil&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;provider-signature&gt;&quot;
+}
+</code></pre>
+<p>Publishing an offer creates no entitlement to traffic or payment. The sponsor
+may reject an origin, template, price, privacy profile, jurisdiction, or
+evidence arrangement.</p>
+<h3 id="64-acquisition-order">6.4 Acquisition Order</h3>
+<p>The accepted and funded order binds:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;orderId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;leadOrderIds&quot;: [&quot;&lt;compatible-lead-order&gt;&quot;],
+  &quot;sponsor&quot;: &quot;onym:key:&lt;sponsor&gt;&quot;,
+  &quot;provider&quot;: &quot;onym:key:&lt;acquisition-provider&gt;&quot;,
+  &quot;applicationPublisher&quot;: &quot;onym:key:&lt;publisher&gt;&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:acquisition-implementation:&lt;store&gt;-v1&quot;,
+  &quot;applicationReference&quot;: &quot;&lt;store-app-id-or-package&gt;&quot;,
+  &quot;landingRouteId&quot;: &quot;&lt;opaque-order-route&gt;&quot;,
+  &quot;storeCohortId&quot;: &quot;&lt;opaque-order-cohort&gt;&quot;,
+  &quot;experienceHash&quot;: &quot;&lt;approved-content-and-behavior-hash&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;,
+    &quot;finalizesAfter&quot;: &quot;2026-08-15T00:00:00Z&quot;
+  },
+  &quot;privacy&quot;: {
+    &quot;minimumReportableCohort&quot;: 20,
+    &quot;appReceivesCohort&quot;: false,
+    &quot;smallCohortPolicy&quot;: &quot;roll-forward-or-unknown&quot;
+  },
+  &quot;settlement&quot;: {
+    &quot;billableMetric&quot;: &quot;eligible-store-acquisition&quot;,
+    &quot;rate&quot;: {&quot;minorUnits&quot;: 250, &quot;per&quot;: 1},
+    &quot;currency&quot;: &quot;&lt;declared-currency-or-asset&gt;&quot;,
+    &quot;maximumBillableUnits&quot;: 1000,
+    &quot;maximumAmount&quot;: 250000,
+    &quot;paymentRail&quot;: &quot;&lt;direct-payment-profile&gt;&quot;,
+    &quot;escrow&quot;: &quot;&lt;optional-escrow&gt;&quot;
+  },
+  &quot;authorizedOracles&quot;: [&quot;onym:key:&lt;store-evidence-oracle&gt;&quot;],
+  &quot;evidenceThreshold&quot;: 1,
+  &quot;sponsorSignature&quot;: &quot;&lt;signature&gt;&quot;,
+  &quot;providerSignature&quot;: &quot;&lt;signature&gt;&quot;,
+  &quot;publisherSignature&quot;: &quot;&lt;signature&gt;&quot;
+}
+</code></pre>
+<p><code>minimumReportableCohort</code> is a protocol floor, not a promise that the store
+will report at that size. A production profile may set a higher minimum than
+the illustrative value above.</p>
+<p>The publisher signature confirms only that the application reference and
+store cohort are authorized. It does not make the publisher liable for
+settlement unless the order explicitly assigns that role.</p>
+<h3 id="65-landing-handoff-aggregate">6.5 Landing Handoff Aggregate</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;eligibleHotLeads&quot;: 418,
+  &quot;eligibleStoreIntents&quot;: 401,
+  &quot;hotLeadAction&quot;: &quot;continue-to-install-v1&quot;,
+  &quot;countingPolicy&quot;: &quot;onym:tracker-free-landing-v1&quot;,
+  &quot;rawVisitorEventsExported&quot;: false,
+  &quot;operator&quot;: &quot;onym:key:&lt;acquisition-provider&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;provider-signature&gt;&quot;
+}
+</code></pre>
+<p>This statement does not prove unique people. Its counts may be affected by
+reloads, automation, shared devices, and the provider's implementation.</p>
+<h3 id="66-store-acquisition-snapshot">6.6 Store Acquisition Snapshot</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;applicationReference&quot;: &quot;&lt;store-app-id-or-package&gt;&quot;,
+  &quot;store&quot;: &quot;&lt;store-id&gt;&quot;,
+  &quot;storeCohortIdHash&quot;: &quot;&lt;hash-of-authorized-cohort&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;eventName&quot;: &quot;&lt;exact-store-defined-event&gt;&quot;,
+  &quot;eventCount&quot;: 137,
+  &quot;reportingStatus&quot;: &quot;final&quot;,
+  &quot;storeThresholdApplied&quot;: true,
+  &quot;statisticalNoisePossible&quot;: true,
+  &quot;sourceReport&quot;: &quot;&lt;report-name-version-and-content-hash&gt;&quot;,
+  &quot;observedAt&quot;: &quot;2026-08-15T00:00:00Z&quot;,
+  &quot;oracle&quot;: &quot;onym:key:&lt;store-evidence-oracle&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;oracle-signature&gt;&quot;
+}
+</code></pre>
+<p>For a suppressed cohort, <code>eventCount</code> is omitted and <code>reportingStatus</code> is
+<code>suppressed</code>. For an unavailable or unfinished report, status is <code>pending</code>,
+<code>unavailable</code>, or <code>incomplete</code>; it is never fabricated as zero.</p>
+<p>The oracle signature proves what the oracle reported from a named source. It
+does not turn proprietary store analytics into independent cryptographic
+ground truth.</p>
+<h3 id="67-efficiency-report">6.7 Efficiency Report</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;random-id&gt;&quot;,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;eligibleHotLeads&quot;: 418,
+  &quot;eligibleStoreIntents&quot;: 401,
+  &quot;eligibleStoreAcquisitions&quot;: 137,
+  &quot;storeEventName&quot;: &quot;&lt;exact-store-defined-event&gt;&quot;,
+  &quot;rates&quot;: {
+    &quot;hotToIntent&quot;: &quot;0.959330&quot;,
+    &quot;hotToAcquisition&quot;: &quot;0.327751&quot;,
+    &quot;intentToAcquisition&quot;: &quot;0.341646&quot;
+  },
+  &quot;settledAmount&quot;: {&quot;minorUnits&quot;: 34250, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;costPerAcquisition&quot;: &quot;250.000000&quot;,
+  &quot;personLevelAttribution&quot;: false,
+  &quot;appReceivedCohort&quot;: false,
+  &quot;status&quot;: &quot;final&quot;,
+  &quot;evidence&quot;: [&quot;&lt;handoff-hash&gt;&quot;, &quot;&lt;store-snapshot-hash&gt;&quot;],
+  &quot;signature&quot;: &quot;&lt;report-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Reports are comparable only when store event, attribution window, privacy
+threshold, reporting status, cohort rules, and profile versions are
+compatible. Apple first-time downloads and Google store-listing acquisitions
+must not be combined as though their definitions were identical.</p>
+<h2 id="7-common-contract-surface">7. Common contract surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>publishAcquisitionOffer</code></td>
+<td>Provider capabilities, privacy, price</td>
+<td>Signed discoverable offer</td>
+</tr>
+<tr>
+<td><code>proposeAcquisitionOrder</code></td>
+<td>Campaign, app, provider, selected terms</td>
+<td>Pending order</td>
+</tr>
+<tr>
+<td><code>authorizeStoreCohort</code></td>
+<td>Order and application-publisher authority</td>
+<td>Store link and cohort commitment</td>
+</tr>
+<tr>
+<td><code>fundAcquisitionOrder</code></td>
+<td>Maximum liability and payment rail</td>
+<td>Reserved budget</td>
+</tr>
+<tr>
+<td><code>activateLanding</code></td>
+<td>Funded order and approved experience</td>
+<td>Order-scoped route</td>
+</tr>
+<tr>
+<td><code>snapshotHotLeadHandoff</code></td>
+<td>Order and compatible window</td>
+<td>Aggregate hot/intention count</td>
+</tr>
+<tr>
+<td><code>snapshotStoreAcquisition</code></td>
+<td>Finalized store report</td>
+<td>Signed aggregate or status</td>
+</tr>
+<tr>
+<td><code>calculateAcquisitionEfficiency</code></td>
+<td>Compatible aggregates</td>
+<td>Aggregate funnel report</td>
+</tr>
+<tr>
+<td><code>calculateAcquisitionSettlement</code></td>
+<td>Order, store evidence, prior settlement</td>
+<td>Capped statement</td>
+</tr>
+<tr>
+<td><code>settleAcquisition</code></td>
+<td>Accepted statement</td>
+<td>Payment reference</td>
+</tr>
+<tr>
+<td><code>disputeAcquisition</code></td>
+<td>Statement and bounded evidence</td>
+<td>Open dispute state</td>
+</tr>
+<tr>
+<td><code>closeAcquisitionOrder</code></td>
+<td>Final or timeout policy</td>
+<td>Closed order and released budget</td>
+</tr>
+</tbody>
+</table></div><p>There is no operation for <code>identifyInstaller</code>, <code>readInstallReferrer</code>,
+<code>attachProviderToIdentity</code>, <code>callbackFromApp</code>, or <code>shareAppActivity</code>.</p>
+<h2 id="8-payment-models">8. Payment models</h2>
+<p>The provider's offer declares one or more payment models. The accepted order
+pins exactly one or a deterministic combination:</p>
+<ul>
+<li><strong>fixed window:</strong> payment for operating an approved experience for a fixed
+period and service level;</li>
+<li><strong>per eligible hot lead:</strong> payment for an aggregate landing handoff under a
+declared counting policy;</li>
+<li><strong>per eligible store intent:</strong> payment for an aggregate outbound store
+action;</li>
+<li><strong>per eligible store acquisition:</strong> payment for the store's final,
+reportable acquisition count; or</li>
+<li><strong>hybrid:</strong> a fixed hosting amount plus a capped performance component.</li>
+</ul>
+<p>The model must name who controls the evidence. Provider self-reported hot
+leads are weaker evidence than a store-reported acquisition and should be
+priced and audited accordingly.</p>
+<p>For a cumulative acquisition counter:</p>
+<pre><code class="language-text">cumulativeEligible = min(storeReportedAcquisitions, maximumBillableUnits)
+newEligible         = max(0, cumulativeEligible - previouslySettledUnits)
+cumulativeGross     = floor(cumulativeEligible * rateMinorUnits / rateUnit)
+newGross            = max(0, cumulativeGross - previouslySettledGross)
+payableMinorUnits   = min(max(0, newGross + signedAdjustments),
+                          remainingOrderBudget)
+</code></pre>
+<p>All arithmetic uses checked integers. The statement binds the store event
+definition and report hash. Suppressed, pending, noisy, corrected, or
+conflicting data follows the order's explicit policy. The settlement engine
+must not reverse-engineer a hidden exact count.</p>
+<p>Payment is direct campaign consideration from sponsor or escrow to provider.
+It is not an app-store purchase by the prospective user, a perpetual royalty,
+or a claim on later subscriptions, messages, identity, or financial activity.</p>
+<h2 id="9-trust-and-evidence">9. Trust and evidence</h2>
+<p>The application publisher is the unavoidable authorization bridge to store
+analytics. The recommended evidence arrangement is:</p>
+<ol>
+<li>the publisher creates or authorizes a shared order cohort;</li>
+<li>the publisher delegates the narrowest available read-only reporting role
+to an oracle;</li>
+<li>the oracle retrieves only the required aggregate report;</li>
+<li>the oracle records report identity, version, processing date, checksum,
+cohort, window, suppression status, and count;</li>
+<li>the oracle signs the canonical snapshot; and</li>
+<li>sponsor and provider can reproduce settlement from the signed objects.</li>
+</ol>
+<p>An oracle must never publish store credentials, raw detailed rows, account
+data, device data, or unrelated application metrics. Where a store cannot
+scope access narrowly enough, the publisher should operate the oracle itself
+or use a constrained export gateway.</p>
+<p>Threshold or mutually selected oracles can reduce unilateral misreporting,
+but several oracles reading the same store report do not create independent
+ground truth.</p>
+<h2 id="10-abuse-and-limitations">10. Abuse and limitations</h2>
+<h3 id="101-copied-cohort-links">10.1 Copied cohort links</h3>
+<p>A shared store link can be copied to another site or channel. Store evidence
+then proves acquisition for the cohort, not that the approved landing host
+caused every acquisition. Orders must use short windows, secret-before-launch
+opaque cohorts, creative checks, caps, anomaly review, and dispute rules.
+Visitor-specific tokens are not an acceptable anti-copying measure.</p>
+<h3 id="102-provider-manipulation">10.2 Provider manipulation</h3>
+<p>A provider can fabricate landing counters, use dark patterns, redirect to the
+wrong application, change creative, automate store traffic, or buy installs.
+Store acquisition evidence is stronger than provider counters but is not
+proof of lawful or organic conduct. The order defines eligibility, audits,
+corrections, and suspension.</p>
+<h3 id="103-store-ambiguity">10.3 Store ambiguity</h3>
+<p>Stores may delay reports, revise counts, apply statistical noise, suppress
+small rows, change attribution rules, group data as “Other,” or discontinue a
+dimension. <code>unknown</code> and <code>incomplete</code> are normal outcomes. A sponsor cannot
+make the provider bear unlimited reporting risk after the agreed finalization
+timeout.</p>
+<h3 id="104-install-is-not-retention">10.4 Install is not retention</h3>
+<p>A download or store acquisition does not prove the app remains installed,
+opens successfully, creates an Onym identity, sends a message, or becomes a
+paying user. Measuring those events would be a separate, opt-in, privacy-
+reviewed contract and is outside this profile.</p>
+<h2 id="11-errors-and-state">11. Errors and state</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_store_profile</code></td>
+<td>Provider/publisher</td>
+<td>Refuse incompatible order</td>
+</tr>
+<tr>
+<td><code>publisher_authority_missing</code></td>
+<td>Store adapter</td>
+<td>Do not activate cohort</td>
+</tr>
+<tr>
+<td><code>budget_unavailable</code></td>
+<td>Sponsor/escrow</td>
+<td>Do not activate landing</td>
+</tr>
+<tr>
+<td><code>landing_origin_unverified</code></td>
+<td>Provider</td>
+<td>Reject or require control proof</td>
+</tr>
+<tr>
+<td><code>experience_mismatch</code></td>
+<td>Landing audit</td>
+<td>Suspend new eligibility</td>
+</tr>
+<tr>
+<td><code>store_target_mismatch</code></td>
+<td>Landing/store adapter</td>
+<td>Stop redirect and dispute</td>
+</tr>
+<tr>
+<td><code>cohort_token_mismatch</code></td>
+<td>Store adapter</td>
+<td>Reject evidence</td>
+</tr>
+<tr>
+<td><code>cohort_token_exposed_to_app</code></td>
+<td>Privacy audit</td>
+<td>Suspend and treat as privacy violation</td>
+</tr>
+<tr>
+<td><code>report_pending</code></td>
+<td>Store</td>
+<td>Wait until bounded finalization time</td>
+</tr>
+<tr>
+<td><code>report_suppressed</code></td>
+<td>Store/privacy policy</td>
+<td>Apply declared small-cohort policy</td>
+</tr>
+<tr>
+<td><code>report_grouped_other</code></td>
+<td>Store</td>
+<td>Mark order non-separable</td>
+</tr>
+<tr>
+<td><code>report_corrected</code></td>
+<td>Store</td>
+<td>Issue append-only correction</td>
+</tr>
+<tr>
+<td><code>report_unavailable</code></td>
+<td>Store/oracle</td>
+<td>Apply timeout, never assume zero</td>
+</tr>
+<tr>
+<td><code>evidence_conflict</code></td>
+<td>Oracles</td>
+<td>Freeze settlement and dispute</td>
+</tr>
+<tr>
+<td><code>traffic_suspected</code></td>
+<td>Sponsor/store</td>
+<td>Quarantine disputed aggregate</td>
+</tr>
+<tr>
+<td><code>settlement_duplicate</code></td>
+<td>Settlement</td>
+<td>Reject replay</td>
+</tr>
+<tr>
+<td><code>payment_failed</code></td>
+<td>Payment rail</td>
+<td>Preserve liability and retry</td>
+</tr>
+</tbody>
+</table></div><p>Order state:</p>
+<pre><code class="language-text">offered
+  -&gt; proposed
+  -&gt; publisher_authorized
+  -&gt; funded
+  -&gt; active
+  -&gt; awaiting_store_finalization
+  -&gt; reportable | suppressed | incomplete | disputed
+  -&gt; statement_accepted
+  -&gt; settled
+  -&gt; closed
+</code></pre>
+<p>A privacy, creative, domain-control, or store-target violation may suspend an
+active order. Suspension stops new eligibility but does not erase valid prior
+evidence.</p>
+<h2 id="12-obligations">12. Obligations</h2>
+<h3 id="121-acquisition-provider">12.1 Acquisition provider</h3>
+<p>A conforming provider must:</p>
+<ol>
+<li>control the declared origin and serve the approved experience;</li>
+<li>use only the order-scoped shared route and authorized store link;</li>
+<li>comply with the pinned privacy and retention profile;</li>
+<li>avoid dark patterns, impersonation, malware, forced redirects, spam, and
+misleading install claims;</li>
+<li>never add a visitor-specific token or app callback;</li>
+<li>sign aggregate landing handoffs and append-only corrections;</li>
+<li>disclose outage, compromise, content change, and third-party subresources;</li>
+<li>preserve bounded audit evidence without visitor records; and</li>
+<li>accept only the payment rights stated in the order.</li>
+</ol>
+<h3 id="122-sponsor">12.2 Sponsor</h3>
+<p>A conforming sponsor must:</p>
+<ol>
+<li>approve lawful creative and accurate disclosures;</li>
+<li>reserve the maximum order liability before activation;</li>
+<li>state payment, evidence, suppression, correction, and timeout rules;</li>
+<li>not demand exact hidden counts or user-level proof;</li>
+<li>not combine small cohorts to isolate a visitor;</li>
+<li>calculate settlement deterministically and idempotently;</li>
+<li>pay valid statements on the declared rail; and</li>
+<li>not treat acquisition as ownership of future user activity.</li>
+</ol>
+<h3 id="123-application-publisher-and-evidence-oracle">12.3 Application publisher and evidence oracle</h3>
+<p>They must:</p>
+<ol>
+<li>authorize the exact application, cohort, store, and window;</li>
+<li>use least-privilege report access where the store permits it;</li>
+<li>keep console/API credentials out of protocol objects;</li>
+<li>normalize the store's exact event rather than renaming it;</li>
+<li>preserve suppression, noise, delay, correction, and uncertainty metadata;</li>
+<li>expose only the minimum aggregate needed by the order;</li>
+<li>sign source identity and content hash; and</li>
+<li>never send the cohort into the installed app.</li>
+</ol>
+<h2 id="13-security-privacy-and-economic-invariants">13. Security, privacy, and economic invariants</h2>
+<ol>
+<li><strong>The app is outside attribution.</strong> It receives no order or cohort value.</li>
+<li><strong>One order, one shared cohort.</strong> No value varies per visitor.</li>
+<li><strong>Store terms remain visible.</strong> A store event is never called a universal
+verified install.</li>
+<li><strong>Small cohorts do not leak.</strong> Suppression is preserved through reports and
+settlement.</li>
+<li><strong>Missing is not zero.</strong> Pending, suppressed, noisy, grouped, and
+unavailable data are explicit states.</li>
+<li><strong>No subtraction attack.</strong> Overlapping aggregates cannot be differenced to
+reveal a small order.</li>
+<li><strong>Anyone may offer; the sponsor chooses.</strong> Permissionless participation
+does not authorize spending or publisher-console access.</li>
+<li><strong>Finite liability.</strong> Every order has a metric, rate, cap, budget, window,
+and finalization rule.</li>
+<li><strong>Payment is idempotent.</strong> Each reportable unit is settled at most once.</li>
+<li><strong>No downstream ownership.</strong> Acquisition payment grants no identity,
+messaging, notary, registry, app, or governance authority.</li>
+<li><strong>Evidence remains scoped.</strong> Oracles reveal only order aggregates and
+source metadata required to audit them.</li>
+<li><strong>Provider replacement is possible.</strong> Another conforming host can offer a
+new order without migrating user identities or app data.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>AcquisitionProfile</code> changes when stage, privacy, evidence, settlement, or
+error semantics change.</li>
+<li><code>StoreImplementationProfile</code> changes when cohort parameters, store events,
+attribution rules, report format, thresholds, or oracle behavior change.</li>
+<li>Every active order pins exact versions; a later platform change cannot
+silently rewrite historical settlement.</li>
+<li>Store corrections produce signed append-only snapshots referencing the
+superseded evidence.</li>
+<li>Test fixtures cover canonical objects, signatures, suppression, pending
+reports, incompatible event definitions, integer arithmetic, caps,
+duplicate settlement, copied links, oracle conflict, and privacy failure.</li>
+</ul>
+<h2 id="15-concrete-implementations">15. Concrete implementations</h2>
+<ul>
+<li><a href="../acquisition/Acquisition-App-Store.html">Acquisition-App-Store.md</a> maps an order cohort to
+an Apple campaign link and aggregate first-time-download evidence.</li>
+<li><a href="../acquisition/Acquisition-Google-Play.html">Acquisition-Google-Play.md</a> maps an order cohort
+to UTM-tagged Google Play reporting while excluding the app-facing Install
+Referrer API.</li>
+</ul>
+<p>Future profiles may use another store or a reviewed aggregate-attribution
+system. They must disclose whether the output is a download, acquisition,
+installation, install intent, activation, or modeled result.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The acquisition boundary is successfully separated when:</p>
+<ol>
+<li>anyone can publish a conforming landing-provider offer;</li>
+<li>a sponsor and publisher can authorize and fund a finite order;</li>
+<li>all visitors in an order receive the same store cohort value;</li>
+<li>the app receives no cohort or provider identifier;</li>
+<li>the store oracle returns only a signed aggregate or explicit non-result;</li>
+<li>hot-to-acquisition efficiency can be calculated when definitions and
+thresholds permit it;</li>
+<li>no UI or report calls a suppressed value zero or a store-specific event a
+stronger event;</li>
+<li>a provider can be paid under its declared model without receiving app-user
+data;</li>
+<li>copied links, delayed reports, corrections, oracle conflicts, privacy
+failure, and duplicate settlement have explicit handling; and</li>
+<li>another store can implement the interface without importing Apple or
+Google objects into the abstract contract.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>Onym can measure and reward a landing provider's aggregate contribution to
+store acquisition without turning the installed person into the provider's
+trackable asset.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/acquisition/Acquisition.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

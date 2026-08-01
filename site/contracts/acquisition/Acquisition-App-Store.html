@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Acquisition: Apple App Store Implementation — Onym Foundation</title>
+<meta name="description" content="Onym Acquisition: Apple App Store Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/acquisition/Acquisition-App-Store.html">
+<meta property="og:title" content="Onym Acquisition: Apple App Store Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/acquisition/Acquisition-App-Store.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/acquisition/Acquisition-App-Store.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-acquisition-apple-app-store-implementation">Onym Acquisition: Apple App Store Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>One acquisition order uses one shared App Store campaign link. A delegated
+oracle reports only the privacy-protected aggregate of first-time downloads;
+the installed app receives no campaign value.</p>
+</blockquote>
+<p>This document implements <a href="../acquisition/Acquisition.html">Acquisition.md</a> with Apple App Store
+campaign links and App Store Connect Analytics. The abstract contract remains
+authoritative for ownership, privacy, offer, settlement, and dispute behavior.</p>
+<p>This profile is proposed architecture. It has not been implemented in the
+current Onym repositories.</p>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">App Store mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Application reference</td>
+<td>Apple app ID and bundle ID commitment</td>
+</tr>
+<tr>
+<td>Shared store cohort</td>
+<td>One App Store Connect campaign token (<code>ct</code>) per order</td>
+</tr>
+<tr>
+<td>Publisher/store token</td>
+<td>App Store provider token (<code>pt</code>)</td>
+</tr>
+<tr>
+<td>Store destination</td>
+<td>App Store product-page campaign link</td>
+</tr>
+<tr>
+<td>Store acquisition</td>
+<td>Campaign-attributed <strong>First-Time Download</strong></td>
+</tr>
+<tr>
+<td>Attribution window</td>
+<td>Apple's current campaign-link rule, pinned in evidence</td>
+</tr>
+<tr>
+<td>Privacy floor</td>
+<td>Onym order minimum plus Apple's applicable threshold</td>
+</tr>
+<tr>
+<td>Evidence source</td>
+<td>App Store Connect campaign analytics or Analytics Reports API</td>
+</tr>
+<tr>
+<td>Evidence oracle</td>
+<td>Publisher or delegated App Store Connect report reader</td>
+</tr>
+<tr>
+<td>App callback</td>
+<td>Absent</td>
+</tr>
+</tbody>
+</table></div><p>Implementation profile identifier:</p>
+<pre><code class="language-text">onym:acquisition-implementation:apple-campaign-first-download-v1
+</code></pre>
+<p>Apple calls the selected outcome a First-Time Download. This profile must not
+rename it a launch, retained installation, account, or unique Onym user.</p>
+<h2 id="2-official-platform-semantics">2. Official platform semantics</h2>
+<p>Apple documents that App Store campaign links use URL campaign parameters and
+can measure campaign-attributed downloads. A first download within 24 hours of
+using a campaign link or token is currently counted as a First-Time Download;
+if more than one campaign link is used in the applicable period, the most
+recent link receives credit.</p>
+<p>Campaign data appears only after the campaign is old enough and has reached
+Apple's minimum number of attributed first-time downloads. At the time of this
+profile, Apple states a minimum of five individual users/first-time downloads.
+The order may and normally should require a higher Onym privacy threshold.</p>
+<p>Apple's downloadable Analytics Reports use privacy-enhancing techniques. Its
+documentation states that small rows can be omitted, detailed reports receive
+additional safeguards, and a small amount of statistical noise may be added.
+Those properties are preserved in the normalized evidence instead of being
+treated as errors.</p>
+<h2 id="3-store-link-construction">3. Store-link construction</h2>
+<p>The application publisher creates or authorizes a campaign link of the form:</p>
+<pre><code class="language-text">https://apps.apple.com/app/apple-store/id&lt;apple-app-id&gt;?pt=&lt;provider-token&gt;&amp;ct=&lt;order-cohort&gt;&amp;mt=8
+</code></pre>
+<p>The final URL must be generated and validated against Apple's current rules;
+the example is descriptive, not a permanent URL grammar.</p>
+<ul>
+<li><code>pt</code> is Apple's provider token associated with the application publisher.
+It does not identify the independent Onym acquisition provider.</li>
+<li><code>ct</code> is the campaign token. This profile uses one opaque token for the
+entire acquisition order.</li>
+<li><code>mt</code> is Apple's media-type parameter where required by the current campaign
+link format.</li>
+</ul>
+<p>The order commits to a normalized hash of the exact destination. The
+acquisition provider receives the authorized URL only after publisher
+authorization and funding.</p>
+<p>The campaign token:</p>
+<ul>
+<li>contains no identity key, landing-session value, IP-derived value, or human
+readable provider name;</li>
+<li>is never varied per visitor;</li>
+<li>is never written to Onym application state; and</li>
+<li>is not reused across acquisition orders.</li>
+</ul>
+<h2 id="4-landing-behavior">4. Landing behavior</h2>
+<p>The acquisition provider serves an order-scoped route shared by all visitors:</p>
+<pre><code class="language-text">https://&lt;provider-origin&gt;/a/&lt;opaque-acquisition-route&gt;
+</code></pre>
+<p>After the declared hot-lead action, the provider directs the browser to the
+authorized App Store campaign link. The page:</p>
+<ol>
+<li>uses no cookies, local storage, advertising ID, fingerprint, or analytics
+pixel;</li>
+<li>does not append a visitor identifier to <code>ct</code> or any other parameter;</li>
+<li>does not require an Onym login or wallet connection;</li>
+<li>applies a restrictive referrer policy;</li>
+<li>uses no automatic or deceptive App Store redirect;</li>
+<li>keeps any one-page capability only until action or short expiry; and</li>
+<li>reports only aggregate hot leads and outbound store intents.</li>
+</ol>
+<p>Apple receives the shared campaign token and its normal store request data.
+The landing provider and sponsor do not receive Apple's user-level event.</p>
+<h2 id="5-publisher-authorization">5. Publisher authorization</h2>
+<p>An <code>AppleCampaignAuthorization</code> binds:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:acquisition-implementation:apple-campaign-first-download-v1&quot;,
+  &quot;appleAppId&quot;: &quot;&lt;numeric-app-id&gt;&quot;,
+  &quot;bundleIdHash&quot;: &quot;&lt;bundle-id-commitment&gt;&quot;,
+  &quot;providerTokenHash&quot;: &quot;&lt;pt-commitment&gt;&quot;,
+  &quot;campaignTokenHash&quot;: &quot;&lt;ct-commitment&gt;&quot;,
+  &quot;destinationUrlHash&quot;: &quot;&lt;normalized-url-hash&gt;&quot;,
+  &quot;authorizedWindow&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;publisher&quot;: &quot;onym:key:&lt;application-publisher&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The public contract need not reveal <code>pt</code> or <code>ct</code> before activation. Evidence
+uses commitments so observers can later verify that the reported campaign is
+the authorized cohort without making unused tokens easy to copy.</p>
+<h2 id="6-evidence-retrieval">6. Evidence retrieval</h2>
+<p>The order chooses one source:</p>
+<h3 id="61-app-store-connect-campaign-view">6.1 App Store Connect campaign view</h3>
+<p>An authorized publisher operator reads the campaign's First-Time Downloads
+after the reporting delay and signs the normalized result. This is suitable
+for manual or low-volume pilots, but screenshots alone are dispute attachments
+rather than canonical machine evidence.</p>
+<h3 id="62-analytics-reports-api">6.2 Analytics Reports API</h3>
+<p>For automation, a publisher-controlled gateway or delegated oracle downloads
+the applicable App Store Downloads analytics report and selects the authorized
+campaign cohort and window. The evidence records:</p>
+<ul>
+<li>report request and report names;</li>
+<li>report category and content level;</li>
+<li>processing date and granularity;</li>
+<li>downloaded segment checksums;</li>
+<li>campaign dimension and application reference;</li>
+<li>First-Time Download event definition;</li>
+<li>count or suppression state; and</li>
+<li>whether Apple documents noise for the selected report.</li>
+</ul>
+<p>Apple currently requires an Admin role to make the initial analytics-report
+request. Once requested, API keys with Sales and Reports or Finance roles can
+download generated reports. Because those roles may expose more than one
+order, the recommended production design keeps the Apple credential inside a
+publisher-operated gateway and returns only an order-scoped signed aggregate.</p>
+<p>No Apple credential, raw report segment, or unrelated campaign data is
+published in the acquisition protocol.</p>
+<h2 id="7-normalized-snapshot">7. Normalized snapshot</h2>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;campaignId&quot;: &quot;onym:campaign:&lt;id&gt;&quot;,
+  &quot;acquisitionOrderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;applicationReference&quot;: &quot;app-store:&lt;apple-app-id&gt;&quot;,
+  &quot;store&quot;: &quot;apple-app-store&quot;,
+  &quot;storeCohortIdHash&quot;: &quot;&lt;campaign-token-hash&gt;&quot;,
+  &quot;window&quot;: {
+    &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+    &quot;endsAt&quot;: &quot;2026-08-08T00:00:00Z&quot;
+  },
+  &quot;eventName&quot;: &quot;apple-first-time-download&quot;,
+  &quot;eventCount&quot;: 137,
+  &quot;attributionRule&quot;: &quot;campaign-link-last-touch-within-24-hours&quot;,
+  &quot;reportingStatus&quot;: &quot;final&quot;,
+  &quot;minimumReportableCohort&quot;: 20,
+  &quot;appleThresholdApplied&quot;: true,
+  &quot;statisticalNoisePossible&quot;: true,
+  &quot;source&quot;: {
+    &quot;report&quot;: &quot;App Store Downloads&quot;,
+    &quot;processingDate&quot;: &quot;2026-08-11&quot;,
+    &quot;contentHash&quot;: &quot;&lt;normalized-source-hash&gt;&quot;
+  },
+  &quot;observedAt&quot;: &quot;2026-08-12T00:00:00Z&quot;,
+  &quot;oracle&quot;: &quot;onym:key:&lt;apple-evidence-oracle&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;oracle-signature&gt;&quot;
+}
+</code></pre>
+<p>The attribution-rule string is versioned. If Apple changes the window or
+credit rule, a new implementation profile is required for new orders.</p>
+<p>When the campaign does not meet the effective threshold, <code>eventCount</code> is
+omitted and <code>reportingStatus</code> is <code>suppressed</code>. When Apple has not completed
+processing, the status is <code>pending</code>. Neither state is a zero.</p>
+<h2 id="8-settlement">8. Settlement</h2>
+<p>A per-acquisition order may pay only the final reportable First-Time Download
+count, after applying the order cap. Store suppression means exact
+per-acquisition settlement may be unavailable for a small provider.</p>
+<p>The order must choose one of these policies before launch:</p>
+<ul>
+<li>wait and roll the same order into a longer compatible window;</li>
+<li>pay the fixed hosting component only;</li>
+<li>settle a declared tier after the cohort becomes reportable; or</li>
+<li>close without a performance component after a bounded timeout.</li>
+</ul>
+<p>It must not infer an exact hidden count from Apple totals, adjacent campaigns,
+or a before/after subtraction. Apple corrections produce an append-only Onym
+correction and follow the order's overpayment policy.</p>
+<h2 id="9-privacy-and-security-properties">9. Privacy and security properties</h2>
+<ol>
+<li>All visitors use the same <code>ct</code> value.</li>
+<li>The installed app receives no <code>ct</code>, acquisition order, or provider ID.</li>
+<li>Onym never asks the app to upload an App Store receipt for attribution.</li>
+<li>Campaign data is reported only after the effective privacy threshold.</li>
+<li>Noise, omission, delay, and opt-in restrictions remain visible.</li>
+<li>The provider learns aggregate outcome, not an Apple account or device.</li>
+<li>The oracle uses the minimum feasible reporting access and exposes only the
+authorized cohort aggregate.</li>
+<li>Landing-network metadata is not used to join an App Store event.</li>
+</ol>
+<p>This profile does not use post-download usage, sales, subscriptions, sessions,
+retention, or deletion reports for settlement. Some Apple analytics in those
+areas depend on users opting to share diagnostics and usage data and have
+different privacy semantics.</p>
+<h2 id="10-failure-and-dispute-mapping">10. Failure and dispute mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Condition</th>
+<th scope="col">Required outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Missing publisher authorization</td>
+<td>Order cannot activate</td>
+</tr>
+<tr>
+<td>Wrong app ID, <code>pt</code>, or <code>ct</code></td>
+<td>Stop redirect; reject evidence</td>
+</tr>
+<tr>
+<td>Campaign below Apple/effective threshold</td>
+<td><code>suppressed</code>, not zero</td>
+</tr>
+<tr>
+<td>Campaign not yet visible</td>
+<td><code>pending</code> until bounded finalization</td>
+</tr>
+<tr>
+<td>Detailed row omitted</td>
+<td>Preserve suppression; do not infer</td>
+</tr>
+<tr>
+<td>Report contains statistical noise</td>
+<td>Mark it and apply pinned policy</td>
+</tr>
+<tr>
+<td>Apple report corrected</td>
+<td>Append corrected snapshot</td>
+</tr>
+<tr>
+<td>Token copied outside approved origin</td>
+<td>Quarantine disputed increment</td>
+</tr>
+<tr>
+<td>App receives campaign data</td>
+<td>Privacy violation and suspension</td>
+</tr>
+<tr>
+<td>Oracle loses report access</td>
+<td><code>unavailable</code>; apply timeout policy</td>
+</tr>
+<tr>
+<td>Two oracles disagree</td>
+<td>Freeze performance settlement</td>
+</tr>
+</tbody>
+</table></div><h2 id="11-required-implementation-components">11. Required implementation components</h2>
+<ol>
+<li>App Store campaign-link authorizer controlled by the application publisher;</li>
+<li>order-scoped tracker-free landing host;</li>
+<li>campaign-token commitment and URL validator;</li>
+<li>App Store Connect report gateway with least practical privilege;</li>
+<li>normalizer for First-Time Download campaign aggregates;</li>
+<li>signed evidence and correction store;</li>
+<li>deterministic efficiency and settlement engine; and</li>
+<li>privacy, copy-abuse, dispute, and credential-rotation controls.</li>
+</ol>
+<h2 id="12-conformance-tests">12. Conformance tests</h2>
+<p>A conforming implementation proves that:</p>
+<ol>
+<li>every test visitor receives an identical campaign token;</li>
+<li>per-visitor query parameters are rejected;</li>
+<li>the destination binds the authorized app and provider tokens;</li>
+<li>no campaign value appears in installed-app state or callback traffic;</li>
+<li>First-Time Download is not relabeled as launch or retained install;</li>
+<li>thresholds and suppression survive normalization;</li>
+<li>pending or missing reports do not become zero;</li>
+<li>noisy and corrected reports retain their metadata;</li>
+<li>duplicate snapshots cannot pay twice; and</li>
+<li>the Apple credential cannot be recovered from an Onym object.</li>
+</ol>
+<h2 id="13-official-references">13. Official references</h2>
+<ul>
+<li>Apple, <a href="https://developer.apple.com/help/app-store-connect-analytics/acquisition/campaign-links">Campaign links</a></li>
+<li>Apple, <a href="https://developer.apple.com/help/app-store-connect-analytics/acquisition/acquisition">Acquisition analytics</a></li>
+<li>Apple, <a href="https://developer.apple.com/help/app-store-connect-analytics/overview/analytics-reports-api">Analytics Reports API overview</a></li>
+<li>Apple, <a href="https://developer.apple.com/documentation/AppStoreConnectAPI/downloading-analytics-reports">Downloading Analytics Reports</a></li>
+</ul>
+<p>These pages are external platform specifications and may change. Production
+orders must pin the observed semantics and report version rather than relying
+only on this draft.</p>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/acquisition/Acquisition-App-Store.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

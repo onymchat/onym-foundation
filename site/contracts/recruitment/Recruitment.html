@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Recruitment Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Recruitment Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/recruitment/Recruitment.html">
+<meta property="og:title" content="Onym Recruitment Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/recruitment/Recruitment.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Recruitment</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/recruitment/Recruitment.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-recruitment-contract-boundary">Onym Recruitment Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>Every Onym seat may publish a need for participants. Anyone may self-apply or
+offer recruiting help, but a recruiter introduces candidates—it does not own
+them, appoint them, or acquire a cut of their future work.</p>
+</blockquote>
+<p>This document defines the technology-neutral recruitment surface used to find
+people, organizations, maintainers, service operators, vendors, auditors,
+contributors, grantees, sponsors, and governance candidates for any Onym seat.
+It does not require a particular job board, social network, recruiter,
+credential registry, identity format, evaluator, escrow, payment rail,
+employment relationship, or jurisdiction.</p>
+<p>The contract ends at a signed selection or activation outcome. Employment,
+contractor, grant, provider, board, sponsor, and volunteer relationships are
+governed by separate agreements and the authority of the destination seat.
+This specification is not an employment contract or legal classification of a
+participant.</p>
+<p>This is proposed architecture. No current Onym repository implements the
+objects, privacy controls, matching, evidence, or settlement described here.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Recruitment is a cross-cutting, permissionless service—not a gate over Onym.</p>
+<ul>
+<li>Every seat may publish a signed, finite participation opening.</li>
+<li>Anyone may discover an opening and apply directly without a recruiter.</li>
+<li>Anyone may publish a recruiting offer or propose candidates, subject to
+candidate consent and the opening's rules.</li>
+<li>A recruiter earns only through an accepted, budget-capped recruitment order.</li>
+<li>A candidate chooses whether, what, and to whom to disclose.</li>
+<li>The destination seat's selection authority evaluates and appoints. A
+recruiter cannot guarantee or manufacture selection.</li>
+<li>The recruitment contract may pay for declared milestones but creates no
+permanent claim on a selected participant's compensation, revenue, identity,
+work, or downstream relationships.</li>
+<li>Legal, equality, accessibility, safeguarding, labor, tax, immigration,
+background-check, and data-protection duties remain with the parties
+assigned by the declared jurisdiction and participation form.</li>
+</ul>
+<p>Open recruiting does not require a requester to accept every recruiter,
+candidate, or unsolicited referral. Open participation means the requirements,
+selection authority, process, evidence, and direct-application route are
+visible—not that every role has unlimited capacity or no qualification.</p>
+<h2 id="2-roles">2. Roles</h2>
+<ul>
+<li>The <strong>requester</strong> publishes the need, funds any recruitment order, and has
+authority to request participation for the destination seat.</li>
+<li>The <strong>seat owner or operator</strong> controls the service, project, legal entity,
+or resource to which a participant may be added.</li>
+<li>The <strong>selection authority</strong> applies the declared process and signs the
+outcome. It may be an operator, user, group, app publisher, foundation board,
+electorate, grants committee, or another named authority.</li>
+<li>The <strong>recruiter</strong> finds, informs, or introduces candidates under an accepted
+order.</li>
+<li>The <strong>candidate</strong> is a consenting person or organization considering the
+opening.</li>
+<li>The <strong>evaluator</strong> verifies only declared qualifications or conducts a
+bounded assessment.</li>
+<li>The <strong>credential issuer</strong> attests a specific fact but does not decide
+selection merely by issuing it.</li>
+<li>The <strong>activation oracle</strong> reports that the destination seat completed a
+declared milestone, such as contract signature or service activation.</li>
+<li>The <strong>settlement provider or escrow</strong>, if used, reserves a finite bounty and
+pays approved milestones.</li>
+</ul>
+<p>One party may hold several roles, but every signed object identifies which
+authority it exercises. A recruiter who also evaluates must disclose that
+conflict. A requester who recruits directly cannot fabricate a third-party
+referral fee.</p>
+<h2 id="3-recruitment-covers-every-seat">3. Recruitment covers every seat</h2>
+<p>The destination is expressed as a versioned <code>seatType</code>, not as free-form job
+marketing.</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Seat or function</th>
+<th scope="col">Example participants</th>
+<th scope="col">Actual selection authority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Identity</td>
+<td>vault implementer, hardware integrator, derivation specialist, security reviewer</td>
+<td>user, product owner, or provider governance</td>
+</tr>
+<tr>
+<td>Recovery trustee</td>
+<td>cloud-custody operator, trustee-app author, institutional trustee, recovery reviewer</td>
+<td>identity holder for enrollment; trustee operator for personnel</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>client author, designer, accessibility reviewer, publisher</td>
+<td>UI project or publisher</td>
+</tr>
+<tr>
+<td>Message transport</td>
+<td>relay operator, protocol maintainer, SRE</td>
+<td>relay owner or service organization</td>
+</tr>
+<tr>
+<td>Blob transport</td>
+<td>storage operator, CDN specialist, implementation maintainer</td>
+<td>blob-service owner</td>
+</tr>
+<tr>
+<td>Notary</td>
+<td>contract author, deployer, auditor, governance designer</td>
+<td>notary provider or selecting group</td>
+</tr>
+<tr>
+<td>Transaction relay</td>
+<td>operator, fee sponsor, reliability engineer</td>
+<td>relayer owner or requester</td>
+</tr>
+<tr>
+<td>Association registry</td>
+<td>registry operator, credential issuer, dispute reviewer</td>
+<td>registry governance</td>
+</tr>
+<tr>
+<td>Application</td>
+<td>builder, integrator, regulated provider, domain expert</td>
+<td>application provider or group</td>
+</tr>
+<tr>
+<td>Lead generation</td>
+<td>promoter, distribution operator, view observer</td>
+<td>campaign sponsor per funded order</td>
+</tr>
+<tr>
+<td>Acquisition</td>
+<td>landing provider, store-evidence oracle, conversion designer</td>
+<td>campaign sponsor and app publisher</td>
+</tr>
+<tr>
+<td>Sponsorship</td>
+<td>sponsor prospect, fundraiser, compliance reviewer</td>
+<td>foundation gift authority</td>
+</tr>
+<tr>
+<td>Foundation governance</td>
+<td>director candidate, treasurer, auditor, grants reviewer</td>
+<td>legal board, members, or electorate</td>
+</tr>
+<tr>
+<td>Protocol commons</td>
+<td>maintainer, researcher, standards editor, security auditor</td>
+<td>named project or foundation process</td>
+</tr>
+<tr>
+<td>Recruitment</td>
+<td>recruiter, evaluator, privacy reviewer, recruitment operator</td>
+<td>requester or recruitment-service governance</td>
+</tr>
+</tbody>
+</table></div><p>Recruitment cannot change the destination authority. For example:</p>
+<ul>
+<li>recruiting a Notary provider does not bind a group to that notary;</li>
+<li>recruiting a Sponsor Director candidate does not bypass the Sponsor Council
+election or legal appointment;</li>
+<li>recruiting an acquisition provider does not authorize an app-store cohort;</li>
+<li>recruiting a recovery trustee does not enroll it for any identity or give it
+a share;</li>
+<li>recruiting a registry issuer does not make its credentials trusted; and</li>
+<li>recruiting a relay operator does not add the relay to a user's route.</li>
+</ul>
+<p>Recruiting for the Identity seat means finding identity-tool authors,
+reviewers, recovery specialists, or voluntarily selected custody providers. It
+never means recruiting a replacement owner for another person's identity.
+Recruitment may itself recruit recruiters, but every nested opening and order
+has its own finite budget and independent authority evidence; circular
+self-attestation and self-triggered milestone payment are invalid.</p>
+<h2 id="4-participation-forms">4. Participation forms</h2>
+<p>Every opening declares exactly one primary <code>participationForm</code>:</p>
+<ul>
+<li><code>employee</code>;</li>
+<li><code>independent-contractor</code>;</li>
+<li><code>service-provider</code>;</li>
+<li><code>vendor</code>;</li>
+<li><code>maintainer</code>;</li>
+<li><code>grant-recipient</code>;</li>
+<li><code>volunteer</code>;</li>
+<li><code>governance-candidate</code>;</li>
+<li><code>sponsor-prospect</code>;</li>
+<li><code>auditor-or-reviewer</code>; or</li>
+<li>another versioned form defined by an implementation profile.</li>
+</ul>
+<p>The label does not determine legal status by itself. The final agreement,
+facts, applicable law, and competent authorities do. A requester must not use
+<code>volunteer</code>, <code>contractor</code>, or <code>grant</code> to evade duties that attach to the real
+relationship.</p>
+<p>An opening declares compensation or expressly says unpaid. It distinguishes:</p>
+<ul>
+<li>participant compensation from recruiter compensation;</li>
+<li>estimated range from guaranteed amount;</li>
+<li>gross amount from taxes, benefits, expenses, fees, or withholding;</li>
+<li>equity/token/ownership, if lawfully offered, from ordinary cash payment; and</li>
+<li>temporary recruitment milestones from ongoing participation terms.</li>
+</ul>
+<h2 id="5-direct-application-and-recruited-introduction">5. Direct application and recruited introduction</h2>
+<h3 id="51-direct-application">5.1 Direct application</h3>
+<p>Every public opening provides a direct application path unless law, safety, or
+the nature of a private search requires a declared exception. Direct applicants
+are not scored lower or charged a fee because no recruiter introduced them.</p>
+<p>Direct application prevents the recruiter market from becoming a toll gate on
+open participation. It also provides a fallback when a recruitment order
+expires, runs out of budget, or enters dispute.</p>
+<h3 id="52-recruited-introduction">5.2 Recruited introduction</h3>
+<p>A recruiter may contact a potential candidate with a truthful summary and the
+public opening. The recruiter may transmit candidate information only after
+the candidate signs an introduction consent naming:</p>
+<ul>
+<li>opening and destination seat;</li>
+<li>requester and intended recipients;</li>
+<li>recruiter;</li>
+<li>exact information being shared;</li>
+<li>purpose and selection stage;</li>
+<li>expiration and withdrawal behavior;</li>
+<li>recruiter-attribution rule;</li>
+<li>whether contact may continue after this opening; and</li>
+<li>candidate's acknowledgement that the recruiter cannot promise selection.</li>
+</ul>
+<p>The candidate may review or correct the introduction before submission. A
+public profile, conference attendance, repository contribution, or contact
+address is not blanket consent to construct or forward a recruitment dossier.</p>
+<h3 id="53-duplicate-introduction">5.3 Duplicate introduction</h3>
+<p>The opening pins one conflict rule:</p>
+<ul>
+<li><code>candidate-choice</code>: the candidate selects which recruiter, if any, represents
+the introduction;</li>
+<li><code>first-consented-introduction</code>: the earliest still-valid candidate-signed
+consent prevails;</li>
+<li><code>shared-credit</code>: named recruiters receive a declared finite split; or</li>
+<li><code>no-introduction-credit</code>: the candidate already applied or had an active
+relationship with the requester.</li>
+</ul>
+<p>The baseline recommends <code>candidate-choice</code>. A recruiter cannot create priority
+by scraping, uploading, or naming a person before their consent.</p>
+<h2 id="6-candidate-privacy">6. Candidate privacy</h2>
+<p>Recruitment cannot be anonymous in every stage, but disclosure remains
+progressive and purpose-scoped.</p>
+<h3 id="61-progressive-disclosure">6.1 Progressive disclosure</h3>
+<ol>
+<li><strong>Discovery:</strong> the candidate reads the public opening without identifying
+themselves.</li>
+<li><strong>Introduction:</strong> the candidate may use a pseudonymous Onym key and disclose
+only coarse qualification claims.</li>
+<li><strong>Assessment:</strong> the candidate reveals evidence required for the declared
+evaluation to named recipients.</li>
+<li><strong>Conditional selection:</strong> legal identity, work eligibility, payment,
+conflicts, or background information is requested only when justified by
+the participation form and law.</li>
+<li><strong>Activation:</strong> necessary records move into the destination agreement's
+separately disclosed retention and access policy.</li>
+</ol>
+<p>The application interface must show why each field is requested, whether it is
+required, who receives it, how long it is kept, and how to exercise applicable
+access, correction, withdrawal, deletion, objection, or appeal rights.</p>
+<p>Candidate-signed introduction consent is a protocol authorization to disclose
+the named data to the named recipients. It is not automatically the legal
+basis for every recruitment-processing purpose. Each controller separately
+declares its role, applicable lawful basis, processors, cross-border transfers,
+statutory duties, and the consequences of withdrawal under its jurisdiction.</p>
+<h3 id="62-prohibited-collection">6.2 Prohibited collection</h3>
+<p>The recruitment contract never requests:</p>
+<ul>
+<li>a BIP-39 recovery phrase, identity root key, private signing key, or wallet
+credential;</li>
+<li>message contents, address book, social graph, or unrelated blockchain
+addresses;</li>
+<li>advertising identifiers or device fingerprints;</li>
+<li>genetic, health, biometric, family, political, religious, union, sexual, or
+other sensitive data unless a specific lawful and necessary process is
+separately declared;</li>
+<li>passwords or private access to social, source-control, or financial
+accounts;</li>
+<li>continuous location, behavioral surveillance, or covert screen/audio/video
+capture; or</li>
+<li>irrelevant prior compensation or financial history.</li>
+</ul>
+<p>Credentials prove narrow claims through holder consent. An evaluator may ask
+for control of a public key but never for the secret itself.</p>
+<h3 id="63-retention">6.3 Retention</h3>
+<p>The opening declares stage-specific retention. The baseline profile requires:</p>
+<ul>
+<li>unconsented prospects: no dossier;</li>
+<li>withdrawn before submission: delete recruiter working data within 30 days,
+except minimal opt-out and legal records;</li>
+<li>rejected application: delete or anonymize selection data within 180 days,
+unless law or an active dispute requires a stated longer period;</li>
+<li>talent pool: separate, optional consent with a maximum 12-month term and
+simple withdrawal;</li>
+<li>selected participant: transfer only necessary records to the destination
+agreement and delete duplicate recruitment copies; and</li>
+<li>aggregate process statistics: no re-identification or candidate ranking.</li>
+</ul>
+<p>The time periods are protocol defaults, not claims that every jurisdiction
+requires or permits them. An implementation must publish any lawful override.</p>
+<h2 id="7-fair-and-accessible-selection">7. Fair and accessible selection</h2>
+<p>An opening must publish objective, role-related criteria and distinguish:</p>
+<ul>
+<li>mandatory legal or operational requirements;</li>
+<li>required competencies;</li>
+<li>trainable or preferred competencies;</li>
+<li>assessment method and approximate time;</li>
+<li>selection stages and decision authority;</li>
+<li>compensation and material conditions;</li>
+<li>location, language, availability, and accessibility requirements; and</li>
+<li>appeal, accommodation, correction, and complaint contacts.</li>
+</ul>
+<p>Criteria cannot encode an unlawful preference directly or through an unjustified
+proxy. Recruiters may not honor an unlawful discriminatory request. The
+selection authority applies the same pinned criteria consistently and records
+job/seat-related reasons for decisions.</p>
+<p>Candidates can request a reasonable alternative assessment or communication
+format where applicable. A take-home exercise must be bounded, relevant, and
+must not quietly extract production work. If the requester intends to use or
+publish candidate work, compensation and license terms are disclosed before
+the exercise.</p>
+<p>An implementation never publishes a rejected candidate's score, explanation,
+or “reputation.” Aggregate process review may examine whether a criterion
+causes unjustified exclusion without exposing individuals.</p>
+<h2 id="8-automated-assistance">8. Automated assistance</h2>
+<p>Automated tools may help distribute an opening, remove duplicate records,
+schedule interviews, or organize candidate-supplied evidence. They do not gain
+ambient authority to select people.</p>
+<p>Before using automated ranking, recommendation, profiling, or rejection, the
+requester publishes:</p>
+<ul>
+<li>tool provider and responsible deployer;</li>
+<li>intended purpose and whether output materially affects selection;</li>
+<li>input fields, derived features, and prohibited features;</li>
+<li>training/evaluation provenance at the level law and security permit;</li>
+<li>accuracy, bias, accessibility, security, and drift evaluation;</li>
+<li>retention and whether candidate data trains another model;</li>
+<li>meaningful human review and override authority;</li>
+<li>explanation, correction, alternative assessment, and appeal path;</li>
+<li>applicable high-risk-system classification and conformity duties; and</li>
+<li>the exact policy version pinned by the opening.</li>
+</ul>
+<p>The baseline prohibits emotion inference, biometric categorization, facial or
+voice personality inference, and covert analysis. A system may not infer a
+protected or sensitive trait and then claim it was never collected.</p>
+<p>Where an automated employment or self-employment selection system falls under
+a high-risk legal regime, an ordinary recruitment profile is insufficient. A
+separate compliant implementation profile, impact assessment, records, human
+oversight, and legal authorization are required. Until then, the outcome stays
+advisory and cannot automatically reject or appoint.</p>
+<h2 id="9-contract-objects">9. Contract objects</h2>
+<h3 id="91-recruitment-profile">9.1 Recruitment Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:recruitment-profile:open-participation-v1&quot;,
+  &quot;interface&quot;: &quot;onym-recruitment-v1&quot;,
+  &quot;privacy&quot;: &quot;progressive-candidate-disclosure-v1&quot;,
+  &quot;introductionPolicy&quot;: &quot;candidate-consented-v1&quot;,
+  &quot;selectionPolicy&quot;: &quot;declared-role-related-human-accountability-v1&quot;,
+  &quot;evidenceSchema&quot;: &quot;onym:recruitment-evidence-v1&quot;,
+  &quot;settlementSchema&quot;: &quot;onym:recruitment-settlement-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym:recruitment-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="92-participation-opening">9.2 Participation Opening</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;openingId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;requester&quot;: &quot;onym:key:&lt;requester&gt;&quot;,
+  &quot;seatType&quot;: &quot;message-transport&quot;,
+  &quot;seatReference&quot;: &quot;&lt;project-service-or-organization&gt;&quot;,
+  &quot;requesterAuthorityEvidence&quot;: &quot;&lt;seat-specific-control-or-resolution&gt;&quot;,
+  &quot;participationForm&quot;: &quot;service-provider&quot;,
+  &quot;title&quot;: &quot;Operate a conforming regional message relay&quot;,
+  &quot;purpose&quot;: &quot;&lt;content-addressed-description&gt;&quot;,
+  &quot;requirements&quot;: {
+    &quot;mandatory&quot;: [&quot;&lt;objective-requirement&gt;&quot;],
+    &quot;preferred&quot;: [&quot;&lt;declared-preference&gt;&quot;],
+    &quot;prohibitedCriteria&quot;: [&quot;&lt;jurisdiction-and-policy-reference&gt;&quot;]
+  },
+  &quot;participantTerms&quot;: {
+    &quot;compensation&quot;: &quot;&lt;range-or-offer-reference&gt;&quot;,
+    &quot;duration&quot;: &quot;&lt;term&gt;&quot;,
+    &quot;jurisdictions&quot;: [&quot;&lt;declared&gt;&quot;],
+    &quot;legalAgreement&quot;: &quot;&lt;draft-or-template-hash&gt;&quot;
+  },
+  &quot;selection&quot;: {
+    &quot;authority&quot;: &quot;onym:key:&lt;selection-authority&gt;&quot;,
+    &quot;stages&quot;: [&quot;application&quot;, &quot;verification&quot;, &quot;interview&quot;, &quot;activation&quot;],
+    &quot;criteria&quot;: &quot;&lt;content-addressed-rubric&gt;&quot;,
+    &quot;automatedMaterialDecision&quot;: false,
+    &quot;appealPolicy&quot;: &quot;&lt;policy-hash&gt;&quot;
+  },
+  &quot;privacy&quot;: {
+    &quot;notice&quot;: &quot;&lt;content-addressed-notice&gt;&quot;,
+    &quot;controllersAndProcessors&quot;: &quot;&lt;named-parties-and-roles&gt;&quot;,
+    &quot;lawfulBasisByPurpose&quot;: &quot;&lt;jurisdiction-specific-policy&gt;&quot;,
+    &quot;retention&quot;: &quot;&lt;stage-specific-policy&gt;&quot;,
+    &quot;talentPoolDefault&quot;: false
+  },
+  &quot;directApplication&quot;: &quot;&lt;endpoint-or-protocol-reference&gt;&quot;,
+  &quot;recruitmentBudget&quot;: {
+    &quot;maximumAmount&quot;: {&quot;minorUnits&quot;: 190000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+    &quot;escrow&quot;: &quot;&lt;optional-escrow&gt;&quot;
+  },
+  &quot;opensAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;closesAt&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;requester-signature&gt;&quot;
+}
+</code></pre>
+<p>The opening's recruitment budget is separate from participant compensation.
+An opening is invalid when the requester cannot show authority to recruit for
+the named seat.</p>
+<h3 id="93-recruiter-offer">9.3 Recruiter Offer</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;recruiterOfferId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;recruiter&quot;: &quot;onym:key:&lt;recruiter&gt;&quot;,
+  &quot;supportedSeatTypes&quot;: [&quot;message-transport&quot;, &quot;blob-transport&quot;, &quot;notary&quot;],
+  &quot;methods&quot;: [&quot;public-outreach&quot;, &quot;candidate-consented-introduction&quot;],
+  &quot;jurisdictions&quot;: [&quot;&lt;declared&gt;&quot;],
+  &quot;privacyPolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;paymentModels&quot;: [&quot;fixed-search&quot;, &quot;qualified-introduction&quot;, &quot;activation-milestone&quot;],
+  &quot;payoutCoordinates&quot;: &quot;&lt;payment-rail-specific-reference&gt;&quot;,
+  &quot;validUntil&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;recruiter-signature&gt;&quot;
+}
+</code></pre>
+<p>Publishing an offer does not authorize outreach in violation of privacy,
+anti-spam, employment-agency, sanctions, licensing, or platform rules.</p>
+<h3 id="94-recruitment-order">9.4 Recruitment Order</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;orderId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;requester&quot;: &quot;onym:key:&lt;requester&gt;&quot;,
+  &quot;recruiter&quot;: &quot;onym:key:&lt;recruiter&gt;&quot;,
+  &quot;scope&quot;: {
+    &quot;seatType&quot;: &quot;message-transport&quot;,
+    &quot;maximumIntroductions&quot;: 10,
+    &quot;methods&quot;: [&quot;candidate-consented-introduction&quot;],
+    &quot;territoryOrCommunity&quot;: &quot;&lt;lawful-scope&gt;&quot;
+  },
+  &quot;attributionRule&quot;: &quot;candidate-choice&quot;,
+  &quot;milestones&quot;: [
+    {&quot;id&quot;: &quot;qualified-introduction&quot;, &quot;maximumOccurrences&quot;: 10, &quot;amount&quot;: {&quot;minorUnits&quot;: 10000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;}},
+    {&quot;id&quot;: &quot;seat-activation&quot;, &quot;maximumOccurrences&quot;: 1, &quot;amount&quot;: {&quot;minorUnits&quot;: 90000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;}}
+  ],
+  &quot;maximumAmount&quot;: {&quot;minorUnits&quot;: 190000, &quot;currency&quot;: &quot;&lt;declared&gt;&quot;},
+  &quot;evidencePolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;privacyPolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;disputePolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;startsAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;endsAt&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;requesterSignature&quot;: &quot;&lt;signature&gt;&quot;,
+  &quot;recruiterSignature&quot;: &quot;&lt;signature&gt;&quot;
+}
+</code></pre>
+<p>The budget is reserved before outreach creates billable work. The order never
+authorizes the recruiter to collect more candidate data than the opening and
+candidate consent permit.</p>
+<h3 id="95-candidate-introduction-consent">9.5 Candidate Introduction Consent</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;consentId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;candidate&quot;: &quot;onym:key:&lt;candidate-pseudonymous-or-public-key&gt;&quot;,
+  &quot;recruiter&quot;: &quot;onym:key:&lt;recruiter&gt;&quot;,
+  &quot;recipients&quot;: [&quot;onym:key:&lt;selection-authority&gt;&quot;],
+  &quot;disclosures&quot;: [&quot;&lt;credential-or-field-reference&gt;&quot;],
+  &quot;purpose&quot;: &quot;application-to-declared-opening&quot;,
+  &quot;attributionAccepted&quot;: true,
+  &quot;contactAfterOpening&quot;: false,
+  &quot;expiresAt&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;withdrawalEndpoint&quot;: &quot;&lt;endpoint-or-protocol-operation&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;candidate-signature&gt;&quot;
+}
+</code></pre>
+<p>Withdrawal stops new processing where legally possible. It does not erase an
+already completed selection, payment obligation, fraud record, or legal record
+that must be retained; the controller explains each exception.</p>
+<h3 id="96-application-envelope">9.6 Application Envelope</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;applicationId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;candidate&quot;: &quot;onym:key:&lt;candidate-key&gt;&quot;,
+  &quot;introductionConsentId&quot;: &quot;&lt;consent-id-or-null-for-direct&gt;&quot;,
+  &quot;claims&quot;: [&quot;&lt;minimum-necessary-claim&gt;&quot;],
+  &quot;credentials&quot;: [&quot;&lt;selectively-disclosed-credential&gt;&quot;],
+  &quot;workSamples&quot;: [&quot;&lt;candidate-authorized-reference&gt;&quot;],
+  &quot;requestedAccommodation&quot;: &quot;&lt;encrypted-to-authorized-recipient-or-null&gt;&quot;,
+  &quot;dataNoticeAccepted&quot;: &quot;&lt;notice-hash&gt;&quot;,
+  &quot;submittedAt&quot;: &quot;2026-08-15T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;candidate-signature&gt;&quot;
+}
+</code></pre>
+<p>The envelope is encrypted to declared recipients. Its public commitment may
+prove timing and integrity without revealing candidate data.</p>
+<h3 id="97-qualification-snapshot">9.7 Qualification Snapshot</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;applicationId&quot;: &quot;&lt;application-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;rubricVersion&quot;: &quot;&lt;rubric-hash&gt;&quot;,
+  &quot;mandatoryCriteria&quot;: {
+    &quot;met&quot;: [&quot;&lt;criterion-id&gt;&quot;],
+    &quot;notMet&quot;: [],
+    &quot;unknown&quot;: [&quot;&lt;criterion-id&gt;&quot;]
+  },
+  &quot;stage&quot;: &quot;verification&quot;,
+  &quot;automatedAssistance&quot;: &quot;none&quot;,
+  &quot;candidateVisibleExplanation&quot;: &quot;&lt;encrypted-explanation-reference&gt;&quot;,
+  &quot;evaluator&quot;: &quot;onym:key:&lt;evaluator&gt;&quot;,
+  &quot;evaluatedAt&quot;: &quot;2026-08-20T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;evaluator-signature&gt;&quot;
+}
+</code></pre>
+<p>The snapshot is private to the candidate and authorized selection participants.
+Only an aggregate recruitment-process report may be public.</p>
+<h3 id="98-selection-outcome">9.8 Selection Outcome</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;outcomeId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;applicationIdHash&quot;: &quot;&lt;private-application-commitment&gt;&quot;,
+  &quot;candidateKeyHash&quot;: &quot;&lt;candidate-key-commitment&gt;&quot;,
+  &quot;outcome&quot;: &quot;conditionally-selected&quot;,
+  &quot;effectiveAuthority&quot;: &quot;onym:key:&lt;selection-authority&gt;&quot;,
+  &quot;conditions&quot;: [&quot;&lt;legal-or-seat-specific-condition&gt;&quot;],
+  &quot;recruiterAttribution&quot;: &quot;&lt;consent-and-order-hash-or-null&gt;&quot;,
+  &quot;publicDisclosure&quot;: &quot;aggregate-only&quot;,
+  &quot;decidedAt&quot;: &quot;2026-08-25T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;selection-authority-signature&gt;&quot;
+}
+</code></pre>
+<p>Permitted private outcomes include <code>withdrawn</code>, <code>not-selected</code>,
+<code>conditionally-selected</code>, <code>selected</code>, and <code>waitlisted</code>. Public objects do not
+name rejected candidates.</p>
+<h3 id="99-activation-evidence">9.9 Activation Evidence</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;activationId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;outcomeIdHash&quot;: &quot;&lt;outcome-commitment&gt;&quot;,
+  &quot;seatType&quot;: &quot;message-transport&quot;,
+  &quot;activationEvent&quot;: &quot;service-contract-effective&quot;,
+  &quot;effectiveAt&quot;: &quot;2026-09-01T00:00:00Z&quot;,
+  &quot;candidateIdentityDisclosed&quot;: false,
+  &quot;evidence&quot;: &quot;&lt;minimum-seat-specific-evidence&gt;&quot;,
+  &quot;oracle&quot;: &quot;onym:key:&lt;activation-oracle&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;oracle-signature&gt;&quot;
+}
+</code></pre>
+<p>Activation evidence proves only the pinned milestone. It does not expose the
+participant's compensation, application, employment file, user activity, or
+future seat revenue.</p>
+<h3 id="910-recruitment-settlement-statement">9.10 Recruitment Settlement Statement</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;statementId&quot;: &quot;&lt;nonreusable-id&gt;&quot;,
+  &quot;orderId&quot;: &quot;&lt;order-id&gt;&quot;,
+  &quot;openingId&quot;: &quot;&lt;opening-id&gt;&quot;,
+  &quot;recruiter&quot;: &quot;onym:key:&lt;recruiter&gt;&quot;,
+  &quot;milestones&quot;: [
+    {&quot;id&quot;: &quot;qualified-introduction&quot;, &quot;occurrenceId&quot;: &quot;&lt;consent-commitment&gt;&quot;, &quot;status&quot;: &quot;approved&quot;, &quot;minorUnits&quot;: 10000},
+    {&quot;id&quot;: &quot;seat-activation&quot;, &quot;occurrenceId&quot;: &quot;&lt;activation-commitment&gt;&quot;, &quot;status&quot;: &quot;approved&quot;, &quot;minorUnits&quot;: 90000}
+  ],
+  &quot;previouslySettledMinorUnits&quot;: 0,
+  &quot;newGrossMinorUnits&quot;: 100000,
+  &quot;adjustmentsMinorUnits&quot;: 0,
+  &quot;payableMinorUnits&quot;: 100000,
+  &quot;currency&quot;: &quot;&lt;declared&gt;&quot;,
+  &quot;candidateIdentityIncluded&quot;: false,
+  &quot;evidence&quot;: [&quot;&lt;consent-hash&gt;&quot;, &quot;&lt;outcome-hash&gt;&quot;, &quot;&lt;activation-hash&gt;&quot;],
+  &quot;requesterSignature&quot;: &quot;&lt;signature&gt;&quot;,
+  &quot;recruiterSignature&quot;: &quot;&lt;signature-or-dispute&gt;&quot;
+}
+</code></pre>
+<p>The evidence commitments prevent duplicate settlement without placing the
+candidate's dossier in a public payment record.</p>
+<h2 id="10-common-contract-surface">10. Common contract surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>publishOpening</code></td>
+<td>Seat, authority, criteria, terms, privacy, budget</td>
+<td>Signed opening</td>
+</tr>
+<tr>
+<td><code>publishRecruiterOffer</code></td>
+<td>Seats, methods, price, jurisdiction, privacy</td>
+<td>Recruiter offer</td>
+</tr>
+<tr>
+<td><code>acceptRecruitmentOrder</code></td>
+<td>Opening, recruiter offer, finite milestones</td>
+<td>Funded order</td>
+</tr>
+<tr>
+<td><code>applyDirectly</code></td>
+<td>Candidate-controlled application</td>
+<td>Direct application receipt</td>
+</tr>
+<tr>
+<td><code>consentIntroduction</code></td>
+<td>Candidate, recruiter, opening, disclosures</td>
+<td>Signed consent</td>
+</tr>
+<tr>
+<td><code>submitIntroduction</code></td>
+<td>Consent and encrypted application</td>
+<td>Application receipt</td>
+</tr>
+<tr>
+<td><code>withdrawConsent</code></td>
+<td>Candidate and consent</td>
+<td>Bounded withdrawal record</td>
+</tr>
+<tr>
+<td><code>requestAccommodation</code></td>
+<td>Candidate and protected request</td>
+<td>Private workflow</td>
+</tr>
+<tr>
+<td><code>evaluateApplication</code></td>
+<td>Pinned rubric and authorized evidence</td>
+<td>Private snapshot</td>
+</tr>
+<tr>
+<td><code>recordSelection</code></td>
+<td>Selection-authority decision</td>
+<td>Private outcome commitment</td>
+</tr>
+<tr>
+<td><code>recordActivation</code></td>
+<td>Seat-specific milestone</td>
+<td>Minimal signed evidence</td>
+</tr>
+<tr>
+<td><code>calculateRecruiterSettlement</code></td>
+<td>Order and approved milestones</td>
+<td>Capped statement</td>
+</tr>
+<tr>
+<td><code>settleRecruiter</code></td>
+<td>Accepted statement</td>
+<td>Payment reference</td>
+</tr>
+<tr>
+<td><code>appealDecision</code></td>
+<td>Candidate and bounded grounds</td>
+<td>Review state</td>
+</tr>
+<tr>
+<td><code>disputeAttribution</code></td>
+<td>Candidate/recruiter/requester evidence</td>
+<td>Dispute state</td>
+</tr>
+<tr>
+<td><code>closeOpening</code></td>
+<td>Final outcomes and retention schedule</td>
+<td>Closed aggregate report</td>
+</tr>
+</tbody>
+</table></div><p>There is no operation for <code>scrapeCandidate</code>, <code>sellCandidate</code>,
+<code>requestIdentitySecret</code>, <code>guaranteeAppointment</code>, <code>publishRejectedScore</code>,
+<code>inheritFutureRevenue</code>, or <code>bypassSeatAuthority</code>.</p>
+<h2 id="11-recruiter-payment-models">11. Recruiter payment models</h2>
+<p>Recruiters define their offers; requesters choose which to accept. Supported
+models include:</p>
+<ul>
+<li><strong>fixed search:</strong> a fixed amount for a bounded, documented search process;</li>
+<li><strong>outreach milestone:</strong> payment for approved public outreach deliverables,
+not raw unsolicited contact volume;</li>
+<li><strong>qualified introduction:</strong> payment when a candidate-consented application
+meets pinned objective requirements;</li>
+<li><strong>assessment support:</strong> fixed payment for a declared evaluation service,
+with conflicts and decision authority separated;</li>
+<li><strong>selection milestone:</strong> payment after the selection authority signs an
+accepted outcome;</li>
+<li><strong>activation milestone:</strong> payment after a contract, provider, board, grant,
+or other seat-specific activation becomes effective;</li>
+<li><strong>bounded retention milestone:</strong> payment after a short declared service
+period, using only a yes/no activation status rather than monitoring the
+participant; or</li>
+<li><strong>hybrid:</strong> a capped combination of the above.</li>
+</ul>
+<p>The baseline prohibits:</p>
+<ul>
+<li>candidate application or introduction fees;</li>
+<li>payment per scraped profile, message, sensitive trait, or rejected person;</li>
+<li>undisclosed percentage of participant compensation;</li>
+<li>perpetual percentage of participant or seat revenue;</li>
+<li>payment conditioned on hiding compensation or legal status;</li>
+<li>different recruiter payment based on a protected characteristic; and</li>
+<li>retroactive claims where no accepted order and candidate consent existed.</li>
+</ul>
+<p>A jurisdiction-specific professional recruiter may lawfully use another fee
+model only through an explicit implementation profile and agreement. It is not
+silently imported into the portable baseline.</p>
+<h3 id="111-calculation">11.1 Calculation</h3>
+<pre><code class="language-text">approvedGross = sum(amount(m) for each approved, previously-unsettled milestone)
+adjustedGross = max(0, approvedGross + signedAdjustments)
+payable       = min(adjustedGross, remainingOrderBudget)
+</code></pre>
+<p>Each milestone occurrence binds its ID, candidate-consent commitment, and
+activation event and settles at most once. Occurrence limits and the total
+order cap both apply. Payment disputes disclose the minimum evidence necessary
+and do not make the candidate a party to recruiter-requester collection unless
+the candidate independently agreed.</p>
+<h2 id="12-obligations">12. Obligations</h2>
+<h3 id="121-requester-and-seat-authority">12.1 Requester and seat authority</h3>
+<p>They must:</p>
+<ol>
+<li>have authority to publish the opening;</li>
+<li>accurately describe the seat, relationship, compensation, risks, and
+selection process;</li>
+<li>reserve finite recruitment compensation before accepting an order;</li>
+<li>preserve a direct-application route where required by the profile;</li>
+<li>use consistent, role-related criteria and lawful accommodations;</li>
+<li>disclose every recipient and automated material decision;</li>
+<li>separate recruitment data from identity, messages, user routes, and
+unrelated participant records;</li>
+<li>sign truthful outcomes and activation evidence;</li>
+<li>pay valid recruiter milestones without demanding extra candidate data; and</li>
+<li>delete or transfer records under the pinned retention policy.</li>
+</ol>
+<h3 id="122-recruiter">12.2 Recruiter</h3>
+<p>A recruiter must:</p>
+<ol>
+<li>obtain an accepted order before claiming compensation;</li>
+<li>describe the opening, requester, compensation, and uncertainty truthfully;</li>
+<li>obtain candidate consent before transmitting identifying information;</li>
+<li>collect only minimum data necessary for the current stage;</li>
+<li>honor opt-out, correction, withdrawal, and contact preferences;</li>
+<li>never buy, scrape, enrich, or resell unauthorized candidate dossiers;</li>
+<li>never request secrets or misrepresent control of an Onym seat;</li>
+<li>reject unlawful discriminatory instructions;</li>
+<li>disclose conflicts, subcontractors, and assessment automation; and</li>
+<li>make no claim on the participant after the finite order milestones.</li>
+</ol>
+<h3 id="123-candidate">12.3 Candidate</h3>
+<p>A candidate must:</p>
+<ol>
+<li>control or be authorized to represent the submitted identity/organization;</li>
+<li>provide materially truthful claims and authorized credentials;</li>
+<li>not submit another person's data or work without permission;</li>
+<li>preserve assessment confidentiality where lawfully agreed;</li>
+<li>disclose conflicts required by the destination seat; and</li>
+<li>separately accept the final participation agreement before activation.</li>
+</ol>
+<p>Candidates do not waive privacy, equality, labor, consumer, whistleblower, or
+other applicable rights merely by using this protocol.</p>
+<h3 id="124-evaluator-and-activation-oracle">12.4 Evaluator and activation oracle</h3>
+<p>They must:</p>
+<ul>
+<li>operate only under the pinned rubric or milestone definition;</li>
+<li>access only authorized evidence;</li>
+<li>distinguish verified fact, assessment, and judgment;</li>
+<li>disclose automation and conflicts;</li>
+<li>provide candidate-visible correction or appeal where required;</li>
+<li>never publish an individual outcome; and</li>
+<li>sign append-only corrections rather than overwrite history.</li>
+</ul>
+<h2 id="13-abuse-and-disputes">13. Abuse and disputes</h2>
+<h3 id="131-fake-openings">13.1 Fake openings</h3>
+<p>An attacker may publish a prestigious-looking role to harvest identities,
+credentials, work samples, or secrets. Opening discovery therefore verifies
+requester authority, seat reference, domain/control evidence, data notice,
+compensation, and complaint channel before curation. Direct signed openings may
+still exist outside a directory, but signatures prove only publisher identity,
+not honesty.</p>
+<h3 id="132-spam-and-scraping">13.2 Spam and scraping</h3>
+<p>The protocol does not reward message volume or profile collection. Public
+outreach uses declared channels and rate limits. Candidate opt-out is portable
+to the recruiter and its disclosed subcontractors. Unconsented “introduction”
+objects are invalid and nonbillable.</p>
+<h3 id="133-credential-and-work-sample-fraud">13.3 Credential and work-sample fraud</h3>
+<p>Credentials remain scoped to their issuer and status. Work samples bind the
+candidate's claim and license, not a universal proof of authorship. Material
+fraud may end the application and enter a private dispute record; it does not
+justify a public blacklist.</p>
+<h3 id="134-duplicate-and-collusive-referrals">13.4 Duplicate and collusive referrals</h3>
+<p>Candidate-signed attribution, order IDs, deadlines, control-group disclosure,
+and idempotent milestones prevent most duplicate claims. Candidate, requester,
+and recruiter collusion remains possible; caps, audits, activation evidence,
+and separation of selection and settlement reduce its impact.</p>
+<h3 id="135-misclassification-and-extracted-work">13.5 Misclassification and extracted work</h3>
+<p>The participation-form label cannot waive employment or contractor law. A
+requester may not rotate “volunteers,” demand unpaid production exercises, or
+use grants to avoid an ongoing work relationship. Complaints pause recruitment
+settlement when the alleged milestone itself is unlawful or fabricated.</p>
+<h2 id="14-errors-and-state">14. Errors and state</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requester_authority_missing</code></td>
+<td>Opening</td>
+<td>Do not publish as verified</td>
+</tr>
+<tr>
+<td><code>opening_expired</code></td>
+<td>Opening</td>
+<td>Reject new applications/orders</td>
+</tr>
+<tr>
+<td><code>recruitment_budget_unavailable</code></td>
+<td>Requester/escrow</td>
+<td>Do not activate order</td>
+</tr>
+<tr>
+<td><code>participation_terms_missing</code></td>
+<td>Opening</td>
+<td>Reject until disclosed</td>
+</tr>
+<tr>
+<td><code>direct_application_unavailable</code></td>
+<td>Requester</td>
+<td>Mark nonconforming unless exception applies</td>
+</tr>
+<tr>
+<td><code>candidate_consent_missing</code></td>
+<td>Recruiter</td>
+<td>Reject introduction and payment</td>
+</tr>
+<tr>
+<td><code>candidate_consent_withdrawn</code></td>
+<td>Candidate</td>
+<td>Stop new processing and apply retention rule</td>
+</tr>
+<tr>
+<td><code>duplicate_introduction</code></td>
+<td>Multiple recruiters</td>
+<td>Apply pinned candidate-centered rule</td>
+</tr>
+<tr>
+<td><code>data_scope_exceeded</code></td>
+<td>Any processor</td>
+<td>Stop processing; notify and remediate</td>
+</tr>
+<tr>
+<td><code>secret_requested</code></td>
+<td>Any party</td>
+<td>Abort and flag security incident</td>
+</tr>
+<tr>
+<td><code>criteria_changed</code></td>
+<td>Requester</td>
+<td>Version or reopen; do not alter active evaluation silently</td>
+</tr>
+<tr>
+<td><code>unlawful_criterion</code></td>
+<td>Opening/evaluator</td>
+<td>Suspend and obtain legal review</td>
+</tr>
+<tr>
+<td><code>accommodation_failed</code></td>
+<td>Selection process</td>
+<td>Pause affected assessment and remedy</td>
+</tr>
+<tr>
+<td><code>automation_undisclosed</code></td>
+<td>Evaluator/requester</td>
+<td>Suspend automated outcome</td>
+</tr>
+<tr>
+<td><code>credential_unverifiable</code></td>
+<td>Issuer/evaluator</td>
+<td>Mark unknown, not false</td>
+</tr>
+<tr>
+<td><code>selection_authority_mismatch</code></td>
+<td>Outcome</td>
+<td>Reject outcome</td>
+</tr>
+<tr>
+<td><code>activation_unverified</code></td>
+<td>Seat/oracle</td>
+<td>Keep milestone pending</td>
+</tr>
+<tr>
+<td><code>settlement_duplicate</code></td>
+<td>Settlement</td>
+<td>Reject replay</td>
+</tr>
+<tr>
+<td><code>attribution_disputed</code></td>
+<td>Candidate/recruiter</td>
+<td>Freeze disputed milestone only</td>
+</tr>
+<tr>
+<td><code>retention_expired</code></td>
+<td>Controller</td>
+<td>Delete or lawfully anonymize</td>
+</tr>
+</tbody>
+</table></div><p>Opening state:</p>
+<pre><code class="language-text">draft -&gt; published -&gt; accepting -&gt; evaluating -&gt; selection_pending
+  -&gt; filled | unfilled | cancelled -&gt; retention_cleanup -&gt; closed
+</code></pre>
+<p>Application state:</p>
+<pre><code class="language-text">discovery -&gt; consented | direct -&gt; submitted -&gt; evaluating
+  -&gt; withdrawn | not_selected | waitlisted | conditional
+  -&gt; selected -&gt; activated
+</code></pre>
+<p>Recruitment order state:</p>
+<pre><code class="language-text">proposed -&gt; accepted_and_funded -&gt; active -&gt; milestone_pending
+  -&gt; approved | disputed -&gt; settled -&gt; closed
+</code></pre>
+<h2 id="15-security-privacy-and-economic-invariants">15. Security, privacy, and economic invariants</h2>
+<ol>
+<li><strong>Direct participation remains possible.</strong> A recruiter is never the only
+gate to a public opening.</li>
+<li><strong>The candidate controls introduction.</strong> Naming a person is not referral
+ownership.</li>
+<li><strong>Recruitment does not appoint.</strong> Only the destination seat's authority can
+select and activate.</li>
+<li><strong>No identity secrets.</strong> Recruitment never receives root or operational
+private keys.</li>
+<li><strong>Disclosure is progressive.</strong> Each stage receives only necessary,
+consented data.</li>
+<li><strong>Criteria are declared and role-related.</strong> Hidden or unlawful steering is
+nonconforming.</li>
+<li><strong>Human accountability remains named.</strong> Automation cannot become an
+unappealable anonymous authority.</li>
+<li><strong>Payment is finite.</strong> Every order has milestones, a maximum amount, a
+window, and reserved budget.</li>
+<li><strong>No future ownership.</strong> Recruiters receive no perpetual cut, user data, or
+control over a selected participant.</li>
+<li><strong>Candidate and recruiter compensation are separate.</strong> One cannot be
+silently deducted from the other.</li>
+<li><strong>Private outcomes stay private.</strong> Rejected people do not become public
+reputation objects.</li>
+<li><strong>Settlement is idempotent.</strong> Each valid milestone is paid at most once.</li>
+<li><strong>Legal status is not self-declared.</strong> Protocol labels do not override the
+real relationship or applicable law.</li>
+<li><strong>Every seat stays sovereign.</strong> Recruitment cannot bypass conformance,
+group choice, publisher authority, foundation bylaws, or legal appointment.</li>
+</ol>
+<h2 id="16-aggregate-accountability">16. Aggregate accountability</h2>
+<p>After an opening closes, the requester may publish a privacy-thresholded report
+containing:</p>
+<ul>
+<li>outreach channels and recruiter orders;</li>
+<li>consented introductions and direct applications;</li>
+<li>stage counts, withdrawals, time-to-decision, and filled/unfilled status;</li>
+<li>accommodation fulfillment and appeal counts;</li>
+<li>recruiter milestones and total settlement;</li>
+<li>aggregate criteria outcomes and documented process changes; and</li>
+<li>retention cleanup completion.</li>
+</ul>
+<p>Small cells are suppressed and overlapping reports cannot be differenced to
+identify candidates. Demographic fairness analysis, when lawful and necessary,
+uses a separately governed sensitive-data process and never exposes traits to
+ordinary evaluators or recruiter payment.</p>
+<p>Recruiter performance reports distinguish search effort, consented
+introductions, qualified applications, selections, activations, retention
+milestones, candidate complaints, and data incidents. A single opaque score is
+insufficient for high-impact decisions or directory exclusion.</p>
+<h2 id="17-versioning-and-conformance">17. Versioning and conformance</h2>
+<ul>
+<li><code>RecruitmentProfile</code> changes when consent, privacy, selection, evidence,
+payment, error, or public-report meaning changes.</li>
+<li>A seat implementation profile changes when destination authority,
+activation evidence, legal form, qualifications, or settlement changes.</li>
+<li>Openings and orders pin exact profile, rubric, data notice, compensation,
+attribution, automation, retention, and dispute versions.</li>
+<li>A policy change cannot retroactively rewrite consent, candidate attribution,
+selection, activation, or payment.</li>
+<li>Corrections are signed append-only objects that preserve who changed what
+and why without publishing candidate records.</li>
+<li>Conformance fixtures cover canonical objects, signatures, encryption,
+consent withdrawal, direct application, duplicate introduction, rubric
+versioning, secret rejection, automation disclosure, activation authority,
+milestone caps, duplicate settlement, retention deletion, and appeals.</li>
+</ul>
+<h2 id="18-future-implementation-profiles">18. Future implementation profiles</h2>
+<p>Concrete profiles may define:</p>
+<ul>
+<li>public open-source maintainer recruitment;</li>
+<li>Nostr or another social-channel recruiting outreach;</li>
+<li>relay, blob, notary, or registry operator onboarding;</li>
+<li>application-builder and regulated-provider selection;</li>
+<li>foundation staff, vendor, auditor, or grants recruitment;</li>
+<li>sponsor prospecting under gift-acceptance rules;</li>
+<li>Sponsor Council candidate discovery without bypassing elections; or</li>
+<li>privacy-reviewed employment recruitment in a declared jurisdiction.</li>
+</ul>
+<p>Each profile maps its real selection authority and activation event. A social
+post view, résumé submission, interview, signed employment contract, provider
+manifest, board election, and active service are different events and cannot
+be relabelled for payment convenience.</p>
+<h2 id="19-acceptance-criteria">19. Acceptance criteria</h2>
+<p>The recruitment boundary is successfully separated when:</p>
+<ol>
+<li>every Onym seat can publish a versioned participation opening;</li>
+<li>candidates can inspect openings and self-apply without a recruiter toll;</li>
+<li>anyone can offer recruiting and earn under an accepted finite order;</li>
+<li>no identifying introduction occurs without candidate consent;</li>
+<li>no recruiter can reserve, sell, or own a candidate by naming them first;</li>
+<li>selection and activation remain with the destination seat's actual
+authority;</li>
+<li>candidate data is encrypted, progressively disclosed, corrected, and
+deleted under a visible policy;</li>
+<li>criteria, compensation, automation, accommodations, and appeal are
+declared before evaluation;</li>
+<li>recruiter milestones can settle without publishing candidate identity;</li>
+<li>rejected candidates do not receive a public negative record;</li>
+<li>no recruitment relationship creates a future royalty or protocol power;
+and</li>
+<li>new seat and jurisdiction profiles can implement the interface without
+rewriting the abstract contract.</li>
+</ol>
+<h2 id="20-official-references">20. Official references</h2>
+<ul>
+<li>European Union, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32016R0679">General Data Protection Regulation, Article 5</a></li>
+<li>European Union, <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex%3A32024R1689">Artificial Intelligence Act</a></li>
+<li>UK Information Commissioner's Office,
+<a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/employment/recruitment-and-selection">Employment practices and data protection: recruitment and selection</a></li>
+<li>US Equal Employment Opportunity Commission,
+<a href="https://www.eeoc.gov/employers/small-business/3-im-recruiting-hiring-or-promoting-employees">Recruiting, hiring, or promoting employees</a></li>
+<li>US Equal Employment Opportunity Commission,
+<a href="https://www.eeoc.gov/employers/coverage-employment-agencies">Coverage of employment agencies</a></li>
+</ul>
+<p>These sources explain some privacy, equality, agency, and automated-selection
+risks; they do not establish the law for every Onym opening. Each employment or
+professional-recruitment implementation must declare and review its actual
+jurisdictions.</p>
+<h2 id="21-justification-in-one-sentence">21. Justification in one sentence</h2>
+<blockquote>
+<p>Onym can let anyone help fill every open seat while candidates control their
+information, destination authorities keep appointment power, and recruiter
+rewards end at transparent, finite milestones.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/recruitment/Recruitment.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

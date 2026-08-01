@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Bank: Stellar Implementation — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Bank: Stellar Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/bank/UI-Bank-Stellar.html">
+<meta property="og:title" content="Onym UI ↔ Bank: Stellar Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/bank/UI-Bank-Stellar.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/85bc43ce476748faf679849666f9334868e74fc8/bank/UI-Bank-Stellar.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-bank-stellar-implementation">Onym UI ↔ Bank: Stellar Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This profile maps the technology-neutral Onym bank boundary onto Stellar
+accounts, transaction envelopes, trustlines, and anchors—reusing the
+identity's BIP-39-derived Ed25519 key as the holder's non-custodial
+Stellar account.</p>
+</blockquote>
+<p>This document is a concrete implementation of <a href="../bank/UI-Bank.html">UI-Bank.md</a>. The
+abstract specification remains authoritative for custody classes, intent
+binding, authorization, outcomes, evidence bases, compliance attribution,
+and payment isolation. This document defines the Stellar mapping and records
+where the present clients—which already derive the Stellar key and use it
+for contract authorization—do not yet implement any bank flow.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>implemented behavior</strong>, which exists in the current Onym repositories;</li>
+<li><strong>profile requirements</strong>, which are required for a conforming Stellar bank
+adapter or provider; and</li>
+<li><strong>gaps</strong>, where current code still needs to converge on the profile.</li>
+</ul>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Stellar mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Settlement layer</td>
+<td><code>stellar:&lt;network-passphrase-hash&gt;</code>, the shared namespace form for a Stellar network</td>
+</tr>
+<tr>
+<td>Non-custodial account</td>
+<td>The identity's Ed25519 domain key as a funded Stellar account (<code>G…</code>)</td>
+</tr>
+<tr>
+<td>Account control proof</td>
+<td>Vault signature over a challenge bound to the account and network</td>
+</tr>
+<tr>
+<td>Receiving coordinates</td>
+<td><code>G…</code> address; optionally a muxed <code>M…</code> sub-address (see §5.2)</td>
+</tr>
+<tr>
+<td>Asset</td>
+<td>Native XLM or an issued asset (code + issuer), held via a trustline</td>
+</tr>
+<tr>
+<td>Quoted operation</td>
+<td>One unsigned XDR <code>TransactionEnvelope</code> with pinned sequence and time bounds</td>
+</tr>
+<tr>
+<td>Quote expiry</td>
+<td>Envelope <code>timeBounds.maxTime</code>, enforced by the ledger itself</td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>Vault Ed25519 signature over the envelope hash, domain-separated by network passphrase</td>
+</tr>
+<tr>
+<td>Network fee</td>
+<td>Stellar fee in stroops; optionally borne by a fee-bump relayer</td>
+</tr>
+<tr>
+<td>Settlement evidence</td>
+<td>Transaction result in a closed ledger, via Horizon/RPC</td>
+</tr>
+<tr>
+<td>Finality</td>
+<td>Ledger close under Stellar consensus; no reorganizations</td>
+</tr>
+<tr>
+<td>Balance basis</td>
+<td><code>ledger-observed</code> from Horizon/RPC; anchor balances are <code>provider-attested</code></td>
+</tr>
+<tr>
+<td>Custodial provider</td>
+<td>An anchor serving deposits/withdrawals under SEP-6/SEP-24</td>
+</tr>
+<tr>
+<td>Escrow class</td>
+<td>Native multisignature accounts with declared signers and thresholds</td>
+</tr>
+<tr>
+<td>Compliance hold</td>
+<td>Anchor policy result, or SEP-8 regulated-asset approval refusal</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:bank-implementation:stellar-v1
+</code></pre>
+<p>Its <code>settlementLayer</code> is the same
+<code>stellar:&lt;network-passphrase-hash&gt;</code> namespace used by
+<a href="../notary/UI-Notary-Stellar.html">UI-Notary-Stellar.md</a>. The canonical hash is
+derived from the exact network passphrase; a display label such as <code>public</code> or
+<code>testnet</code> is not a network identity.</p>
+<p>It maps this portable profile:</p>
+<pre><code class="language-text">onym:bank-profile:account-payment-v1
+</code></pre>
+<p>The account reuse, envelope display rules, relayer integration, and
+sub-address conventions below are Onym conventions. They are not implied by
+generic Stellar support: a wallet holding the same Ed25519 key implements
+none of this contract's consent, custody-disclosure, or evidence semantics
+by virtue of speaking Stellar.</p>
+<h2 id="2-ownership-mapping">2. Ownership mapping</h2>
+<ul>
+<li>The <strong>account holder</strong>'s vault derives the Ed25519 key from the BIP-39
+root (<a href="../identity/UI-Identity-BIP39.html">../identity/UI-Identity-BIP39.md</a>)
+and signs envelopes through the identity profile's <code>sign-transaction</code>
+displayed-intent capability.</li>
+<li>The <strong>bank provider</strong> operates quoting, records, and (if an anchor)
+custody and compliance. For a purely non-custodial account, the &quot;provider&quot;
+may be as thin as a read service plus quoting logic.</li>
+<li>The <strong>Stellar network</strong> validators settle transactions; they are
+infrastructure, not a counterparty.</li>
+<li>The <strong>transaction relayer</strong> (<a href="../notary/UI-Notary-Stellar.html">../notary/UI-Notary-Stellar.md</a>)
+may wrap payments in fee-bump transactions and pay fees, as it already
+does for contract operations. It can refuse or observe; it cannot forge
+the holder's signature.</li>
+<li>The <strong>anchor</strong>, when used, is a regulated custodial provider bridging
+Stellar assets and external value. Its duties are its own (whitepaper
+§10.2).</li>
+<li>The <strong>UI publisher</strong> presents accounts, quotes, and consent without
+becoming any of the above.</li>
+</ul>
+<h2 id="3-physical-topology">3. Physical topology</h2>
+<pre><code class="language-text">UI flow / repository
+  |-- identity vault: sign-transaction, prove-address-control
+  `-- bank port
+        |
+        v
+  Stellar bank adapter
+        |-- XDR encode/decode · display rendering
+        |-- sequence &amp; time-bounds management
+        |-- quote verification · idempotency
+        v
+  ┌─────────────────────┬──────────────────────┬───────────────────┐
+  │ Horizon / RPC       │ Transaction relayer  │ Anchor (optional) │
+  │ reads · submission  │ fee-bump submission  │ SEP-6/24 ramps    │
+  └─────────────────────┴──────────────────────┴───────────────────┘
+                    │
+                    v
+             Stellar network
+</code></pre>
+<h2 id="4-account-mapping">4. Account mapping</h2>
+<h3 id="41-the-reused-identity-key">4.1 The reused identity key</h3>
+<p>The holder's Stellar account is the Ed25519 domain key already derived by
+the BIP-39 identity profile; its public key is the account ID. This gives
+every Onym identity a non-custodial account address at zero additional
+derivation cost, with signing available through the existing vault
+capability.</p>
+<p>The reuse has consequences this profile must state plainly:</p>
+<ol>
+<li><strong>One account per identity.</strong> Until the identity profile supports
+per-context derivation, all Stellar activity of one identity shares one
+public address. Payments, contract fee history, and any published
+address claim are correlatable by anyone; the abstract boundary's
+context-isolation invariant is <em>not yet satisfiable</em> on this profile
+(see §12).</li>
+<li><strong>Shared blast radius.</strong> The key that spends funds is derived from the
+same root as messaging and membership keys. Domain separation isolates
+the key material, but root compromise loses everything at once, per the
+identity profile's declared compromise model.</li>
+<li><strong>Contract-flow adjacency.</strong> The same key already authorizes Soroban
+group operations. An observer of the ledger can connect an identity's
+group activity and its payment activity through the shared account.</li>
+<li><strong>Account-control operations cross seats.</strong> <code>AccountMerge</code> can remove the
+account, while signer or threshold changes through <code>SetOptions</code> can disable
+or transfer its authorization. Both affect bank payments and any Soroban
+contract-flow transactions sourced by this account.</li>
+</ol>
+<p>A successor identity profile with per-context Ed25519 derivation upgrades
+this profile to real context isolation; the bank port is already shaped for
+it (<code>context</code> on every account).</p>
+<h3 id="42-account-existence-and-reserves">4.2 Account existence and reserves</h3>
+<p>A Stellar account exists only after funding. Its reserve requirement is:</p>
+<pre><code class="language-text">(2 + numSubEntries + numSponsoring - numSponsored) * baseReserve
+</code></pre>
+<p>Selling liabilities also reduce the spendable balance. <code>baseReserve</code> is a
+live network parameter; clients read it rather than hard-code a nominal XLM
+value. A conforming adapter:</p>
+<ol>
+<li>distinguishes &quot;key derived&quot; from &quot;account funded&quot; and never renders an
+unfunded address as a working account;</li>
+<li>maps <code>insufficient_reserve</code> to the abstract
+<code>available_balance_restricted</code> error and shows total balance, reserve,
+sponsorship counters, liabilities, and resulting spendable balance; and</li>
+<li>discloses who funds account creation and reserves as a declared offer, not
+an invisible subsidy. CAP-33 sponsorship uses paired
+<code>BeginSponsoringFutureReserves</code> / <code>EndSponsoringFutureReserves</code> operations
+and changes <code>numSponsoring</code> / <code>numSponsored</code>; it does not erase the reserve
+or turn a fee-bump relayer into a sponsor by implication.</li>
+</ol>
+<h3 id="43-trustlines">4.3 Trustlines</h3>
+<p>Issued assets require a <code>ChangeTrust</code> operation, which is itself a signed,
+reserve-consuming, publicly visible act. The adapter treats trustline
+creation as a first-class intent through the same quote → display →
+authorize flow as payments: which asset, which issuer, what reserve cost,
+and the fact that holding the asset becomes public ledger state.</p>
+<h2 id="5-receiving-coordinates">5. Receiving coordinates</h2>
+<h3 id="51-plain-account-address">5.1 Plain account address</h3>
+<p>The default receiving coordinate is the <code>G…</code> account address, displayable
+and QR-encodable. Address reuse warnings apply per abstract obligation §7.6,
+with the honest caveat that on this profile all contexts currently share
+the address anyway (§4.1).</p>
+<h3 id="52-muxed-sub-addresses">5.2 Muxed sub-addresses</h3>
+<p>The profile may use muxed accounts (<code>M…</code> strkey): a 64-bit ID multiplexed
+over the one Ed25519 account. These give the holder or a provider
+per-context <em>attribution</em>—distinguishing payers, invoices, or contexts at
+receipt time—without new keys or reserves.</p>
+<p>They are attribution, not privacy: the underlying <code>G…</code> account is plainly
+visible in the muxed address and on the ledger. A conforming client never
+presents an <code>M…</code> address as unlinkable from the identity's account. Fresh
+per-context privacy requires per-context keys, which this profile defers to
+the identity layer.</p>
+<h3 id="53-memos">5.3 Memos</h3>
+<p>Classic memo-based attribution (<code>MEMO_ID</code>, <code>MEMO_TEXT</code>) remains necessary
+with some anchors and exchanges. Memos are public ledger content: the
+adapter must warn before any user-supplied memo text and must never place
+names, identity identifiers, entitlement data, or invoice descriptions in
+memos by default.</p>
+<h2 id="6-payment-mapping">6. Payment mapping</h2>
+<h3 id="61-quote">6.1 Quote</h3>
+<p>A quote's <code>operation</code> is one unsigned XDR <code>TransactionEnvelope</code> containing:</p>
+<ul>
+<li>the holder's account as the <strong>inner transaction source</strong>; a §7 fee-bump
+relayer can become only the outer fee source and never replaces this value;</li>
+<li>a pinned sequence number allocated under the serialization rule below;</li>
+<li><code>timeBounds.maxTime</code> equal to the quote's <code>expiresAt</code>, so expiry is
+enforced by every validator, not just client courtesy;</li>
+<li>the payment operation: <code>Payment</code>, <code>CreateAccount</code> (when the destination
+is unfunded—rendered as such), or <code>PathPaymentStrictSend/Receive</code> for
+conversions, with the path and minimum-received rendered; and</li>
+<li>the network fee in stroops, distinct in the quote from any provider fee.</li>
+</ul>
+<h4 id="611-sequence-allocation-and-concurrency">6.1.1 Sequence allocation and concurrency</h4>
+<p>This profile permits at most one live quoted or authorized transaction per
+underlying <code>G…</code> source account. The adapter acquires a per-account sequence
+lease, reads the current sequence and observation ledger, assigns the next
+sequence, and holds the lease until the intent settles, fails, expires, or is
+explicitly cancelled. It does not issue several independent quotes with the
+same sequence or assume they will be submitted in order.</p>
+<p>The account is shared with current Soroban contract flows and may also be used
+by another wallet, so an operation outside the bank adapter can advance the
+sequence and invalidate the lease. The adapter re-reads account state before
+authorization and submission. On <code>tx_bad_seq</code>, it first queries the authorized
+transaction hash to rule out an already accepted submission; otherwise it
+returns abstract <code>operation_conflict</code>, discards the stale quote, and obtains a
+fresh quote and authorization. It never edits or blindly re-signs the old
+envelope.</p>
+<p>This lease rule applies to transactions intended for ledger submission.
+SEP-10 authentication challenges are deliberately non-submittable, use the
+protocol-required sequence number zero, and follow the separate validation
+path in §8.</p>
+<h3 id="62-display-and-authorization">6.2 Display and authorization</h3>
+<p>The adapter decodes the envelope and renders every operation through a
+<strong>whitelist renderer</strong>. The whitelist and minimum rendering rules are:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Required rendering and checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Payment</code></td>
+<td>source, destination, exact asset and amount</td>
+</tr>
+<tr>
+<td><code>CreateAccount</code></td>
+<td>source, destination, starting balance, reserve and sponsorship effect</td>
+</tr>
+<tr>
+<td><code>ChangeTrust</code></td>
+<td>holder, asset code and issuer, limit, reserve and public-linkability effect</td>
+</tr>
+<tr>
+<td><code>PathPaymentStrictSend</code> / <code>PathPaymentStrictReceive</code></td>
+<td>source/destination assets and amounts, full path, limits, slippage, destination</td>
+</tr>
+<tr>
+<td><code>ManageData</code></td>
+<td>key, value digest, source, and zero-value effect; accepted for SEP-10 only after full challenge validation and rendered as authentication, never payment</td>
+</tr>
+<tr>
+<td><code>AllowTrust</code></td>
+<td>issuer source, trustor, asset, and authorization value; accepted only as an issuer-sourced SEP-8 compliance operation</td>
+</tr>
+<tr>
+<td><code>BeginSponsoringFutureReserves</code> / <code>EndSponsoringFutureReserves</code> / <code>RevokeSponsorship</code></td>
+<td>every source, sponsored party or ledger entry, pairing, and reserve-liability change</td>
+</tr>
+<tr>
+<td><code>SetOptions</code></td>
+<td>every signer addition/removal, signer weight, master weight, threshold, flag, home domain, and other changed field, with maximal account-control warning</td>
+</tr>
+<tr>
+<td><code>AccountMerge</code></td>
+<td>source, destination, whole-balance transfer, account deletion, and maximal irreversible warning</td>
+</tr>
+</tbody>
+</table></div><p>Any envelope containing an operation outside the whitelist, more operations
+than displayed, an unexpected source account, or a whitelisted operation that
+fails its context-specific checks is refused before the vault is invoked.
+<code>intentDecoding</code> conformance means there is no envelope the renderer displays
+as less than it is.</p>
+<p>For the reused account, the maximal warnings for <code>SetOptions</code> and
+<code>AccountMerge</code> explicitly say that the operation can disable, transfer, or
+destroy both bank control and the identity's account-based authorization for
+Soroban contract-flow transactions. A generic “account settings” or “close
+account” label is nonconforming.</p>
+<p>The vault signs the envelope hash domain-separated by the network
+passphrase—so testnet signatures cannot replay on the public network—and
+the adapter submits exactly the signed envelope. Stellar's sequence numbers
+make replay of a settled envelope impossible, giving the abstract
+idempotency requirement ledger-level teeth: a resubmitted duplicate fails
+with a sequence error rather than double-paying.</p>
+<h3 id="63-outcomes-and-evidence">6.3 Outcomes and evidence</h3>
+<ul>
+<li><code>submitted</code>: accepted by a Horizon/RPC endpoint into the queue.</li>
+<li><code>pending</code>: not yet in a closed ledger.</li>
+<li><code>settled</code>: transaction result present in a closed ledger; the evidence is
+the result and its ledger number. Stellar consensus does not reorganize,
+so <code>settled</code> is final and the abstract <code>settlement_reorged</code> error is
+structurally unreachable on this profile.</li>
+<li><code>failed</code>: a result code in a closed ledger (rendered by code:
+underfunded, low reserve, no trustline, missing destination, bad auth, bad
+sequence, too late).</li>
+<li><code>unknown</code>: submission timeout—resolved by querying for the transaction
+hash before any re-quote, never by re-signing blind.</li>
+</ul>
+<p><code>expired</code> maps to <code>tx_too_late</code>: an envelope past its time bounds can never
+settle, so expiry is a safe terminal state.</p>
+<p>Stellar-specific result mapping extends the abstract errors:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Stellar result</th>
+<th scope="col">Abstract result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tx_bad_seq</code></td>
+<td><code>operation_conflict</code>, after transaction-hash reconciliation</td>
+</tr>
+<tr>
+<td><code>tx_insufficient_balance</code> or an operation-specific <code>*_low_reserve</code></td>
+<td><code>available_balance_restricted</code> with reserve and sponsorship detail</td>
+</tr>
+<tr>
+<td>an operation-specific <code>*_underfunded</code></td>
+<td><code>insufficient_funds</code></td>
+</tr>
+<tr>
+<td><code>tx_too_late</code></td>
+<td><code>quote_expired</code></td>
+</tr>
+</tbody>
+</table></div><h2 id="7-fees-and-the-relayer">7. Fees and the relayer</h2>
+<p>The holder may pay network fees natively, or the profile may reuse the
+existing fee-paying transaction relayer via <strong>fee-bump transactions</strong>: the
+relayer wraps the holder's signed envelope in a fee-bump envelope and pays
+the fee from its own account.</p>
+<p>Profile requirements:</p>
+<ol>
+<li>the inner envelope the holder signed is untouched—the relayer adds fee
+payment, never operations;</li>
+<li>the relayer's service, refusal behavior, and observation surface follow
+its existing manifest (it sees the transaction and submission metadata,
+as it already does for contract operations); and</li>
+<li>the quote states who pays the fee; a relayer subsidy is a declared offer
+term, not magic.</li>
+</ol>
+<h2 id="8-custodial-class-anchors">8. Custodial class: anchors</h2>
+<p>Custodial accounts on this profile are anchor balances: deposits and
+withdrawals bridged under SEP-6 (programmatic) or SEP-24 (interactive),
+authenticated by SEP-10 web auth—a challenge transaction the vault signs as
+a <code>prove-address-control</code> capability (it must be rendered as a login proof,
+never as a payment; a conforming renderer shows SEP-10 challenges as
+authentication with zero value movement).</p>
+<p>An anchor account's manifest declares <code>custodyClass: custodial</code>, its
+regulatory self-declaration, protection scheme, and withdrawal terms per
+the abstract §5.3/§10. Anchor balances are <code>provider-attested</code>; the
+on-ledger tokens an anchor issues are ledger-observed, but their
+redeemability is exactly the anchor's liability. Clients render that
+distinction—token in your account (non-custodial, ledger-observed) versus
+balance at the anchor (custodial claim)—without collapsing it.</p>
+<p>SEP-8 regulated assets require an explicit approval loop:</p>
+<ol>
+<li>The holder authorizes the initially displayed envelope, and the adapter
+sends those exact bytes to the issuer's approval server rather than to the
+network.</li>
+<li>A <code>success</code> response may add issuer signatures but must preserve the
+transaction bytes and holder operations; the adapter verifies this before
+submission.</li>
+<li>A <code>revised</code> response is <code>authorization_revision_required</code>, not approval of
+the old intent. The adapter preserves it as a new quote revision, verifies
+every original holder-sourced operation is byte-for-byte unchanged, rejects
+any added holder-sourced operation, decodes and displays every added
+issuer-sourced operation, compares the revisions, and requests a fresh
+holder signature over the complete revised envelope.</li>
+<li><code>pending</code>, <code>action_required</code>, and <code>rejected</code> remain attributed
+<code>compliance_hold</code> states under the issuer's published policy. Resubmission
+after action or delay reuses the same authorized bytes unless the server
+returns a separately displayed revision.</li>
+</ol>
+<p>The revised envelope never inherits the original signature as consent. The
+fresh authorization covers the complete transaction, including SEP-8
+<code>AllowTrust</code> operations or other issuer-added compliance operations. This is a
+new authorization cycle, not post-consent mutation.</p>
+<h2 id="9-escrow-class-native-multisignature">9. Escrow class: native multisignature</h2>
+<p>Stellar's signer weights and thresholds implement the <code>escrow</code> class
+natively: an account whose declared movements need multiple signers
+(holder + provider, holder + recovery service, N-of-M arrangements). The
+manifest names signers, weights, thresholds, and the unilateral exit path
+if any. Setting signers and thresholds (<code>SetOptions</code>) is itself a
+displayed, authorized intent with maximal warning: it changes who controls
+the account, and a hostile threshold change is account theft. Because this
+profile reuses the same account for current Soroban flows, the warning also
+states that changing master weight, signers, or thresholds can disable or hand
+another signer the account authorization used by those contract transactions.
+<code>AccountMerge</code> carries the corresponding warning that deleting the account
+also destroys that cross-seat authorization surface until a separately
+verified recovery or recreation flow succeeds.</p>
+<h2 id="10-privacy">10. Privacy</h2>
+<p>Everything on Stellar is public: balances, trustlines, every payment's
+source, destination, amount, asset, memo, time, and the account's whole
+history. Zero-knowledge protections in the Onym notary contracts do not
+extend to payments. On this profile:</p>
+<ul>
+<li>the ledger is a permanent public record correlating all activity of the
+reused account (§4.1);</li>
+<li>memos and muxed IDs add attribution on top of that record;</li>
+<li>Horizon/RPC providers additionally observe the holder's queries—balance
+checks and history reads leak interest and IP metadata to the read
+endpoint, which the manifest's privacy profile must declare; and</li>
+<li>anchors learn what their KYC policy collects, bounded by their published
+policy per abstract §9.7–9.8.</li>
+</ul>
+<p>A conforming client says this before first use of the bank feature, in the
+same register the whitepaper uses for ledger leakage (§9.4): zero knowledge
+is not zero metadata, and payments here have no zero knowledge at all.</p>
+<h2 id="11-current-implementation-mapping">11. Current implementation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Boundary role</th>
+<th scope="col">Current implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ed25519/Stellar key derivation</td>
+<td>Identity modules of <code>onym-ios</code> / <code>onym-android</code> over the SDKs</td>
+</tr>
+<tr>
+<td>Stellar-facing authorization</td>
+<td>Implemented for Soroban contract flows via <code>onym-relayer</code></td>
+</tr>
+<tr>
+<td>Fee-bump relaying</td>
+<td><code>onym-relayer</code> fee payment for contract operations</td>
+</tr>
+<tr>
+<td>Bank port, adapter, quotes, display renderer</td>
+<td>Not implemented</td>
+</tr>
+<tr>
+<td>Anchor/SEP integrations</td>
+<td>Not implemented</td>
+</tr>
+<tr>
+<td>Read services (Horizon/RPC selection)</td>
+<td>Present for contract flows; no balance/statement surface</td>
+</tr>
+</tbody>
+</table></div><p>Implemented today: the key, its Stellar account representation, envelope
+signing for contract authorization, and relayer submission. No payment,
+balance, trustline, or anchor flow exists in any client. This document is
+therefore a design profile validated against Stellar's rules, not a
+description of shipped behavior.</p>
+<h2 id="12-known-gaps">12. Known gaps</h2>
+<p>Current code and the current identity profile are not yet a conforming
+implementation:</p>
+<ol>
+<li>no bank port, adapter, quote flow, or XDR display renderer exists in the
+clients—the entire §6 pipeline is unbuilt;</li>
+<li>context isolation is unsatisfiable until the identity profile derives
+per-context Stellar keys; one shared account correlates all payment,
+contract, and published-address activity (§4.1), and this is the
+profile's most user-visible privacy limitation;</li>
+<li>envelope signing for contract flows does not yet go through a typed
+displayed-intent capability—the vault capability port itself is an
+identity-profile gap that this profile inherits and depends on;</li>
+<li>no <code>ServiceManifest</code> format exists for bank providers, anchors, or read
+services, so custody class, regulatory declarations, and fee schedules
+have no verified carrier;</li>
+<li>reserve handling (including CAP-33 sponsorship counters, trustline costs,
+and spendable-vs-total calculation) has no UX or adapter logic;</li>
+<li>SEP-10/6/24/8 integrations, and the login-vs-payment rendering split for
+SEP-10 challenges, are unimplemented;</li>
+<li>statement export, <code>provider-attested</code> versus <code>ledger-observed</code> labeling,
+sequence leasing across bank and Soroban flows, SEP-8 revision handling,
+and outcome idempotency logic do not exist; and</li>
+<li>there is no fixture suite: envelope rendering (including adversarial
+envelopes that must refuse), signature domain separation, sequence and
+time-bounds handling, and outcome mapping all need vectors a third-party
+adapter can pass.</li>
+</ol>
+<p>These gaps are build order, not open questions: the identity capability
+port and per-context derivation (identity profile), then the adapter and
+renderer with fixtures, then providers and anchors.</p>
+<h2 id="13-conformance-tests">13. Conformance tests</h2>
+<p>A shared fixture suite covers, at minimum:</p>
+<ol>
+<li>envelope encode/decode round-trips for every whitelisted operation type,
+byte-exact across platforms;</li>
+<li>adversarial rendering vectors: hidden extra operations, unexpected
+source accounts, non-whitelisted operations, oversized memos—all must
+refuse before signing;</li>
+<li>signature vectors: envelope hash, network-passphrase domain separation,
+and cross-network replay rejection;</li>
+<li>sequence and time-bounds vectors: stale sequence, future sequence,
+expired bounds (<code>tx_too_late</code>), duplicate-submission behavior, concurrent
+quote refusal, and invalidation by an external Soroban transaction;</li>
+<li>fee-bump wrapping: inner-envelope immutability under relayer fees;</li>
+<li>outcome mapping for the principal result codes, including
+<code>unknown</code>-then-query resolution;</li>
+<li>reserve arithmetic: <code>numSubEntries</code>, <code>numSponsoring</code>, <code>numSponsored</code>,
+selling liabilities, spendable calculation, and CAP-33 begin/end pairing;</li>
+<li>muxed address encode/decode and the <code>M…</code>-implies-<code>G…</code> disclosure rule;</li>
+<li>SEP-10 <code>ManageData</code> challenge validation and rendering as zero-value
+authentication;</li>
+<li><code>SetOptions</code> and <code>AccountMerge</code> rendering with the bank-and-Soroban
+cross-seat authority warning;</li>
+<li>SEP-8 <code>success</code>, <code>revised</code>, <code>pending</code>, <code>action_required</code>, and <code>rejected</code>
+flows, including byte comparison and fresh authorization of revisions;</li>
+<li>result mapping for <code>tx_bad_seq</code>, reserve restrictions, underfunding, and
+expiry; and</li>
+<li>custody-class display decisions for ledger tokens versus anchor claims.</li>
+</ol>
+<h2 id="14-acceptance-criteria">14. Acceptance criteria</h2>
+<p>This Stellar profile satisfies the abstract boundary when:</p>
+<ol>
+<li>a third-party adapter can implement it from the profile and fixtures
+alone, and spend the same non-custodial account as the official client
+with the same vault;</li>
+<li>no envelope settles that the renderer did not display in full, and no
+rendering vector can be constructed that understates an envelope;</li>
+<li>quote expiry, replay, and duplicates are enforced by ledger semantics
+(time bounds, sequences) and verified by fixtures;</li>
+<li>relayer fee payment leaves holder-signed operations untouched and
+declared;</li>
+<li>anchor balances, ledger tokens, and escrow arrangements render as their
+distinct custody classes with the anchor's declarations visible;</li>
+<li>SEP-10 authentication is never confusable with a payment;</li>
+<li>SEP-8 revisions cannot bypass a complete diff, re-display, and fresh
+authorization cycle;</li>
+<li>shared-account sequence conflicts cannot cause blind resubmission or
+hidden re-signing;</li>
+<li>the shared-account correlation and cross-seat account-control limitations
+are disclosed in-product until per-context keys remove them; and</li>
+<li>the profile upgrades to per-context accounts without changing the
+abstract port's shape.</li>
+</ol>
+<h2 id="references">References</h2>
+<ol>
+<li>Abstract Onym bank boundary: <a href="../bank/UI-Bank.html">UI-Bank.md</a></li>
+<li>Onym BIP-39 identity implementation:
+<a href="../identity/UI-Identity-BIP39.html">../identity/UI-Identity-BIP39.md</a></li>
+<li>Onym Stellar notary implementation:
+<a href="../notary/UI-Notary-Stellar.html">../notary/UI-Notary-Stellar.md</a></li>
+<li>Stellar developer documentation, “Accounts” (reserves, subentries):
+<a href="https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts">https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts</a></li>
+<li>Stellar developer documentation, “Transactions and operations”:
+<a href="https://developers.stellar.org/docs/learn/fundamentals/transactions">https://developers.stellar.org/docs/learn/fundamentals/transactions</a></li>
+<li>CAP-15, “Fee-Bump Transactions”:
+<a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md</a></li>
+<li>CAP-33, “Sponsored Reserves”:
+<a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0033.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0033.md</a></li>
+<li>CAP-27 / SEP-23, “Muxed Accounts”:
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md">https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md</a></li>
+<li>SEP-10, “Stellar Web Authentication”:
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md">https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md</a></li>
+<li>SEP-24, “Hosted Deposit and Withdrawal”:
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md">https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md</a></li>
+<li>SEP-8, “Regulated Assets”:
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md">https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md</a></li>
+<li>Onym transaction relayer: <a href="https://github.com/onymchat/onym-relayer">https://github.com/onymchat/onym-relayer</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/worktree-bank-boundary/bank/UI-Bank-Stellar.md">latest version on worktree-bank-boundary →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

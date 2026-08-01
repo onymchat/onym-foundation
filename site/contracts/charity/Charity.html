@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Charity Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Charity Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/charity/Charity.html">
+<meta property="og:title" content="Onym Charity Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/charity/Charity.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Charitable coordination</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/charity/Charity.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-charity-contract-boundary">Onym Charity Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>A charity system decides who is eligible, where funds go, and which rules
+apply. A user interface carries private intent and asks for scoped
+authorization. A notary makes narrow claims verifiable. None of them proves
+that an organization is good merely by calling it verified.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary through which a user
+application can discover a charitable program, verify its declared trust
+path, donate, receive evidence, or privately claim aid. It does not require
+Onym Messenger, a blockchain, Stellar, Soroban, a token, a particular
+zero-knowledge system, or a particular legal form of nonprofit organization.</p>
+<p>A conforming implementation may use a public ledger, regulated payment rail,
+bank transfer, threshold-operated service, verifiable log, or a combination.
+The Onym Messenger user-interface profile is specified separately in
+<a href="../charity/UI-Charity.html">UI-Charity.md</a>. A Stellar/Soroban financial or notary mapping,
+if selected, is a separate implementation profile rather than part of this
+abstract contract.</p>
+<p>The July 2026 draft memorandum between Onym and a proposed humanitarian
+provider informed the division of responsibility in this document. The
+memorandum is not itself a protocol specification, deployment manifest, proof
+of production readiness, or substitute for a binding agreement.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Charity is an open application seat composed of separately replaceable roles.</p>
+<ul>
+<li>The <strong>user application</strong> presents canonical intent, holds local
+capabilities, transports private messages, and verifies receipts.</li>
+<li>The <strong>charity operator</strong> defines a program, performs operational work,
+allocates aid, handles complaints, and makes the claims attached to a
+campaign.</li>
+<li>An <strong>organization credential issuer</strong> checks an organization under a named
+policy and issues or revokes a signed credential.</li>
+<li>An <strong>eligibility issuer</strong> attests that a beneficiary satisfies a named aid
+policy, preferably without publishing the beneficiary's identity.</li>
+<li>A <strong>financial provider</strong> quotes, submits, settles, refunds, or disburses
+funds under its own legal and operational authority.</li>
+<li>A <strong>notary</strong> records narrow public state and produces verifiable evidence.</li>
+<li>An <strong>auditor or report issuer</strong> makes signed claims about receipts,
+allocation, expenditure, or impact.</li>
+<li>A <strong>directory or association registry</strong> maps human-readable names to signed
+organization records. It is not automatically a credential issuer.</li>
+</ul>
+<p>Anyone may implement or operate one of these roles and publish an offer. Open
+participation means permissionless authorship and entry, not automatic trust,
+listing, payment, regulatory approval, or access to user secrets. A user,
+community, or application chooses which issuers, operators, deployments, and
+payment rails it accepts.</p>
+<p>One party may occupy several roles, but the signed records must still identify
+which authority it exercises. The application publisher is not implicitly the
+charity operator, credential issuer, custodian, auditor, or regulator. The
+charity operator is not implicitly authorized to administer the messenger or
+extract its user graph.</p>
+<h2 id="2-domain-boundary">2. Domain boundary</h2>
+<h3 id="21-user-application-domain">2.1 User-application domain</h3>
+<p>The user application is responsible for:</p>
+<ol>
+<li>showing who made each material claim and under which policy;</li>
+<li>resolving and verifying the selected charity profile and deployment;</li>
+<li>presenting the asset, network, destination, amount, fees, privacy effect,
+refund rule, and finality rule before authorization;</li>
+<li>requesting the smallest identity capability needed for the operation;</li>
+<li>protecting local keys, private messages, proofs, and receipts;</li>
+<li>submitting operations only to providers the user selected; and</li>
+<li>independently checking returned evidence where the profile permits it.</li>
+</ol>
+<p>The application must not silently decide that a nonprofit is trustworthy,
+change the recipient, sign hidden operation bytes, retain compliance
+documents without a declared purpose, or claim that a cryptographically valid
+receipt proves charitable impact.</p>
+<h3 id="22-charity-operations-domain">2.2 Charity-operations domain</h3>
+<p>The charity operator and its selected providers are responsible for:</p>
+<ol>
+<li>organization onboarding and verification policy;</li>
+<li>campaign truthfulness, beneficiaries, allocation, and delivery;</li>
+<li>legal status, fundraising authority, sanctions and financial-crime controls;</li>
+<li>required donor or beneficiary due diligence;</li>
+<li>safeguarding, custody, accounting, tax receipts, refunds, and disputes;</li>
+<li>regulator, bank, grantor, and payment-provider relationships; and</li>
+<li>the accuracy and limits of expenditure and impact reports.</li>
+</ol>
+<p>These responsibilities do not move to the UI merely because the UI renders a
+campaign or invokes a contract.</p>
+<h3 id="23-shared-contract-surface">2.3 Shared contract surface</h3>
+<p>The shared surface contains only the versioned objects and operations required
+to join the domains:</p>
+<ul>
+<li>profiles and deployment bindings;</li>
+<li>organization credentials and trust policy;</li>
+<li>campaign records and signed updates;</li>
+<li>donation quotes, intents, outcomes, refunds, and receipts;</li>
+<li>beneficiary eligibility policies, presentations, claims, and outcomes;</li>
+<li>fund-flow and audit commitments;</li>
+<li>privacy declarations and incident contacts; and</li>
+<li>canonical errors, state transitions, and conformance evidence.</li>
+</ul>
+<p>Implementation-specific transaction objects, wallet handles, RPC clients,
+database models, messenger screens, and legal case files remain behind their
+respective adapters.</p>
+<h2 id="3-trust-semantics">3. Trust semantics</h2>
+<h3 id="31-verified-is-always-qualified">3.1 “Verified” is always qualified</h3>
+<p><code>verified organization</code> is not a universal state. It means:</p>
+<blockquote>
+<p>issuer <strong>I</strong> attested at time <strong>T</strong> that subject <strong>S</strong> satisfied policy
+<strong>P</strong>, version <strong>V</strong>, for scope <strong>C</strong>, until expiry or revocation.</p>
+</blockquote>
+<p>The UI must show or make available the issuer, policy, scope, validity period,
+and current revocation result. It must not collapse these into an unqualified
+Onym checkmark. A credential proves that an issuer signed claims; it does not
+prove that the issuer is competent, honest, current, or trusted by the user.</p>
+<p>A <code>TrustPolicy</code> pins accepted issuers, credential types, assurance levels,
+revocation methods, freshness limits, jurisdiction constraints, and any
+required combinations. Trust policy is explicit and replaceable. Issuer trust
+does not become transitive merely because one issuer refers to another.</p>
+<h3 id="32-cryptographic-evidence-has-narrow-meaning">3.2 Cryptographic evidence has narrow meaning</h3>
+<ul>
+<li>A signature proves control of the signing capability over exact bytes.</li>
+<li>A credential proves an issuer made the encoded claim.</li>
+<li>A zero-knowledge proof proves its declared predicate and public inputs.</li>
+<li>Notary evidence proves the declared state under the selected notary profile.</li>
+<li>A settlement receipt proves the declared financial transition under the
+selected financial profile.</li>
+<li>An audit or impact record proves its author made the report.</li>
+</ul>
+<p>None alone proves legal compliance, absence of fraud, delivery of aid, fair
+allocation, beneficiary wellbeing, or the truth of off-system facts.</p>
+<h3 id="33-no-hidden-trust-inheritance">3.3 No hidden trust inheritance</h3>
+<p>The identities of the campaign operator, financial recipient, credential
+issuer, financial provider, notary, auditor, and UI publisher must be
+separately inspectable. A brand, app-store listing, domain name, registry name,
+or transport route does not bind these roles unless a signed profile says so.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">┌──────────────────────── user-controlled application ────────────────────────┐
+│ campaign UI · local identity capability · private messages · local receipt  │
+└───────────────┬────────────────┬──────────────────┬─────────────────────────┘
+                │                │                  │
+       resolve claims       move value       prove/observe state
+                │                │                  │
+                v                v                  v
+       ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+       │ issuer/registry│ │ financial rail │ │ notary / log   │
+       │ attest + revoke│ │ quote + settle │ │ commit + prove │
+       └───────┬────────┘ └───────┬────────┘ └───────┬────────┘
+               │                  │                  │
+               └──────────────────┼──────────────────┘
+                                  v
+                    ┌────────────────────────┐
+                    │ charity operator       │
+                    │ campaign · allocation  │
+                    │ compliance · disputes  │
+                    └────────────────────────┘
+</code></pre>
+<p>The topology is logical. A deployment may combine several boxes, but doing so
+does not expand their authority. The UI treats every remote response as
+untrusted until it validates the evidence required by the pinned profiles.</p>
+<h2 id="5-profiles-and-bindings">5. Profiles and bindings</h2>
+<h3 id="51-charity-profile">5.1 Charity Profile</h3>
+<p>A <code>CharityProfile</code> defines portable semantics without selecting an operator or
+backend:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:charity-profile:donation-aid-v1&quot;,
+  &quot;interface&quot;: &quot;onym-charity-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;resolve-campaign&quot;,
+    &quot;quote-donation&quot;,
+    &quot;prepare-donation&quot;,
+    &quot;submit-donation&quot;,
+    &quot;read-donation&quot;,
+    &quot;request-refund&quot;,
+    &quot;present-eligibility&quot;,
+    &quot;claim-aid&quot;,
+    &quot;read-aid-claim&quot;,
+    &quot;read-fund-flow&quot;
+  ],
+  &quot;schemas&quot;: &quot;&lt;content-addressed-schema-set&gt;&quot;,
+  &quot;trustSemantics&quot;: &quot;&lt;content-addressed-trust-semantics&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;metricProfile&quot;: &quot;&lt;content-addressed-volume-profile&gt;&quot;,
+  &quot;errorSchema&quot;: &quot;onym-charity-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes object meaning, canonicalization, authorization coverage,
+state transitions, evidence, errors, and privacy requirements. It does not fix
+a currency, network, smart-contract language, UI, operator, or price.</p>
+<h3 id="52-charity-deployment">5.2 Charity Deployment</h3>
+<p>A <code>CharityDeployment</code> binds the abstract profile to concrete providers:</p>
+<pre><code class="language-json">{
+  &quot;deploymentVersion&quot;: 1,
+  &quot;deploymentId&quot;: &quot;onym:charity-deployment:&lt;id&gt;&quot;,
+  &quot;charityProfileId&quot;: &quot;onym:charity-profile:donation-aid-v1&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;charity-operator&gt;&quot;,
+  &quot;organizationCredentialPolicy&quot;: &quot;&lt;trust-policy-id-and-hash&gt;&quot;,
+  &quot;campaignRegistry&quot;: &quot;&lt;adapter-profile-and-endpoint&gt;&quot;,
+  &quot;financialBindings&quot;: [&quot;&lt;financial-profile-and-deployment&gt;&quot;],
+  &quot;notaryBindings&quot;: [&quot;&lt;notary-profile-and-deployment&gt;&quot;],
+  &quot;eligibilityBindings&quot;: [&quot;&lt;proof-profile-and-issuer-policy&gt;&quot;],
+  &quot;auditBindings&quot;: [&quot;&lt;audit-profile-and-issuer-policy&gt;&quot;],
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;incidentContact&quot;: &quot;&lt;authenticated-contact&gt;&quot;,
+  &quot;validFrom&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;validUntil&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The application verifies the deployment signature, profile hash, provider
+bindings, validity, status, and replacement rules. A deployment update cannot
+silently change a destination, accepted issuer, proof system, fee schedule, or
+privacy disclosure for an already prepared operation.</p>
+<h3 id="53-delivery-and-ownership-declaration">5.3 Delivery and ownership declaration</h3>
+<p>How software is funded or owned does not change runtime semantics. A project
+may nevertheless publish a <code>DeliveryOwnershipProfile</code> declaring:</p>
+<ul>
+<li>the owner and license of each pre-existing component;</li>
+<li>the license of interface specifications and implementation code;</li>
+<li>who develops, deploys, maintains, and responds to incidents for each layer;</li>
+<li>whether a joint entity controls a deployment;</li>
+<li>whether anyone may deploy a public-domain implementation; and</li>
+<li>grant applicant, deliverable, and duplicate-funding disclosure rules.</li>
+</ul>
+<p>Layer-separated ownership, a jointly owned deployment entity, and a CC0/public
+commons implementation can all conform to the same charity boundary. Funding
+or corporate documents must not be smuggled into protocol authority.</p>
+<h2 id="6-boundary-objects">6. Boundary objects</h2>
+<p>All signed objects use deterministic canonicalization, an explicit schema and
+version, a domain-separation tag, creation and expiry times where relevant,
+and a stable digest. Unknown critical fields cause rejection.</p>
+<h3 id="61-trust-policy">6.1 Trust Policy</h3>
+<pre><code class="language-json">{
+  &quot;trustPolicyVersion&quot;: 1,
+  &quot;trustPolicyId&quot;: &quot;&lt;stable-id&gt;&quot;,
+  &quot;acceptedCredentialTypes&quot;: [&quot;charitable-organization-v1&quot;],
+  &quot;acceptedIssuers&quot;: [&quot;onym:key:&lt;issuer-id&gt;&quot;],
+  &quot;minimumAssurance&quot;: &quot;&lt;declared-level&gt;&quot;,
+  &quot;jurisdictions&quot;: [&quot;&lt;declared-scope&gt;&quot;],
+  &quot;maximumCredentialAge&quot;: &quot;P30D&quot;,
+  &quot;revocationFreshness&quot;: &quot;PT24H&quot;,
+  &quot;combinationRule&quot;: &quot;any-one&quot;,
+  &quot;policyDocument&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;policy-author-signature&gt;&quot;
+}
+</code></pre>
+<p>The policy does not contain donor or beneficiary identifiers.</p>
+<h3 id="62-organization-credential">6.2 Organization Credential</h3>
+<pre><code class="language-json">{
+  &quot;credentialVersion&quot;: 1,
+  &quot;credentialId&quot;: &quot;&lt;opaque-id&gt;&quot;,
+  &quot;credentialType&quot;: &quot;charitable-organization-v1&quot;,
+  &quot;issuer&quot;: &quot;onym:key:&lt;issuer-id&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:key:&lt;organization-id&gt;&quot;,
+  &quot;claims&quot;: {
+    &quot;legalEntityReference&quot;: &quot;&lt;issuer-scoped-reference&gt;&quot;,
+    &quot;authorizedScopes&quot;: [&quot;fundraise:&lt;jurisdiction-or-program&gt;&quot;],
+    &quot;assurance&quot;: &quot;&lt;declared-level&gt;&quot;
+  },
+  &quot;policyId&quot;: &quot;&lt;verification-policy-id-and-version&gt;&quot;,
+  &quot;issuedAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;expiresAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;status&quot;: &quot;&lt;revocation-status-reference&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;issuer-signature&gt;&quot;
+}
+</code></pre>
+<p>The abstract boundary does not mandate W3C Verifiable Credentials, but a
+profile may map this object to that data model. Private source documents stay
+with the responsible issuer unless a separate, consented disclosure is
+required.</p>
+<h3 id="63-charity-campaign">6.3 Charity Campaign</h3>
+<pre><code class="language-json">{
+  &quot;campaignVersion&quot;: 1,
+  &quot;campaignId&quot;: &quot;&lt;stable-random-id&gt;&quot;,
+  &quot;charityDeploymentId&quot;: &quot;&lt;deployment-id&gt;&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;charity-operator&gt;&quot;,
+  &quot;organization&quot;: &quot;onym:key:&lt;organization-id&gt;&quot;,
+  &quot;organizationCredential&quot;: &quot;&lt;credential-id-and-digest&gt;&quot;,
+  &quot;title&quot;: &quot;&lt;human-readable-title&gt;&quot;,
+  &quot;purpose&quot;: &quot;&lt;content-addressed-description&gt;&quot;,
+  &quot;jurisdictions&quot;: [&quot;&lt;declared-scope&gt;&quot;],
+  &quot;startsAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;endsAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;acceptedAssets&quot;: [&quot;&lt;asset-and-network-id&gt;&quot;],
+  &quot;financialDestinations&quot;: [&quot;&lt;signed-destination-binding&gt;&quot;],
+  &quot;allocationPolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;refundPolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;reportingPolicy&quot;: &quot;&lt;content-addressed-policy&gt;&quot;,
+  &quot;beneficiaryPrivacy&quot;: &quot;&lt;content-addressed-disclosure-profile&gt;&quot;,
+  &quot;revision&quot;: 1,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>Material updates create a new revision. A donation intent pins the exact
+campaign revision, credential digest, destination, and provider bindings it
+accepted.</p>
+<h3 id="64-donation-quote">6.4 Donation Quote</h3>
+<pre><code class="language-json">{
+  &quot;quoteVersion&quot;: 1,
+  &quot;quoteId&quot;: &quot;&lt;provider-unique-id&gt;&quot;,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;campaignRevision&quot;: 1,
+  &quot;financialProvider&quot;: &quot;onym:key:&lt;provider-id&gt;&quot;,
+  &quot;asset&quot;: &quot;&lt;asset-and-network-id&gt;&quot;,
+  &quot;grossAmount&quot;: &quot;100.00&quot;,
+  &quot;fees&quot;: [
+    {
+      &quot;kind&quot;: &quot;rail&quot;,
+      &quot;amount&quot;: &quot;1.00&quot;,
+      &quot;rate&quot;: &quot;0.010000&quot;,
+      &quot;basis&quot;: &quot;gross-amount&quot;,
+      &quot;recipient&quot;: &quot;onym:key:&lt;declared-party&gt;&quot;
+    }
+  ],
+  &quot;netAmount&quot;: &quot;99.00&quot;,
+  &quot;destination&quot;: &quot;&lt;canonical-destination&gt;&quot;,
+  &quot;interfaceChannelId&quot;: &quot;&lt;optional-non-user-specific-channel&gt;&quot;,
+  &quot;finalityRule&quot;: &quot;&lt;profile-defined-rule&gt;&quot;,
+  &quot;refundRule&quot;: &quot;&lt;policy-id-and-digest&gt;&quot;,
+  &quot;expiresAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;financial-provider-signature&gt;&quot;
+}
+</code></pre>
+<p><code>grossAmount = netAmount + sum(fees)</code> under the profile's fixed precision and
+rounding rule. Fees never appear only after authorization.</p>
+<h3 id="65-donation-intent">6.5 Donation Intent</h3>
+<pre><code class="language-json">{
+  &quot;intentVersion&quot;: 1,
+  &quot;intentId&quot;: &quot;&lt;user-generated-random-id&gt;&quot;,
+  &quot;quoteId&quot;: &quot;&lt;quote-id-and-digest&gt;&quot;,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;campaignRevision&quot;: 1,
+  &quot;organizationCredentialDigest&quot;: &quot;&lt;credential-digest&gt;&quot;,
+  &quot;grossAmount&quot;: &quot;100.00&quot;,
+  &quot;asset&quot;: &quot;&lt;asset-and-network-id&gt;&quot;,
+  &quot;destination&quot;: &quot;&lt;canonical-destination&gt;&quot;,
+  &quot;donorDisclosure&quot;: &quot;private-to-extent-supported&quot;,
+  &quot;interfaceChannelId&quot;: &quot;&lt;optional-non-user-specific-channel&gt;&quot;,
+  &quot;expiresAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;authorization&quot;: &quot;&lt;scoped-user-authorization&gt;&quot;
+}
+</code></pre>
+<p>Authorization covers every state-changing and value-moving field. An
+<code>interfaceChannelId</code>, when present, identifies a shared interface profile or
+campaign channel—not a person, device, install, contact, or persistent
+referral. It is weak source evidence and must never control authorization,
+eligibility, price, or service.</p>
+<h3 id="66-donation-receipt">6.6 Donation Receipt</h3>
+<pre><code class="language-json">{
+  &quot;receiptVersion&quot;: 1,
+  &quot;receiptId&quot;: &quot;&lt;stable-id&gt;&quot;,
+  &quot;intentId&quot;: &quot;&lt;intent-id&gt;&quot;,
+  &quot;intentDigest&quot;: &quot;&lt;digest-of-canonical-authorized-intent&gt;&quot;,
+  &quot;quoteId&quot;: &quot;&lt;quote-id-and-digest&gt;&quot;,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;campaignRevision&quot;: 1,
+  &quot;organization&quot;: &quot;onym:key:&lt;organization-id&gt;&quot;,
+  &quot;organizationCredentialDigest&quot;: &quot;&lt;credential-digest&gt;&quot;,
+  &quot;asset&quot;: &quot;&lt;asset-and-network-id&gt;&quot;,
+  &quot;grossAmount&quot;: &quot;100.00&quot;,
+  &quot;fees&quot;: [
+    {
+      &quot;kind&quot;: &quot;rail&quot;,
+      &quot;amount&quot;: &quot;1.00&quot;,
+      &quot;rate&quot;: &quot;0.010000&quot;,
+      &quot;basis&quot;: &quot;gross-amount&quot;,
+      &quot;recipient&quot;: &quot;onym:key:&lt;declared-party&gt;&quot;
+    }
+  ],
+  &quot;netAmount&quot;: &quot;99.00&quot;,
+  &quot;interfaceChannelId&quot;: &quot;&lt;optional-non-user-specific-channel&gt;&quot;,
+  &quot;status&quot;: &quot;finalized&quot;,
+  &quot;finalizedAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;financialEvidence&quot;: &quot;&lt;profile-defined-settlement-evidence&gt;&quot;,
+  &quot;notaryEvidence&quot;: &quot;&lt;optional-profile-defined-evidence&gt;&quot;,
+  &quot;publicReference&quot;: &quot;&lt;optional-non-PII-reference&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;receipt-issuer-signature&gt;&quot;
+}
+</code></pre>
+<p>The receipt identifies its issuer. A private tax receipt or regulated payment
+record may require additional personal data and must use a separate, explicit
+flow with its own controller, purpose, retention, and disclosure terms.
+<code>intentDigest</code> binds the receipt to the exact canonical intent bytes the donor
+authorized; matching a human-readable <code>intentId</code> alone is insufficient.</p>
+<p>When <code>interfaceChannelId</code> is present, the quote proposes it, the donation
+intent pins the quote and repeats the same value, and the receipt copies that
+value. A mismatch invalidates channel-based measurement. Omission from any of
+the three objects means the donation is not attributable to an interface
+channel under this profile.</p>
+<h3 id="67-eligibility-policy-and-presentation">6.7 Eligibility Policy and Presentation</h3>
+<p>An <code>EligibilityPolicy</code> defines a predicate, trusted issuers, validity window,
+proof system, public inputs, nullifier scope, and disclosure profile. An
+<code>EligibilityPresentation</code> proves the requested predicate without publishing
+the underlying credential when the selected proof system supports it.</p>
+<pre><code class="language-json">{
+  &quot;presentationVersion&quot;: 1,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;campaignRevision&quot;: 1,
+  &quot;policyId&quot;: &quot;&lt;eligibility-policy-id-and-version&gt;&quot;,
+  &quot;epoch&quot;: &quot;&lt;policy-defined-claim-window&gt;&quot;,
+  &quot;publicInputs&quot;: &quot;&lt;canonical-policy-defined-inputs&gt;&quot;,
+  &quot;nullifier&quot;: &quot;&lt;campaign-and-epoch-scoped-nullifier&gt;&quot;,
+  &quot;proof&quot;: &quot;&lt;proof-bytes&gt;&quot;,
+  &quot;expiresAt&quot;: &quot;&lt;timestamp&gt;&quot;
+}
+</code></pre>
+<p>The presentation binds the exact campaign revision so it cannot be reinterpreted
+under a later eligibility, allocation, or privacy policy. Its nullifier remains
+stable across revisions within the same campaign and epoch to prevent a policy
+update from enabling a second claim. It must not become a cross-campaign or
+permanent beneficiary identifier. If a proof profile cannot avoid revealing
+identity, the UI must state that before submission and require explicit user
+choice.</p>
+<h3 id="68-aid-claim-and-disbursement-receipt">6.8 Aid Claim and Disbursement Receipt</h3>
+<p>An <code>AidClaim</code> pins the exact campaign revision, eligibility policy,
+presentation digest, requested entitlement, private delivery binding, expiry,
+and claimant authorization:</p>
+<pre><code class="language-json">{
+  &quot;claimVersion&quot;: 1,
+  &quot;claimId&quot;: &quot;&lt;claimant-generated-random-id&gt;&quot;,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;campaignRevision&quot;: 1,
+  &quot;eligibilityPolicyId&quot;: &quot;&lt;policy-id-and-version&gt;&quot;,
+  &quot;presentationDigest&quot;: &quot;&lt;digest-of-eligibility-presentation&gt;&quot;,
+  &quot;nullifier&quot;: &quot;&lt;campaign-and-epoch-scoped-nullifier&gt;&quot;,
+  &quot;entitlement&quot;: {
+    &quot;class&quot;: &quot;&lt;policy-defined-entitlement-class&gt;&quot;,
+    &quot;amount&quot;: &quot;&lt;optional-canonical-amount&gt;&quot;,
+    &quot;asset&quot;: &quot;&lt;optional-asset-and-network-id&gt;&quot;
+  },
+  &quot;deliveryBinding&quot;: {
+    &quot;bindingVersion&quot;: 1,
+    &quot;provider&quot;: &quot;onym:key:&lt;delivery-provider&gt;&quot;,
+    &quot;railProfileId&quot;: &quot;&lt;financial-or-physical-delivery-profile&gt;&quot;,
+    &quot;recipientCommitment&quot;: &quot;&lt;randomized-claim-scoped-recipient-commitment&gt;&quot;,
+    &quot;encryptedRecipient&quot;: &quot;&lt;recipient-details-sealed-to-provider&gt;&quot;,
+    &quot;disclosures&quot;: [&quot;&lt;declared-field-or-category&gt;&quot;],
+    &quot;expiresAt&quot;: &quot;&lt;timestamp&gt;&quot;
+  },
+  &quot;expiresAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;authorization&quot;: &quot;&lt;scoped-claimant-authorization&gt;&quot;
+}
+</code></pre>
+<p>The claimant authorization covers the canonical digest of every field,
+including the delivery binding. <code>recipientCommitment</code> is randomized and scoped
+to this claim so repeated delivery coordinates do not intentionally create a
+public correlation key. <code>encryptedRecipient</code> contains only the payout address,
+pickup capability, shipping coordinate, or other recipient data required by
+the selected rail. It is sealed to the named delivery provider and is never
+copied into public notary state. Public state may contain only the claim
+digest, scoped nullifier, and recipient commitment required by the profile.
+The binding must reveal no more than the chosen financial or physical delivery
+rail requires.</p>
+<p>An <code>AidDisbursementReceipt</code> records the exact claim, outcome, entitlement,
+fees, finality, and evidence without repeating private delivery details:</p>
+<pre><code class="language-json">{
+  &quot;disbursementReceiptVersion&quot;: 1,
+  &quot;receiptId&quot;: &quot;&lt;stable-id&gt;&quot;,
+  &quot;claimId&quot;: &quot;&lt;claim-id&gt;&quot;,
+  &quot;claimDigest&quot;: &quot;&lt;digest-of-canonical-authorized-claim&gt;&quot;,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;campaignRevision&quot;: 1,
+  &quot;eligibilityPolicyId&quot;: &quot;&lt;policy-id-and-version&gt;&quot;,
+  &quot;presentationDigest&quot;: &quot;&lt;digest-of-eligibility-presentation&gt;&quot;,
+  &quot;publicClaimReference&quot;: &quot;&lt;scoped-nullifier-or-unlinked-commitment&gt;&quot;,
+  &quot;entitlement&quot;: {
+    &quot;class&quot;: &quot;&lt;policy-defined-entitlement-class&gt;&quot;,
+    &quot;amount&quot;: &quot;&lt;optional-canonical-amount&gt;&quot;,
+    &quot;asset&quot;: &quot;&lt;optional-asset-and-network-id&gt;&quot;
+  },
+  &quot;fees&quot;: [
+    {
+      &quot;kind&quot;: &quot;delivery&quot;,
+      &quot;amount&quot;: &quot;&lt;canonical-amount&gt;&quot;,
+      &quot;rate&quot;: &quot;&lt;canonical-rate-or-zero&gt;&quot;,
+      &quot;basis&quot;: &quot;&lt;declared-basis&gt;&quot;,
+      &quot;recipient&quot;: &quot;onym:key:&lt;declared-party&gt;&quot;
+    }
+  ],
+  &quot;deliveryBindingDigest&quot;: &quot;&lt;digest-of-private-delivery-binding&gt;&quot;,
+  &quot;status&quot;: &quot;disbursed&quot;,
+  &quot;finalizedAt&quot;: &quot;&lt;timestamp&gt;&quot;,
+  &quot;deliveryEvidence&quot;: &quot;&lt;profile-defined-private-or-committed-evidence&gt;&quot;,
+  &quot;notaryEvidence&quot;: &quot;&lt;optional-profile-defined-public-evidence&gt;&quot;,
+  &quot;issuer&quot;: &quot;onym:key:&lt;receipt-issuer&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;receipt-issuer-signature&gt;&quot;
+}
+</code></pre>
+<p>The receipt declares whether <code>deliveryEvidence</code> is private to the claimant and
+provider or safely publishable as a commitment. Public evidence uses the
+scoped nullifier or an unlinked commitment—not the beneficiary's name,
+contact, messenger identity, government identifier, private payout address,
+pickup secret, or physical delivery location.</p>
+<h3 id="69-aggregate-fund-flow-report">6.9 Aggregate Fund-Flow Report</h3>
+<pre><code class="language-json">{
+  &quot;reportVersion&quot;: 1,
+  &quot;reportId&quot;: &quot;&lt;stable-id&gt;&quot;,
+  &quot;campaignId&quot;: &quot;&lt;campaign-id&gt;&quot;,
+  &quot;period&quot;: {&quot;from&quot;: &quot;&lt;timestamp&gt;&quot;, &quot;to&quot;: &quot;&lt;timestamp&gt;&quot;},
+  &quot;measurement&quot;: &quot;net-finalized&quot;,
+  &quot;asset&quot;: &quot;&lt;asset-and-network-id&gt;&quot;,
+  &quot;finalizedGross&quot;: &quot;&lt;amount&gt;&quot;,
+  &quot;finalizedNet&quot;: &quot;&lt;amount&gt;&quot;,
+  &quot;refundsAndReversals&quot;: &quot;&lt;amount&gt;&quot;,
+  &quot;eligibleDonationVolume&quot;: &quot;&lt;amount&gt;&quot;,
+  &quot;operationCount&quot;: &quot;&lt;optional-aggregate-count&gt;&quot;,
+  &quot;sourceCommitment&quot;: &quot;&lt;verifiable-record-set-commitment&gt;&quot;,
+  &quot;evidence&quot;: &quot;&lt;notary-financial-or-audit-evidence&gt;&quot;,
+  &quot;issuer&quot;: &quot;onym:key:&lt;report-issuer&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;report-issuer-signature&gt;&quot;
+}
+</code></pre>
+<p>The report never contains donor or beneficiary identities. Counts smaller
+than a profile-defined privacy threshold should be suppressed or bucketed.</p>
+<h2 id="7-operations">7. Operations</h2>
+<p>The canonical wire operation names are the kebab-case values in
+<code>CharityProfile.operations</code> and the table below. Camel-case names in local SDK
+or UI ports are non-wire aliases. In particular, a local <code>watchDonation</code>
+reconciliation loop invokes <code>read-donation</code>, and <code>watchAidClaim</code> invokes
+<code>read-aid-claim</code>; watching does not define additional wire operations.</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Canonical wire operation</th>
+<th scope="col">Caller intent</th>
+<th scope="col">Required checks</th>
+<th scope="col">Success evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resolve-campaign</code></td>
+<td>inspect a campaign</td>
+<td>profile, deployment, signatures, credential policy, status, freshness</td>
+<td>verified view plus explicit warnings</td>
+</tr>
+<tr>
+<td><code>quote-donation</code></td>
+<td>request current terms</td>
+<td>campaign revision, provider binding, asset, destination, arithmetic, expiry</td>
+<td>signed quote</td>
+</tr>
+<tr>
+<td><code>prepare-donation</code></td>
+<td>freeze exact operation</td>
+<td>quote, privacy disclosure, authorization schema</td>
+<td>canonical intent bytes/digest</td>
+</tr>
+<tr>
+<td><code>submit-donation</code></td>
+<td>move declared value</td>
+<td>local authorization, current quote, destination, idempotency</td>
+<td>pending outcome/provider reference</td>
+</tr>
+<tr>
+<td><code>read-donation</code></td>
+<td>reconcile state</td>
+<td>evidence and finality rule</td>
+<td>finalized, failed, refunded, or still pending</td>
+</tr>
+<tr>
+<td><code>request-refund</code></td>
+<td>invoke declared policy</td>
+<td>requester authority, receipt, deadline, provider rule</td>
+<td>decision and financial evidence</td>
+</tr>
+<tr>
+<td><code>present-eligibility</code></td>
+<td>prove entitlement</td>
+<td>policy, issuer, proof, scope, expiry, nullifier</td>
+<td>verified presentation outcome</td>
+</tr>
+<tr>
+<td><code>claim-aid</code></td>
+<td>request aid</td>
+<td>campaign state, presentation, duplicate rule, delivery binding</td>
+<td>pending claim or rejection</td>
+</tr>
+<tr>
+<td><code>read-aid-claim</code></td>
+<td>reconcile claim</td>
+<td>profile-defined finality and evidence</td>
+<td>disbursement receipt or terminal refusal</td>
+</tr>
+<tr>
+<td><code>read-fund-flow</code></td>
+<td>inspect aggregate movement</td>
+<td>report signature, source commitment, measurement profile</td>
+<td>verified aggregate report</td>
+</tr>
+</tbody>
+</table></div><p>Read operations must not require identifying the user unless the selected
+provider has a lawful, disclosed reason. Submission operations are
+idempotent by their stable intent or claim identifier.</p>
+<h2 id="8-state-machines">8. State machines</h2>
+<h3 id="81-campaign">8.1 Campaign</h3>
+<pre><code class="language-text">draft -&gt; active -&gt; paused -&gt; active
+              \-&gt; closed
+              \-&gt; revoked
+</code></pre>
+<p>Only an authorized campaign controller may change status. An organization
+credential becoming invalid changes the resolved trust result immediately,
+even if the campaign record still says <code>active</code>. A UI blocks new donations
+under its trust policy and preserves evidence for already finalized actions.</p>
+<h3 id="82-donation">8.2 Donation</h3>
+<pre><code class="language-text">prepared -&gt; submitted -&gt; pending -&gt; finalized
+prepared -&gt; expired
+submitted -&gt; failed | expired
+pending -&gt; failed | expired
+finalized -&gt; refund-pending -&gt; refunded | refund-denied
+finalized -&gt; reversed
+</code></pre>
+<p><code>submitted</code> is not settlement. The profile defines when evidence is final and
+how reorganization, chargeback, reversal, partial refund, and provider outage
+are represented.</p>
+<h3 id="83-aid-claim">8.3 Aid claim</h3>
+<pre><code class="language-text">prepared -&gt; submitted
+prepared -&gt; expired
+submitted -&gt; eligibility-verified | rejected | expired
+eligibility-verified -&gt; approved | rejected | expired
+approved -&gt; disbursed | expired
+</code></pre>
+<p>Approval is not disbursement. Public evidence must not reveal which private
+claimant followed a nullifier into a real-world payout.</p>
+<h2 id="9-privacy-boundary">9. Privacy boundary</h2>
+<h3 id="91-required-data-minimization">9.1 Required data minimization</h3>
+<p>The base interface requires no real name, email, phone, advertising identifier,
+address-book upload, device fingerprint, persistent referral token, messenger
+social graph, or plaintext conversation. Providers may require regulated data
+for a particular rail, jurisdiction, tax receipt, or aid program, but that is
+a distinct declared flow with a named controller and retention policy.</p>
+<p>No provider may demand the identity root secret, BIP-39 mnemonic, unrelated
+derived key, message decryption key, or complete credential as proof of control.
+The application supplies a scoped signature, capability, derived presentation,
+or transaction authorization.</p>
+<h3 id="92-beneficiary-protection">9.2 Beneficiary protection</h3>
+<ul>
+<li>Never publish a beneficiary roster.</li>
+<li>Prefer predicates such as “eligible under policy P” over source attributes.</li>
+<li>Use campaign- and epoch-scoped nullifiers when duplicate prevention is
+needed.</li>
+<li>Keep case files and source credentials with the responsible operator or
+issuer, not in public notary state.</li>
+<li>Do not place names, phone numbers, home addresses, medical facts, migration
+status, precise location, or private payout coordinates in public events.</li>
+<li>Make screenshots, notifications, exports, backups, and support logs part of
+the threat model.</li>
+</ul>
+<h3 id="93-donor-privacy">9.3 Donor privacy</h3>
+<p>A public financial rail can expose addresses, amounts, timing, fee payers,
+contract targets, and transaction graphs even when the messenger carries no
+PII. A profile declares these disclosures and the UI warns before signing.
+“Anonymous donation” must not be shown when the selected rail or compliance
+flow makes the donor identifiable to the provider or public.</p>
+<p>The donor may choose a public, pseudonymous, or private-to-the-extent-supported
+receipt. Public recognition is opt-in and separate from payment validity.</p>
+<h3 id="94-incidents-and-responsibility">9.4 Incidents and responsibility</h3>
+<p>No architecture can honestly guarantee zero privacy incidents across user
+devices, external financial rails, charities, issuers, and regulators. Each
+deployment instead declares:</p>
+<ol>
+<li>which party controls each data set;</li>
+<li>permitted purposes and retention;</li>
+<li>security and disclosure commitments;</li>
+<li>incident contact and response window;</li>
+<li>evidence-preservation and user-notification policy; and</li>
+<li>the boundary of responsibility.</li>
+</ol>
+<p>The Onym-side target is zero intentional PII publication in messenger protocol
+objects and the charity contract surface. That is a testable design invariant,
+not a warranty that no endpoint can ever be compromised.</p>
+<h2 id="10-measurement-without-tracking-people">10. Measurement without tracking people</h2>
+<p>The protocol may measure fund flow without measuring people.</p>
+<p><code>eligibleDonationVolume</code> is the amount, under a pinned measurement rule, from
+finalized donation receipts that:</p>
+<ol>
+<li>reference a campaign and revision valid at authorization time;</li>
+<li>reference an organization credential accepted by the pinned trust policy;</li>
+<li>settle to the pinned campaign destination through an accepted financial
+binding; and</li>
+<li>have not been duplicated, refunded, reversed, or otherwise excluded.</li>
+</ol>
+<p>Every report declares whether volume means gross finalized value or net value
+received. The recommended default is <strong>net finalized value</strong>, with refunds and
+reversals subtracted and fees reported separately. Cross-asset totals require
+a separately declared valuation source, timestamp, currency, and rounding
+rule; otherwise amounts remain per asset.</p>
+<p>This metric proves qualifying financial flow into selected campaigns. It does
+not prove:</p>
+<ul>
+<li>that a particular person installed or used an application;</li>
+<li>that the donation originated from a particular message or screen;</li>
+<li>that a new user was acquired;</li>
+<li>that the charity spent funds as intended; or</li>
+<li>that impact occurred.</li>
+</ul>
+<p>An optional shared <code>interfaceChannelId</code> can distinguish broad interface
+profiles, such as <code>onym-messenger</code>, when both quote and receipt bind it. It is
+not reliable person-level attribution and can be copied or spoofed. It must not
+be used for surveillance, per-user royalties, discrimination, or eligibility.
+Campaign-specific efficiency can be computed as qualifying volume divided by
+declared campaign spend, but must be labeled a campaign estimate rather than a
+user conversion rate.</p>
+<h2 id="11-financial-safety-participant-offers-and-compliance">11. Financial safety, participant offers, and compliance</h2>
+<p>The abstract boundary is non-custodial: it requests quotes, obtains user
+authorization, and verifies outcomes. It does not grant the UI, messenger
+publisher, registry, or notary custody of funds by implication.</p>
+<p>Before authorization the UI shows:</p>
+<ul>
+<li>financial provider and legal counterparty;</li>
+<li>asset and network;</li>
+<li>gross amount, each fee, and net amount;</li>
+<li>exact destination and recipient binding;</li>
+<li>finality, reversal, and refund rules;</li>
+<li>known tax-receipt status;</li>
+<li>donor data disclosed to each party; and</li>
+<li>whether a public transaction graph may result.</li>
+</ul>
+<p>Every independently owned role may publish a signed, bounded service offer.
+For example, an issuer may charge an organization for verification, a proof
+provider for computation, a financial provider per settlement, a notary per
+operation or period, an auditor for an engagement, and a UI provider through a
+subscription, sponsorship, fixed campaign fee, or disclosed share of
+qualifying volume. An operator may also provide its role as a grant-funded or
+free public service.</p>
+<p>Participation does not create an automatic royalty. A compensable offer exists
+only when an authorized buyer accepts its price, scope, evidence, duration,
+limits, refund terms, and settlement destination. Payment never makes an
+issuer trusted, a campaign valid, an operation authorized, or a report true.</p>
+<p>Any fee or revenue share deducted from a donor's value appears in the signed
+quote as an amount, rate, recipient, and basis. It is included in the finalized
+receipt and in arithmetic from gross amount to net amount. No UI, registry,
+transport, notary, financial provider, lead generator, or app publisher
+receives an undisclosed cut. A payment may reward a completed operation or
+aggregate campaign outcome;
+it must not attach a permanent royalty identity to the donor or beneficiary.</p>
+<p>Provider settlement can use aggregate signed statements or qualifying receipt
+IDs. The provider receives only evidence needed for the accepted offer, not
+messenger history, contacts, source credentials, or a persistent user profile.
+Disputes about offer fulfillment remain separate from donation finality unless
+the accepted financial profile explicitly and visibly couples them.</p>
+<p>Applicable law varies by entity, activity, asset, rail, beneficiary, and
+jurisdiction. Organization credentials and cryptographic proofs do not replace
+risk-based compliance. Each operator remains responsible for obtaining legal
+advice and implementing proportionate measures within its domain. A profile
+must allow providers to refuse with a typed reason, but a refusal must not leak
+sensitive compliance facts into public state.</p>
+<h2 id="12-errors-and-refusal">12. Errors and refusal</h2>
+<p>The port returns typed outcomes rather than provider text as control flow:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Code</th>
+<th scope="col">Meaning</th>
+<th scope="col">Safe UI behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PROFILE_UNSUPPORTED</code></td>
+<td>interface/profile version is unsupported</td>
+<td>offer another compatible adapter</td>
+</tr>
+<tr>
+<td><code>DEPLOYMENT_INVALID</code></td>
+<td>binding signature, hash, status, or validity failed</td>
+<td>block and identify failed check</td>
+</tr>
+<tr>
+<td><code>CAMPAIGN_NOT_ACTIVE</code></td>
+<td>campaign is absent, paused, closed, or revoked</td>
+<td>block new action; preserve history</td>
+</tr>
+<tr>
+<td><code>CREDENTIAL_UNTRUSTED</code></td>
+<td>credential does not satisfy selected policy</td>
+<td>show issuer/policy mismatch</td>
+</tr>
+<tr>
+<td><code>CREDENTIAL_REVOKED</code></td>
+<td>current status is revoked</td>
+<td>block new action</td>
+</tr>
+<tr>
+<td><code>QUOTE_EXPIRED</code></td>
+<td>financial terms are no longer valid</td>
+<td>fetch and re-present a quote</td>
+</tr>
+<tr>
+<td><code>TERMS_CHANGED</code></td>
+<td>destination, amount, fee, privacy, or policy changed</td>
+<td>require fresh authorization</td>
+</tr>
+<tr>
+<td><code>AUTHORIZATION_INVALID</code></td>
+<td>signature/capability does not cover operation</td>
+<td>fail without retrying blindly</td>
+</tr>
+<tr>
+<td><code>PAYMENT_REQUIRED</code></td>
+<td>provider requires a declared service payment</td>
+<td>show signed offer separately</td>
+</tr>
+<tr>
+<td><code>COMPLIANCE_REQUIRED</code></td>
+<td>selected provider needs an additional private flow</td>
+<td>identify provider and disclosure before consent</td>
+</tr>
+<tr>
+<td><code>PROOF_INVALID</code></td>
+<td>eligibility proof failed</td>
+<td>reveal no unnecessary diagnostic publicly</td>
+</tr>
+<tr>
+<td><code>NULLIFIER_USED</code></td>
+<td>entitlement was already claimed in this scope</td>
+<td>show scoped duplicate refusal</td>
+</tr>
+<tr>
+<td><code>SUBMISSION_UNKNOWN</code></td>
+<td>provider accepted request but outcome is unresolved</td>
+<td>reconcile using stable intent ID</td>
+</tr>
+<tr>
+<td><code>FINALITY_PENDING</code></td>
+<td>evidence is valid but not final</td>
+<td>keep pending</td>
+</tr>
+<tr>
+<td><code>REFUND_DENIED</code></td>
+<td>refund policy did not authorize a refund</td>
+<td>show authenticated reason and dispute route</td>
+</tr>
+<tr>
+<td><code>PRIVACY_PROFILE_MISMATCH</code></td>
+<td>requested flow would exceed accepted disclosure</td>
+<td>stop and require explicit new choice</td>
+</tr>
+</tbody>
+</table></div><p>Provider prose may be shown as untrusted supplemental information. It cannot
+change the meaning of a code or cause the application to sign a new operation.</p>
+<h2 id="13-security-invariants">13. Security invariants</h2>
+<ol>
+<li>No seed phrase, root secret, or unscoped private key crosses the boundary.</li>
+<li>User authorization covers exact amount, asset, destination, campaign
+revision, quote, expiry, fees, and relevant privacy choice.</li>
+<li>A message, link, QR code, or directory entry can propose an operation but
+cannot authorize it.</li>
+<li>Organization trust is derived from an explicit issuer policy, not UI brand.</li>
+<li>Campaign changes cannot mutate an already authorized intent.</li>
+<li>Submission is idempotent and reconciliation never creates a second payment.</li>
+<li>Public records contain no intentional donor or beneficiary PII.</li>
+<li>Eligibility nullifiers are scoped; they are not global person identifiers.</li>
+<li>Aggregate reports exclude or correct duplicates, refunds, and reversals.</li>
+<li>Financial settlement, organization verification, and impact reporting are
+distinct claims with distinct issuers.</li>
+<li>A paid provider refusal does not make an invalid operation valid.</li>
+<li>Every remote object is size-bounded, schema-checked, and signature-checked
+before rendering or execution.</li>
+</ol>
+<h2 id="14-versioning-migration-and-revocation">14. Versioning, migration, and revocation</h2>
+<ul>
+<li>Profiles and schemas are immutable and content-addressed.</li>
+<li>Deployments and campaigns are revisioned signed records.</li>
+<li>New optional fields are safe only when their omission cannot alter security,
+value, trust, or privacy semantics.</li>
+<li>Unknown critical fields fail closed.</li>
+<li>An in-flight operation remains bound to the revisions it authorized.</li>
+<li>Credential revocation blocks new operations but does not erase historical
+evidence.</li>
+<li>Provider or destination migration requires a new deployment or campaign
+revision and fresh user authorization.</li>
+<li>Emergency pause is explicit, authenticated, and auditable; it does not grant
+the UI publisher a hidden withdrawal or redirection power.</li>
+</ul>
+<h2 id="15-conformance">15. Conformance</h2>
+<p>A conforming implementation publishes:</p>
+<ol>
+<li>supported Charity Profile and schema hashes;</li>
+<li>canonicalization and signature test vectors;</li>
+<li>trust-policy and revocation test vectors;</li>
+<li>amount, fee, precision, and rounding vectors;</li>
+<li>donation idempotency, timeout, finality, refund, and reversal tests;</li>
+<li>eligibility proof, scope, expiry, and duplicate-claim tests if aid is
+supported;</li>
+<li>privacy-field inventory and negative PII fixtures;</li>
+<li>aggregate measurement and correction vectors;</li>
+<li>malformed, oversized, replayed, and unknown-critical-field fixtures; and</li>
+<li>deployment, operator, license, support, and incident declarations.</li>
+</ol>
+<p>Two implementations are interoperable only when they preserve the same
+logical meaning and evidence—not merely because both can send JSON or invoke
+the same ledger.</p>
+<h2 id="16-non-normative-design-references">16. Non-normative design references</h2>
+<p>These sources inform the trust, privacy, and risk separation in this draft;
+they do not make a deployment legally compliant by themselves:</p>
+<ul>
+<li>the <a href="https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/">W3C Verifiable Credentials Data Model 2.0</a>
+describes explicit issuer, holder, and verifier roles while leaving issuer
+trust decisions to an ecosystem policy;</li>
+<li>Article 5 of the <a href="https://eur-lex.europa.eu/eli/reg/2016/679/2016-05-04">EU General Data Protection Regulation</a>
+includes purpose limitation, data minimization, storage limitation, and
+integrity/confidentiality principles; and</li>
+<li>the <a href="https://www.fatf-gafi.org/en/publications/Financialinclusionandnpoissues/Bpp-combating-abuse-npo.html">FATF best-practices paper for nonprofit organizations</a>
+describes focused, proportionate, risk-based measures and warns against
+unnecessarily burdensome restrictions on legitimate nonprofit activity.</li>
+</ul>
+<h2 id="17-acceptance-criteria">17. Acceptance criteria</h2>
+<p>The abstract charity boundary is acceptable when:</p>
+<ul>
+<li>a third-party application can resolve and verify a campaign without trusting
+the original UI publisher;</li>
+<li>a third-party charity and credential issuer can participate through public
+profiles without receiving messenger or identity secrets;</li>
+<li>a donor sees exact value, recipient, trust path, fees, privacy, and finality
+before locally authorizing;</li>
+<li>a beneficiary can prove a scoped entitlement without public identity when
+the selected profile claims that property;</li>
+<li>finalized, refunded, and reversed operations reconcile without double spend
+or double counting;</li>
+<li>public fund-flow metrics contain no person-level attribution;</li>
+<li>a deployment can replace a financial, notary, or UI implementation through
+an explicit migration rather than a silent operator redirect; and</li>
+<li>responsibility for charity operations, compliance, funds, messenger UX,
+credentials, and evidence is visible at every boundary.</li>
+</ul>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/charity/Charity.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

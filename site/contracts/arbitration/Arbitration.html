@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Arbitration Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Arbitration Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/arbitration/Arbitration.html">
+<meta property="og:title" content="Onym Arbitration Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/arbitration/Arbitration.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Arbitration</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/arbitration/Arbitration.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-arbitration-contract-boundary">Onym Arbitration Contract Boundary</h1>
+<p><strong>Proposal draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>An arbiter decides one named dispute over one bounded stake, under rules
+every party signed before the dispute existed. It is chosen per order,
+paid regardless of outcome, and owns nothing outside the orders that
+chose it.</p>
+</blockquote>
+<p>This document proposes the technology-neutral boundary for the
+<strong>arbitration seat</strong>: the institutional service that resolves disputes
+arising inside other seats' signed orders—lead-generation campaigns,
+acquisition orders, recruitment milestones, channel-offer settlements,
+escrow accounts—by issuing signed, enforceable-within-the-stake decisions.</p>
+<p>The <a href="../WHITEPAPER.html">whitepaper</a> already assumes this seat without naming
+it: Telegram lead orders carry &quot;dispute windows&quot; (§11), the acquisition
+contract includes a &quot;dispute&quot; component (§12), economic-abuse mitigations
+list &quot;challenge periods&quot; (§17.10), and the bank boundary's escrow class
+(<a href="../bank/UI-Bank.html">../bank/UI-Bank.md</a> §10) reserves a seat for exactly
+the tie-breaking party this document specifies.</p>
+<p>It does not require a particular legal-arbitration framework, jurisdiction,
+panel size, evidence technology, or enforcement rail. No concrete
+implementation profile exists yet.</p>
+<p>Two scope statements up front:</p>
+<ol>
+<li><strong>This is contractual dispute disposition over a bounded stake</strong>, chosen
+ex ante by the parties. Whether such a clause is also a legally binding
+arbitration agreement is a matter of the applicable law and the clause's
+own drafting; the protocol label does not override the real relationship
+or any party's statutory rights (the same stance the recruitment
+contract takes toward participation forms).</li>
+<li><strong>The arbiter is not a court of the protocol.</strong> It has no standing over
+users, seats, or orders that did not name it, and no power to amend
+protocol rules, seize funds outside its escrow, or sanction anyone's
+participation.</li>
+</ol>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the disputing parties, the arbiter, the enforcement rail, and
+evidence sources as independently owned components joined by versioned
+interfaces.</p>
+<ul>
+<li>The <strong>parties</strong> are the signers of an underlying order—sponsor and lead
+generator, publisher and acquisition provider, requester and recruiter,
+buyer and seller in an escrow. They choose whether to include an
+arbitration clause at all, and which arbiter it names.</li>
+<li>The <strong>arbiter</strong> owns its procedure, calendar, professional judgment, and
+reputation. It sells dispute disposition under its published procedure
+and the clause's evidence rules. It may be one institution or a declared
+panel.</li>
+<li>The <strong>enforcement rail</strong> is whatever holds the stake: a bank-seat escrow
+account, a multisignature arrangement, a foundation's escrow service, or
+the parties' ordinary payment obligations. The rail executes awards
+mechanically within the stake; it decides nothing.</li>
+<li><strong>Evidence sources</strong> are the observers and oracles the underlying order
+already defines—the Telegram view observer, the store acquisition
+oracle, audit-seat attestations
+(<a href="../audit/Audit.html">../audit/Audit.md</a>)—plus the parties' own signed
+submissions.</li>
+<li>The <strong>underlying seat contract</strong> (lead, acquisition, recruitment,
+channel offer, escrow) defines what was promised and what evidence
+counts. Arbitration interprets that contract; it does not rewrite it.</li>
+</ul>
+<p>One organization may occupy several roles, but the profile does not merge
+their authority: an arbiter that operates an escrow rail, or that has a
+relationship with a party, discloses the conflict in its manifest and the
+clause, or is nonconforming.</p>
+<p>The boundary has three interfaces:</p>
+<ol>
+<li>the <strong>clause</strong> interface: how an underlying order names an arbiter,
+evidence rules, deadlines, fees, and default dispositions before any
+dispute exists;</li>
+<li>the <strong>proceeding</strong> interface: filing, response, evidence, decision, and
+any declared appeal; and</li>
+<li>the <strong>enforcement</strong> interface: how a signed award becomes a movement of
+the bounded stake and nothing else.</li>
+</ol>
+<h2 id="2-what-the-arbitration-seat-does">2. What the arbitration seat does</h2>
+<p>A conforming arbiter can:</p>
+<ol>
+<li>publish a signed manifest declaring its procedures, dispute classes,
+fee offers, conflict policy, and decision timelines;</li>
+<li>accept designation in an order's <code>ArbitrationClause</code> before the order
+activates;</li>
+<li>receive a <code>DisputeFiling</code> within the clause's window, and the response
+within the response window;</li>
+<li>receive signed evidence under the clause's evidence rules, including
+oracle reports and attestations the underlying order already defines;</li>
+<li>issue a signed, reasoned <code>Award</code> disposing of the disputed stake within
+the clause's bounds;</li>
+<li>participate in the declared appeal path, when one exists; and</li>
+<li>answer status queries about proceedings it conducts, within its
+confidentiality rules.</li>
+</ol>
+<p>It does not solicit disputes, reopen settled orders outside declared
+windows, adjust stakes upward, join third parties who never signed the
+clause, publish party identities beyond the clause's disclosure terms, or
+acquire jurisdiction over anything by deciding one dispute well.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-dispute-windows-without-deciders-are-dead-letters">3.1 Dispute windows without deciders are dead letters</h3>
+<p>Every economic seat contract in the system declares evidence rules, caps,
+and dispute windows—and then stops. Without a named decider, a &quot;dispute&quot;
+is a negotiation in which the party holding the money wins. A seat for
+chosen, bounded adjudication is what makes finite prepaid budgets and
+challenge periods mean something.</p>
+<h3 id="32-consent-must-precede-the-conflict">3.2 Consent must precede the conflict</h3>
+<p>An adjudicator imposed after a dispute arises is chosen by the stronger
+party. The clause is signed with the order, when interests are still
+aligned: arbiter identity, evidence rules, deadlines, fee split, and—
+critically—what happens to the stake if nobody decides. After signing,
+neither party can swap the arbiter or the rules alone.</p>
+<h3 id="33-authority-must-be-the-size-of-the-stake">3.3 Authority must be the size of the stake</h3>
+<p>The whitepaper's rule—minimum authority for the role (§1)—applies
+sharply here: the arbiter's entire power is disposition of the named,
+bounded stake under the named order. It cannot touch other funds, other
+orders, identities, group state, or reputations beyond publishing what the
+clause allows. A bad arbiter costs the parties one stake and itself its
+future selection; that is the whole blast radius.</p>
+<h3 id="34-undecided-must-be-a-defined-outcome">3.4 Undecided must be a defined outcome</h3>
+<p>Arbiters fail: they vanish, stall, or are compromised. If arbiter failure
+freezes funds indefinitely, the arbiter has acquired hostage power the seat
+must not hold. Every clause therefore declares a <strong>default disposition</strong>—
+where the stake goes if no valid award issues by the deadline—so the
+worst-case arbiter is an absent one, not an omnipotent one.</p>
+<h3 id="35-the-legal-system-is-not-displaced">3.5 The legal system is not displaced</h3>
+<p>Parties may have statutory rights no clause can waive, and real courts may
+review, enforce, or ignore an award depending on jurisdiction and drafting.
+The boundary keeps the protocol honest about this: the award binds the rail
+within the stake; everything beyond the stake is ordinary law between the
+parties.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">underlying order (lead · acquisition · recruitment · channel · escrow)
+        │ includes, at signing
+        v
+┌──────────────────────────────┐
+│ ArbitrationClause            │
+│ arbiter · rules · deadlines  │
+│ fees · default disposition   │
+└──────┬───────────────────────┘
+       │ dispute window opens
+       v
+┌──────────────┐  filing/response   ┌──────────────────────────┐
+│ Party A      │───────────────────&gt;│ Arbiter (or panel)       │
+│ Party B      │&lt;───────────────────│ procedure · judgment     │
+└──────┬───────┘   signed evidence  └───────────┬──────────────┘
+       │            + oracle reports            │ signed Award
+       │            + attestations              v
+       │                            ┌──────────────────────────┐
+       └───────────────────────────&gt;│ Enforcement rail         │
+             stake escrowed         │ escrow / multisig /      │
+             at order funding       │ payment obligation       │
+                                    │ executes within stake    │
+                                    └──────────────────────────┘
+
+   No award reaches beyond the stake. No arbiter is reachable by a
+   dispute whose order never named it. Absent arbiter -&gt; default
+   disposition at deadline.
+</code></pre>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-arbitration-profile">5.1 Arbitration Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:arbitration-profile:bounded-stake-v1&quot;,
+  &quot;interface&quot;: &quot;onym-arbitration-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;accept-designation&quot;,
+    &quot;file-dispute&quot;,
+    &quot;respond&quot;,
+    &quot;submit-evidence&quot;,
+    &quot;issue-award&quot;,
+    &quot;appeal&quot;,
+    &quot;query-status&quot;
+  ],
+  &quot;clauseSchema&quot;: &quot;onym-arbitration-clause-v1&quot;,
+  &quot;awardSchema&quot;: &quot;onym-arbitration-award-v1&quot;,
+  &quot;panelModels&quot;: [&quot;single&quot;, &quot;declared-panel-majority&quot;],
+  &quot;errorSchema&quot;: &quot;onym-arbitration-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="52-arbiter-manifest">5.2 Arbiter Manifest</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;arbiter-id&gt;&quot;,
+  &quot;seat&quot;: &quot;arbitration&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;arbiter-identity&gt;&quot;,
+  &quot;arbitrationProfileId&quot;: &quot;onym:arbitration-profile:bounded-stake-v1&quot;,
+  &quot;procedure&quot;: &quot;&lt;hash-or-url: filing, response, evidence, reasoning rules&gt;&quot;,
+  &quot;disputeClasses&quot;: [
+    &quot;aggregate-delivery-evidence&quot;,
+    &quot;milestone-completion&quot;,
+    &quot;settlement-calculation&quot;,
+    &quot;service-nonperformance&quot;,
+    &quot;escrow-condition&quot;
+  ],
+  &quot;panelModel&quot;: &quot;single&quot;,
+  &quot;timelines&quot;: {&quot;response&quot;: &quot;P14D&quot;, &quot;decision&quot;: &quot;P30D&quot;},
+  &quot;conflictPolicy&quot;: &quot;&lt;hash-or-url: relationships, recusal, disclosure&gt;&quot;,
+  &quot;confidentiality&quot;: &quot;&lt;hash-or-url: what is published, what stays private&gt;&quot;,
+  &quot;jurisdictionNote&quot;: &quot;&lt;hash-or-url: legal form and enforceability stance&gt;&quot;,
+  &quot;offers&quot;: [&quot;&lt;fee-offer-ids&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;arbiter-signature&gt;&quot;
+}
+</code></pre>
+<p>Dispute classes describe what the arbiter is competent and willing to
+decide—counter-evidence disagreements are a different skill from milestone
+quality judgments. A clause naming an arbiter outside its declared classes
+is invalid at order validation, not discovered at filing.</p>
+<h3 id="53-arbitration-clause">5.3 Arbitration Clause</h3>
+<p>Embedded in, and signed with, the underlying order:</p>
+<pre><code class="language-json">{
+  &quot;clauseVersion&quot;: 1,
+  &quot;orderRef&quot;: &quot;&lt;hash-of-underlying-order&gt;&quot;,
+  &quot;arbiter&quot;: &quot;onym:component:&lt;arbiter-id&gt;&quot;,
+  &quot;disputeClass&quot;: &quot;aggregate-delivery-evidence&quot;,
+  &quot;stake&quot;: {
+    &quot;description&quot;: &quot;escrowed-campaign-budget&quot;,
+    &quot;maximum&quot;: {&quot;value&quot;: &quot;5000.00&quot;, &quot;asset&quot;: &quot;&lt;asset-descriptor&gt;&quot;},
+    &quot;rail&quot;: &quot;onym:component:&lt;escrow-or-rail-id&gt;&quot;
+  },
+  &quot;windows&quot;: {
+    &quot;filing&quot;: &quot;P21D-after-settlement-report&quot;,
+    &quot;response&quot;: &quot;P14D&quot;,
+    &quot;evidenceClose&quot;: &quot;P14D-after-response&quot;,
+    &quot;decision&quot;: &quot;P30D-after-evidence-close&quot;
+  },
+  &quot;evidenceRules&quot;: &quot;&lt;hash: what counts, per the underlying order&gt;&quot;,
+  &quot;fees&quot;: {
+    &quot;amount&quot;: {&quot;value&quot;: &quot;200.00&quot;, &quot;asset&quot;: &quot;&lt;asset-descriptor&gt;&quot;},
+    &quot;deposit&quot;: &quot;split-at-filing&quot;,
+    &quot;allocation&quot;: &quot;clause-defined (e.g., decided-with-award)&quot;
+  },
+  &quot;appeal&quot;: &quot;none | &lt;declared-appeal-arbiter-and-window&gt;&quot;,
+  &quot;defaultDisposition&quot;: &quot;return-remaining-stake-to-sponsor&quot;,
+  &quot;disclosure&quot;: &quot;parties-and-award-private; anonymized-award-publishable&quot;,
+  &quot;signatures&quot;: [&quot;&lt;party-a&gt;&quot;, &quot;&lt;party-b&gt;&quot;, &quot;&lt;arbiter-acceptance&gt;&quot;]
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>the arbiter countersigns designation before the order activates—no
+party can bind an arbiter that never accepted, and no arbiter can be
+surprised into jurisdiction;</li>
+<li><code>stake.maximum</code> bounds every award; the clause cannot authorize
+punitive amounts beyond the escrowed or declared stake;</li>
+<li><code>defaultDisposition</code> is mandatory: a clause with no answer to &quot;what if
+nobody decides&quot; is invalid;</li>
+<li>fee <strong>amount</strong> is outcome-independent; <code>allocation</code> (who ultimately
+bears it, such as loser-pays) may be clause-defined and award-applied;
+and</li>
+<li><code>evidenceRules</code> reference the underlying order's own evidence and
+observer definitions—arbitration inherits the order's epistemics rather
+than inventing new surveillance.</li>
+</ol>
+<h3 id="54-dispute-filing-and-response">5.4 Dispute Filing and Response</h3>
+<pre><code class="language-json">{
+  &quot;filingVersion&quot;: 1,
+  &quot;disputeId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;clauseRef&quot;: &quot;&lt;hash-of-clause&gt;&quot;,
+  &quot;claimant&quot;: &quot;onym:key:&lt;party&gt;&quot;,
+  &quot;claim&quot;: &quot;&lt;hash-or-inline: what outcome is sought and why&gt;&quot;,
+  &quot;reliefSought&quot;: {&quot;value&quot;: &quot;1200.00&quot;, &quot;asset&quot;: &quot;&lt;asset-descriptor&gt;&quot;},
+  &quot;filedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;feeDeposit&quot;: &quot;&lt;payment-evidence-per-clause&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;claimant-signature&gt;&quot;
+}
+</code></pre>
+<p>The response mirrors the filing. A missing response within the window does
+not automatically award the claim; it proceeds to decision on the evidence
+present, per the arbiter's published default-of-appearance procedure—
+no-show is a weakness, not a confession.</p>
+<h3 id="55-evidence">5.5 Evidence</h3>
+<p>Evidence is signed material within the clause's rules: the underlying
+order's oracle reports and observer snapshots, settlement statements,
+courier receipts, audit-seat attestations, and party declarations. The
+arbiter weighs evidence; it does not collect surveillance. A conforming
+proceeding never demands identity root material, message plaintext,
+unrelated account history, or de-anonymization of aggregate evidence
+beyond what the underlying order already made legible—the privacy floor of
+the underlying seat is the privacy floor of its disputes
+(suppressed or grouped store aggregates stay suppressed, per §12 of the
+whitepaper).</p>
+<h3 id="56-award">5.6 Award</h3>
+<pre><code class="language-json">{
+  &quot;awardVersion&quot;: 1,
+  &quot;disputeId&quot;: &quot;&lt;same-id&gt;&quot;,
+  &quot;clauseRef&quot;: &quot;&lt;hash-of-clause&gt;&quot;,
+  &quot;arbiter&quot;: &quot;onym:component:&lt;arbiter-id&gt;&quot;,
+  &quot;disposition&quot;: [
+    {&quot;to&quot;: &quot;onym:key:&lt;party-a&gt;&quot;, &quot;amount&quot;: {&quot;value&quot;: &quot;800.00&quot;, &quot;asset&quot;: &quot;&lt;asset&gt;&quot;}},
+    {&quot;to&quot;: &quot;onym:key:&lt;party-b&gt;&quot;, &quot;amount&quot;: {&quot;value&quot;: &quot;400.00&quot;, &quot;asset&quot;: &quot;&lt;asset&gt;&quot;}}
+  ],
+  &quot;feeAllocation&quot;: {&quot;bearer&quot;: &quot;onym:key:&lt;party-b&gt;&quot;, &quot;basis&quot;: &quot;clause-rule&quot;},
+  &quot;reasoning&quot;: &quot;&lt;content-address: findings against the order's terms&gt;&quot;,
+  &quot;decidedAt&quot;: &quot;2026-09-10T00:00:00Z&quot;,
+  &quot;panelSignatures&quot;: [&quot;&lt;arbiter-or-majority-signatures&gt;&quot;],
+  &quot;final&quot;: true
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>the disposition sums to at most the stake; anything else is invalid at
+the rail and everywhere else;</li>
+<li><code>reasoning</code> is mandatory—an unexplained award is nonconforming even
+when the clause keeps it private between the parties;</li>
+<li>the award interprets the underlying order's terms and evidence rules;
+it cannot amend the order, create new obligations, or bind non-parties;
+and</li>
+<li><code>final</code> reflects the clause's appeal structure; a declared appeal
+window suspends enforcement only as the clause states.</li>
+</ol>
+<h3 id="57-enforcement-binding">5.7 Enforcement binding</h3>
+<p>The rail executes valid awards mechanically:</p>
+<ul>
+<li>a <strong>bank-seat escrow account</strong> (<a href="../bank/UI-Bank.html">../bank/UI-Bank.md</a>
+§10) lists the arbiter as the declared tie-breaking signer: disbursement
+requires either both parties' signatures (settlement) or one party plus
+a valid award (adjudicated outcome), and the default disposition becomes
+executable by the entitled party alone after the decision deadline;</li>
+<li>an <strong>obligation rail</strong> (no escrow) makes the award a signed input to the
+parties' ordinary settlement, with nonperformance visible and
+attributable; and</li>
+<li>the rail validates award shape—clause reference, stake bound, signatures,
+finality—not its wisdom.</li>
+</ul>
+<p>The arbiter's key can sign awards; it cannot sign ordinary transfers. A
+compromised arbiter key is bounded to the disputes that named it, inside
+stakes that still require the award-shaped path.</p>
+<h2 id="6-common-arbitration-surface">6. Common arbitration surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accept-designation</code></td>
+<td>Draft clause</td>
+<td>Arbiter countersignature or refusal</td>
+</tr>
+<tr>
+<td><code>file-dispute</code></td>
+<td><code>DisputeFiling</code> within window, fee deposit</td>
+<td>Proceeding opened</td>
+</tr>
+<tr>
+<td><code>respond</code></td>
+<td>Response within window</td>
+<td>Proceeding at issue</td>
+</tr>
+<tr>
+<td><code>submit-evidence</code></td>
+<td>Signed items per evidence rules</td>
+<td>Entered into record</td>
+</tr>
+<tr>
+<td><code>issue-award</code></td>
+<td>Closed record</td>
+<td>Signed <code>Award</code> to parties and rail</td>
+</tr>
+<tr>
+<td><code>appeal</code></td>
+<td>Per declared appeal path only</td>
+<td>Suspension and review as clause states</td>
+</tr>
+<tr>
+<td><code>query-status</code></td>
+<td>Dispute ID, party credential</td>
+<td>Stage and deadlines, per confidentiality</td>
+</tr>
+</tbody>
+</table></div><p>Every operation is deadline-bearing. The clause's windows, not the
+arbiter's convenience, drive the calendar; a blown decision deadline
+triggers the default disposition, not an extension the parties never
+signed.</p>
+<h2 id="7-party-obligations">7. Party obligations</h2>
+<p>Conforming parties (and the client software acting for them) must:</p>
+<ol>
+<li>validate the clause at order signing: arbiter manifest current, dispute
+class matched, stake and rail consistent with the order's funding,
+default disposition present;</li>
+<li>render the clause's consequences before signing the order—who decides,
+what evidence counts, what it costs, what happens on silence—with the
+same prominence as price;</li>
+<li>file, respond, and submit evidence within windows, through signed
+objects, without out-of-band pressure on the arbiter;</li>
+<li>submit only evidence the clause's rules allow; attempting to introduce
+de-anonymizing material the underlying order excluded is a violation
+surfaced to the arbiter, not a tactic;</li>
+<li>honor awards on obligation rails and not obstruct escrow execution; and</li>
+<li>treat statutory rights honestly: a clause presented to a consumer or
+employee-like party carries the underlying seat's disclosure duties,
+and clients must not present arbitration as extinguishing rights it
+legally cannot.</li>
+</ol>
+<h2 id="8-arbiter-obligations">8. Arbiter obligations</h2>
+<p>A conforming arbiter must:</p>
+<ol>
+<li>publish and follow its manifest: procedure, classes, timelines,
+conflict policy, confidentiality, fee offers;</li>
+<li>accept designation only within its declared classes and capacity, and
+refuse clauses whose windows it cannot meet;</li>
+<li>disclose conflicts at designation and recuse when its policy requires;
+an undisclosed relationship with a party voids conformance;</li>
+<li>keep fee amounts outcome-independent and take nothing else of value
+from any party to a live or prospective proceeding;</li>
+<li>decide on the record, against the underlying order's terms, within the
+deadline, with signed reasoning;</li>
+<li>hold proceeding materials under the clause's confidentiality terms,
+retain them no longer than declared, and never reuse them commercially;</li>
+<li>publish anonymized awards only as the clause allows, and consistently—
+not only the decisions that flatter it;</li>
+<li>operate its keys such that award signing is separated from its ordinary
+operational keys, and report compromise immediately to named rails and
+parties; and</li>
+<li>state plainly in its manifest what legal weight its process claims in
+which jurisdictions, without overclaiming enforceability.</li>
+</ol>
+<h2 id="9-panels-and-appeal">9. Panels and appeal</h2>
+<p>The initial profile admits two panel models: a single arbiter, or a
+declared panel deciding by majority with all panelist identities in the
+clause. Appeal, when the clause declares it, names the appellate arbiter
+and window in advance; an appeal path invented after the dispute arises is
+no path. Both layers stay inside the same stake—appeal reviews the award,
+it does not enlarge the money.</p>
+<h2 id="10-relationship-to-other-seats">10. Relationship to other seats</h2>
+<ul>
+<li><strong>Lead generation and acquisition orders</strong> gain a decider for exactly
+the disagreements their evidence sections anticipate: counter snapshots,
+suppressed cohorts, window boundaries, cap arithmetic.</li>
+<li><strong>Recruitment orders</strong> gain milestone-completion adjudication without
+the arbiter acquiring any appointment authority—the destination seat's
+selection power is untouched; only the recruiter's milestone payment is
+decidable.</li>
+<li><strong>Channel offers</strong> gain settlement-calculation disposition between
+frontend publishers and seat owners.</li>
+<li><strong>The bank seat</strong> supplies the strongest rail (escrow class with the
+arbiter as declared signer) and is also a consumer: custodial-provider
+withdrawal disputes remain legal matters (the bank contract is explicit
+that <code>withdrawal_refused</code> escalates as law, not as a bug), but parties
+may voluntarily escrow disputed service fees under a clause.</li>
+<li><strong>The audit seat</strong> supplies attestations as evidence—an attested
+conformance failure is strong material in a nonperformance dispute—and
+arbiters themselves are attestable subjects (procedure conformance, key
+handling).</li>
+<li><strong>Directories</strong> may list arbiters and cite their track records; as
+everywhere, listing is curation, not validity.</li>
+</ul>
+<h2 id="11-payment-at-the-arbitration-boundary">11. Payment at the arbitration boundary</h2>
+<p>Arbiters publish fee offers as <code>SeatOffer</code>s: fixed per dispute class,
+staked-value bands, or panel rates. Deposits are taken at filing per the
+clause; allocation follows the award's clause-defined rule. The
+invariants: fee amounts never depend on who wins; no contingency, no
+percentage of the award; no fee makes an award more valid or an absent
+one less defaulted. An arbiter's unpaid invoice is its own commercial
+matter and never a lien on the stake beyond the clause's declared fee.</p>
+<h2 id="12-errors-and-lifecycle">12. Errors and lifecycle</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse clause at order validation</td>
+</tr>
+<tr>
+<td><code>class_mismatch</code></td>
+<td>Clause validation</td>
+<td>Invalid clause; order signing blocked</td>
+</tr>
+<tr>
+<td><code>designation_refused</code></td>
+<td>Arbiter</td>
+<td>Choose another arbiter before order activates</td>
+</tr>
+<tr>
+<td><code>window_closed</code></td>
+<td>Time</td>
+<td>Filing or evidence rejected; settlement stands</td>
+</tr>
+<tr>
+<td><code>fee_deposit_missing</code></td>
+<td>Filing</td>
+<td>Proceeding not opened; window keeps running</td>
+</tr>
+<tr>
+<td><code>evidence_excluded</code></td>
+<td>Clause rules</td>
+<td>Item refused with the rule cited</td>
+</tr>
+<tr>
+<td><code>no_response</code></td>
+<td>Party</td>
+<td>Proceed on record per default-of-appearance</td>
+</tr>
+<tr>
+<td><code>conflict_disclosed</code></td>
+<td>Arbiter</td>
+<td>Recusal or party waiver per clause</td>
+</tr>
+<tr>
+<td><code>decision_overdue</code></td>
+<td>Arbiter</td>
+<td>Default disposition becomes executable</td>
+</tr>
+<tr>
+<td><code>award_invalid</code></td>
+<td>Rail validation</td>
+<td>Not executed; exceeds stake, bad shape, or bad signatures</td>
+</tr>
+<tr>
+<td><code>appeal_filed</code></td>
+<td>Declared path only</td>
+<td>Enforcement suspended as clause states</td>
+</tr>
+<tr>
+<td><code>rail_unavailable</code></td>
+<td>Infrastructure</td>
+<td>Award remains valid; execution retries; obligation persists</td>
+</tr>
+</tbody>
+</table></div><p>Dispute lifecycle:</p>
+<pre><code class="language-text">clause_signed (with order)
+  -&gt; settlement_report | escrow_condition_event
+  -&gt; filing_window_open
+       -&gt; no filing -&gt; settled (order's own terms stand)
+       -&gt; filed -&gt; responded | no_response
+            -&gt; evidence_open -&gt; evidence_closed
+            -&gt; decided (signed award) -&gt; [appeal?] -&gt; enforced -&gt; closed
+            -&gt; decision_overdue -&gt; default_disposition -&gt; closed
+</code></pre>
+<p>Every path terminates. There is no state in which funds wait on a party or
+arbiter forever, and no path in which silence transfers more than the
+clause's declared defaults.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>Jurisdiction is signed consent.</strong> An arbiter decides only disputes
+whose clause it countersigned before the order activated; nothing can
+be arbitrated into its docket afterward.</li>
+<li><strong>Authority equals the stake.</strong> Awards dispose of at most the named,
+bounded stake; rails reject anything larger; nothing else the parties
+own is reachable.</li>
+<li><strong>Undecided is defined.</strong> Every clause carries a default disposition;
+arbiter absence is a scheduled outcome, never a freeze.</li>
+<li><strong>The order's privacy floor holds.</strong> Disputes weigh the evidence the
+underlying order defined; they cannot demand de-anonymization, root
+material, plaintext, or unrelated history the order excluded.</li>
+<li><strong>Fees are outcome-independent.</strong> Amounts never track the winner;
+allocation follows pre-signed clause rules only.</li>
+<li><strong>Awards are reasoned and signed.</strong> Machine-validatable shape for the
+rail, human-readable findings for the parties.</li>
+<li><strong>Conflicts void silently-conflicted decisions.</strong> Disclosure at
+designation, recusal per policy, and an undisclosed interest is
+nonconformance, not a footnote.</li>
+<li><strong>No precedent machine.</strong> Awards bind their dispute; publication is
+clause-governed, anonymized, and consistent; no arbiter accretes
+protocol-wide authority through volume.</li>
+<li><strong>Enforcement is mechanical.</strong> Rails validate shape, bounds, and
+signatures—never re-judge merits, and never accept an award-shaped
+object for an ordinary transfer.</li>
+<li><strong>The seat is optional everywhere.</strong> Orders without clauses remain
+valid; direct protocol use never requires naming an arbiter; and no
+directory, client, or counterparty default may silently insert one.</li>
+<li><strong>Law outranks the label.</strong> Statutory rights, consumer protections,
+and court authority are untouched by anything in a clause, and
+manifests must not claim otherwise.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>ArbitrationProfile</code> changes when operation, clause, award, or panel
+meaning changes; dispute classes are additive capabilities.</li>
+<li>Clauses are immutable once the order activates; changing arbiter, rules,
+or windows is a signed order amendment by all parties plus the new
+arbiter's acceptance.</li>
+<li>Awards are immutable; corrections travel as clause-declared appeal
+outcomes, never edits.</li>
+<li>Cross-platform fixtures cover: clause validation (class mismatch,
+missing default disposition, stake/rail inconsistency); window
+arithmetic including timezone-hostile boundaries; filing, response, and
+no-show progressions; award shape validation at rails (over-stake,
+wrong clause, missing signatures, non-final with pending appeal);
+default-disposition execution after deadline; fee deposit and
+allocation; and panel-majority signature verification.</li>
+<li>A rail, an arbiter, and party clients from three different authors must
+interoperate using only published profiles and fixtures.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>No concrete profile exists yet. The natural first profile pairs the two
+smallest complete pieces already specified elsewhere:</p>
+<ul>
+<li><strong>Stellar escrow rail</strong>: the bank boundary's escrow class implemented as
+a Stellar multisignature account whose signer/threshold arrangement
+encodes &quot;both parties, or one party plus a valid award, or the entitled
+party alone after the decision deadline&quot;; and</li>
+<li><strong><code>aggregate-delivery-evidence</code> disputes</strong> over Telegram lead orders,
+whose observer snapshots and caps are already fully specified and
+produce small, decidable records.</li>
+</ul>
+<p>That pairing exercises every object in this contract with the least new
+machinery.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The arbitration seat is successfully specified when:</p>
+<ol>
+<li>two parties can name an arbiter in an order, fund a bounded stake, and
+have a dispute decided and executed using only published profiles and
+fixtures;</li>
+<li>no award reaching beyond its stake, clause, or parties validates at any
+conforming rail;</li>
+<li>an arbiter that disappears costs the parties nothing but the clause's
+default disposition, on schedule;</li>
+<li>no proceeding can extract evidence below the underlying order's privacy
+floor;</li>
+<li>fee structures with outcome-contingent amounts are expressible nowhere
+in conforming objects;</li>
+<li>orders without arbitration clauses, and seats that never adopt the
+pattern, remain fully conforming;</li>
+<li>an arbiter's conflicts, procedure, and track record are inspectable
+before designation; and</li>
+<li>a second rail technology and a second arbiter institution can implement
+the profiles without pretending to be the first.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>The arbitration seat gives every signed order a decider the parties chose
+while they still agreed—one whose whole power is a reasoned, signed
+disposition of a stake they bounded in advance, and whose worst failure
+mode is the default they also chose.</p>
+</blockquote>
+<h2 id="references">References</h2>
+<ol>
+<li>Onym system whitepaper, §1, §11, §12, §17.10:
+<a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
+<li>Onym bank boundary, escrow class:
+<a href="../bank/UI-Bank.html">../bank/UI-Bank.md</a></li>
+<li>Onym audit seat (attestations as evidence):
+<a href="../audit/Audit.html">../audit/Audit.md</a></li>
+<li>Onym lead generation contract (dispute windows, observer evidence):
+<a href="../lead/Lead-Generation.html">../lead/Lead-Generation.md</a></li>
+<li>Onym acquisition contract (evidence and dispute component):
+<a href="../acquisition/Acquisition.html">../acquisition/Acquisition.md</a></li>
+<li>Onym recruitment contract (milestones, participation-form honesty):
+<a href="../recruitment/Recruitment.html">../recruitment/Recruitment.md</a></li>
+<li>UNCITRAL Model Law on International Commercial Arbitration:
+<a href="https://uncitral.un.org/en/texts/arbitration/modellaw/commercial_arbitration">https://uncitral.un.org/en/texts/arbitration/modellaw/commercial_arbitration</a></li>
+<li>New York Convention on the Recognition and Enforcement of Foreign
+Arbitral Awards (1958):
+<a href="https://uncitral.un.org/en/texts/arbitration/conventions/foreign_arbitral_awards">https://uncitral.un.org/en/texts/arbitration/conventions/foreign_arbitral_awards</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/arbitration/Arbitration.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

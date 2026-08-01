@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Recovery Trustee: Shamir Threshold Implementation — Onym Foundation</title>
+<meta name="description" content="Onym Recovery Trustee: Shamir Threshold Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/recovery/Recovery-Trustee-Shamir.html">
+<meta property="og:title" content="Onym Recovery Trustee: Shamir Threshold Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/recovery/Recovery-Trustee-Shamir.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/recovery/Recovery-Trustee-Shamir.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-recovery-trustee-shamir-threshold-implementation">Onym Recovery Trustee: Shamir Threshold Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>No one trustee holds the recovery secret. A declared threshold can recover;
+fewer shares cannot. Availability and collusion move from one provider to a
+set the holder chooses.</p>
+</blockquote>
+<p>This document maps the abstract
+<a href="../recovery/Recovery-Trustee.html">Recovery Trustee seat</a> to independently selected
+trustees holding shares created with Shamir's Secret Sharing. The v1 wire
+profile uses the final SLIP-0039 share format for interoperability and wraps
+each share in session-bound public-key encryption for enrollment and recovery.</p>
+<p>The client splits a random recovery-unlock key, not the BIP-39 mnemonic text.
+That unlock key protects the vault's canonical <code>RecoveryArtifact</code>. This keeps
+the trustee profile independent of the identity's seed, curve, or migration
+format and lets authenticated decryption reject an incorrect reconstruction.</p>
+<p>The profile does not make trustees trustless. Any threshold of them can
+recover. Too few available trustees permanently block recovery. Human
+recognition, service authentication, coercion resistance, payment, and
+operational storage remain separate risks.</p>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Shamir trustee mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Implementation profile</td>
+<td><code>onym:recovery-implementation:shamir-trustees-slip39-v1</code></td>
+</tr>
+<tr>
+<td>Custody class</td>
+<td>Holder-selected <code>t</code>-of-<code>n</code> threshold</td>
+</tr>
+<tr>
+<td>Protected secret</td>
+<td>Random 256-bit recovery-unlock key (<code>RUK</code>)</td>
+</tr>
+<tr>
+<td>Share format</td>
+<td>SLIP-0039, one group with <code>t</code>-of-<code>n</code> member shares</td>
+</tr>
+<tr>
+<td>Trustee</td>
+<td>One independently enrolled member-share slot</td>
+</tr>
+<tr>
+<td>Protected object</td>
+<td>AEAD-encrypted canonical <code>RecoveryArtifact</code></td>
+</tr>
+<tr>
+<td>Enrollment transfer</td>
+<td>One share HPKE-sealed to one trustee key</td>
+</tr>
+<tr>
+<td>Recovery transfer</td>
+<td>Same share HPKE-sealed to one fresh destination key/session</td>
+</tr>
+<tr>
+<td>Integrity</td>
+<td>Share checksums/reconstruction digest plus final artifact AEAD</td>
+</tr>
+<tr>
+<td>Individual malicious-share proof</td>
+<td>Not provided; this is not verifiable secret sharing</td>
+</tr>
+<tr>
+<td>Recovery modes</td>
+<td>Secret restoration; authority migration when the identity profile supports it</td>
+</tr>
+</tbody>
+</table></div><p>The profile maps:</p>
+<pre><code class="language-text">onym:recovery-profile:trustee-v1
+    -&gt; onym:recovery-implementation:shamir-trustees-slip39-v1
+</code></pre>
+<p>An implementation must claim this complete identifier. An arbitrary Shamir
+library, proprietary mnemonic share, or set of encrypted file fragments is not
+wire-compatible.</p>
+<h2 id="2-threshold-meaning">2. Threshold meaning</h2>
+<p>For <code>t</code>-of-<code>n</code> trustees:</p>
+<ul>
+<li>any <code>t</code> valid shares can reconstruct <code>RUK</code>;</li>
+<li>fewer than <code>t</code> shares reveal no information about <code>RUK</code> under the secret-
+sharing construction;</li>
+<li>the system tolerates at most <code>n - t</code> unavailable trustees; and</li>
+<li>any <code>t</code> colluding, compromised, coerced, or deceived trustees can recover.</li>
+</ul>
+<p>Examples:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Policy</th>
+<th scope="col">Availability</th>
+<th scope="col">Collusion boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2-of-3</td>
+<td>One trustee may be unavailable</td>
+<td>Any two can recover</td>
+</tr>
+<tr>
+<td>3-of-5</td>
+<td>Two trustees may be unavailable</td>
+<td>Any three can recover</td>
+</tr>
+<tr>
+<td>5-of-7</td>
+<td>Two trustees may be unavailable</td>
+<td>Any five can recover</td>
+</tr>
+</tbody>
+</table></div><p>There is no universally best threshold. A higher <code>t</code> resists collusion but
+increases loss risk. A larger <code>n</code> adds operational and metadata surface. The
+UI shows both sentences—“these many can steal” and “these many may disappear”
+—before confirmation.</p>
+<p>SLIP-0039 supports at most 16 members in one group. This profile therefore
+requires <code>2 &lt;= t &lt;= n &lt;= 16</code>. A 1-of-1 arrangement uses the cloud or another
+single-custodian profile, not a misleading threshold label.</p>
+<h2 id="3-trustee-selection-and-independence">3. Trustee selection and independence</h2>
+<p>A trustee can be:</p>
+<ul>
+<li>a human using a dedicated trustee application;</li>
+<li>an organization with a reviewed recovery process;</li>
+<li>a hardware device kept in another location;</li>
+<li>a paid online trustee service; or</li>
+<li>another automated agent that can protect and release one share.</li>
+</ul>
+<p>The holder should select different administrative, credential, device, cloud,
+geographic, and legal failure domains. Three services owned by one parent,
+three accounts recovered through one email address, or three virtual machines
+under one administrator are not meaningfully independent.</p>
+<p>Each signed trustee manifest declares an operator and <code>trustDomain</code>. A UI may
+warn about known overlap, but cannot prove social or corporate independence
+from self-asserted metadata. Directory investigation and holder judgment
+remain part of the trust decision.</p>
+<h2 id="4-cryptographic-construction">4. Cryptographic construction</h2>
+<h3 id="41-required-suites">4.1 Required suites</h3>
+<p>The v1 profile uses:</p>
+<ul>
+<li>a 256-bit <code>RUK</code> from a cryptographically secure random source;</li>
+<li>AES-256-GCM with a fresh 96-bit nonce for the recovery artifact;</li>
+<li>SHA-256 for protocol object and ciphertext digests;</li>
+<li>SLIP-0039 for one-group <code>t</code>-of-<code>n</code> member sharing of <code>RUK</code>;</li>
+<li>RFC 9180 HPKE Base mode using DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, and
+AES-256-GCM for transfers to trustees and recovery destinations; and</li>
+<li>Ed25519 for fresh session proofs and signed outer enrollment/trustee
+objects.</li>
+</ul>
+<p>The profile pins canonical encodings, byte order, HPKE <code>info</code>, AEAD associated
+data, SLIP-0039 parameters, and fixtures. Implementations use reviewed
+libraries with cross-platform vectors; they do not implement polynomial
+arithmetic in UI code.</p>
+<h3 id="42-artifact-encryption">4.2 Artifact encryption</h3>
+<p>The healthy vault serializes the abstract <code>RecoveryArtifact</code> and computes:</p>
+<pre><code class="language-text">identityBindingCommitment = SHA-256(canonical(
+  &quot;onym-recovery-identity-binding-v1&quot;,
+  identityBindingSalt,
+  identitySubject,
+  descriptorDigest
+))
+
+AAD = canonical(
+  implementationProfileId,
+  enrollmentId,
+  enrollmentSequence,
+  policyDigest,
+  identityBindingCommitment,
+  recoveryMode,
+  artifactId
+)
+
+artifactCiphertext = AES-256-GCM-Seal(
+  key = RUK,
+  nonce = fresh 96-bit nonce,
+  plaintext = canonical RecoveryArtifact,
+  associatedData = AAD
+)
+</code></pre>
+<p>The client places the ciphertext, nonce, every AAD field, and a digest over the
+canonical header and ciphertext into the abstract <code>ProtectedRecoveryArtifact</code>.
+That object may be replicated with every trustee or stored through one or more
+opaque blob locations. It is not a secret key, but its header, location, and
+enrollment binding are private metadata. A recovery policy declares the
+artifact availability rule separately from its share threshold.</p>
+<h3 id="43-slip-0039-parameters">4.3 SLIP-0039 parameters</h3>
+<p>This profile encodes the 32-byte <code>RUK</code> as the SLIP-0039 master secret with:</p>
+<pre><code class="language-json">{
+  &quot;masterSecretBits&quot;: 256,
+  &quot;groupCount&quot;: 1,
+  &quot;groupThreshold&quot;: 1,
+  &quot;memberCount&quot;: &quot;n&quot;,
+  &quot;memberThreshold&quot;: &quot;t&quot;,
+  &quot;extendableBackup&quot;: false,
+  &quot;passphrase&quot;: &quot;&quot;,
+  &quot;iterationExponent&quot;: 0
+}
+</code></pre>
+<p>The empty SLIP-0039 passphrase is intentional: the declared trustee threshold
+is the complete cryptographic recovery authority. A forgotten extra
+passphrase would defeat recovery, while a weak remembered passphrase would add
+little protection against colluding trustees. A future profile may define a
+holder-retained factor, but must present the resulting permanent-loss risk and
+use a new implementation identifier.</p>
+<p>SLIP-0039's 15-bit identifier and share metadata help reject mixed share sets,
+but they are not the Onym enrollment ID. Every share is also carried inside an
+outer, cryptographically bound 256-bit enrollment and session context.</p>
+<p>SLIP-0039 is mostly incompatible with BIP-39. The client must not present a
+SLIP-0039 trustee share as a BIP-39 recovery phrase or instruct the user to
+import it into the ordinary Onym seed screen.</p>
+<h3 id="44-share-envelope">4.4 Share envelope</h3>
+<p>Before delivery, each mnemonic share is represented canonically as lowercase
+SLIP-0039 words separated by one ASCII space and placed in a private envelope:</p>
+<pre><code class="language-json">{
+  &quot;shareEnvelopeVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:shamir-trustees-slip39-v1&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;random-256-bit-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;sha256&gt;&quot;,
+  &quot;identityBindingCommitment&quot;: &quot;&lt;opaque-commitment-from-policy&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;sha256&gt;&quot;,
+  &quot;artifactId&quot;: &quot;&lt;same-random-256-bit-id-as-protected-artifact&gt;&quot;,
+  &quot;recoveryMode&quot;: &quot;secret-restoration&quot;,
+  &quot;trusteeComponentId&quot;: &quot;onym:component:&lt;trustee-id&gt;&quot;,
+  &quot;slot&quot;: &quot;&lt;random-opaque-slot-id&gt;&quot;,
+  &quot;trusteeChallenge&quot;: &quot;&lt;fresh-single-use-challenge-issued-for-this-slot&gt;&quot;,
+  &quot;memberIndex&quot;: &quot;&lt;0-through-n-minus-1&gt;&quot;,
+  &quot;memberThreshold&quot;: &quot;t&quot;,
+  &quot;memberCount&quot;: &quot;n&quot;,
+  &quot;trusteePolicy&quot;: {
+    &quot;candidateFactors&quot;: [&quot;&lt;this-trustee-factor-bindings&gt;&quot;],
+    &quot;cooldown&quot;: &quot;P2D&quot;,
+    &quot;sessionLifetime&quot;: &quot;P7D&quot;,
+    &quot;maximumAttempts&quot;: 3,
+    &quot;notifications&quot;: [&quot;&lt;this-trustee-destination-references&gt;&quot;],
+    &quot;holderVeto&quot;: &quot;&lt;this-trustee-veto-method-and-deadline&gt;&quot;,
+    &quot;lapsePolicy&quot;: &quot;&lt;this-trustee-grace-export-destruction-rule&gt;&quot;
+  },
+  &quot;slip39Share&quot;: &quot;&lt;canonical-share-words&gt;&quot;,
+  &quot;createdAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;authorizationPublicKey&quot;: &quot;&lt;recovery-and-trustee-scoped-ed25519-public-key&gt;&quot;,
+  &quot;holderAuthorization&quot;: &quot;&lt;ed25519-signature-over-canonical-envelope-with-this-field-omitted&gt;&quot;
+}
+</code></pre>
+<p>This signed envelope is the Shamir mapping of the abstract
+<code>TrusteeEnrollmentAuthorization</code>: it contains the full-policy digest and only
+this trustee's identity, slot, share parameters, and enforcement policy. The
+holder authorization authenticates every envelope field, including the share,
+before the entire envelope is HPKE-sealed to that trustee. HPKE Base mode
+provides confidentiality to the trustee; the Ed25519 authorization provides
+sender authentication. Only the intended trustee learns its member index,
+policy, or words. The coordinator receives a ciphertext and digest, not the
+share or the full trustee roster.</p>
+<p>The authorization proves control of the recovery-scoped enrollment key, not a
+claimed human relationship. A human trustee independently confirms the
+invitation and displayed key fingerprint with the holder before accepting; a
+name, avatar, message, or valid self-created key alone cannot establish who
+asked them to become a trustee.</p>
+<p>Trustees never send share words through email, SMS, ordinary messenger chat,
+support tickets, a public notary, clipboard telemetry, or QR codes rendered by
+an untrusted web page. A human trustee uses a conforming app that decrypts,
+stores, and later re-encrypts the envelope without displaying words by
+default.</p>
+<h2 id="5-enrollment-ceremony">5. Enrollment ceremony</h2>
+<h3 id="51-preconditions">5.1 Preconditions</h3>
+<p>While the identity is healthy, the holder selects:</p>
+<ul>
+<li>recovery mode and identity/descriptor binding;</li>
+<li><code>t</code> and <code>n</code>;</li>
+<li>exactly <code>n</code> current trustee manifests and enrollment public keys;</li>
+<li>each trustee's candidate-recognition/factor policy;</li>
+<li>cooldown, notifications, veto, session lifetime, and attempt limits;</li>
+<li>protected-artifact locations and replication rule; and</li>
+<li>each trustee offer, term, lapse, export, and deletion behavior.</li>
+</ul>
+<p>Each trustee then issues a fresh, expiring, single-use enrollment challenge
+after accepting the human invitation or authenticating the service enrollment
+and entitlement. A published HPKE key without this challenge is insufficient
+to create stored trustee state.</p>
+<p>The UI highlights shared failure domains and refuses duplicate component IDs,
+duplicate member indices, duplicate slots, expired manifests, or incompatible
+implementation profiles.</p>
+<h3 id="52-generate-and-distribute">5.2 Generate and distribute</h3>
+<p>The healthy vault:</p>
+<ol>
+<li>creates a random enrollment ID, <code>RUK</code>, artifact ID, and artifact nonce;</li>
+<li>encrypts the canonical artifact with <code>RUK</code> and the exact enrollment AAD;</li>
+<li>invokes a conforming SLIP-0039 implementation to create <code>n</code> shares at
+threshold <code>t</code>;</li>
+<li>creates one outer share envelope per trustee containing only that
+trustee's policy and slot, then signs it with the distinct recovery-and-
+trustee-scoped Ed25519 authorization key recorded for that slot;</li>
+<li>HPKE-seals each signed envelope to that trustee's current enrollment public
+key, binding the profile, policy, enrollment, artifact, trustee, slot,
+trustee-issued challenge, and authorization-key digest in <code>info</code>;</li>
+<li>sends the protected artifact and only the intended sealed share to each
+selected trustee;</li>
+<li>collects and verifies all <code>n</code> signed enrollment receipts;</li>
+<li>creates and verifies the encrypted recovery map defined below; and</li>
+<li>destroys plaintext shares and <code>RUK</code> from process memory on a best-effort
+basis after activation.</li>
+</ol>
+<p>The enrollment is not active if fewer than <code>n</code> selected trustees acknowledge.
+The holder may deliberately create a revised policy with a lower <code>n</code>; the UI
+must not silently activate a partially enrolled set under the old policy.
+It is also not active until the holder confirms a usable recovery-map copy and
+its separate map key.</p>
+<h3 id="53-trustee-receipt">5.3 Trustee receipt</h3>
+<p>Each trustee:</p>
+<ol>
+<li>decrypts the envelope and verifies its recovery-and-trustee-scoped Ed25519
+holder authorization over every field;</li>
+<li>verifies the exact abstract and implementation profiles, its own component
+and slot, the artifact digest, the opaque full-policy digest binding, and
+its local trustee policy;</li>
+<li>consumes the matching unexpired, single-use challenge and refuses an
+unsolicited or replayed enrollment;</li>
+<li>accepts only the current enrollment sequence for that enrollment and
+authorization key, refusing replay or rollback;</li>
+<li>validates the SLIP-0039 checksum, member threshold, member count, and member
+index against the signed envelope;</li>
+<li>confirms any invitation or human relationship through the prearranged
+independent path rather than trusting display text; and</li>
+<li>stores the share under its local protection and verifies durable read-back
+before returning:</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;receiptVersion&quot;: 1,
+  &quot;operation&quot;: &quot;enroll&quot;,
+  &quot;componentId&quot;: &quot;onym:component:&lt;trustee-id&gt;&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;same-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policyDigest&quot;: &quot;&lt;same-sha256&gt;&quot;,
+  &quot;artifactDigest&quot;: &quot;&lt;same-sha256&gt;&quot;,
+  &quot;artifactId&quot;: &quot;&lt;same-artifact-id&gt;&quot;,
+  &quot;slot&quot;: &quot;&lt;same-slot&gt;&quot;,
+  &quot;sealedContributionDigest&quot;: &quot;&lt;digest-of-enrollment-ciphertext&gt;&quot;,
+  &quot;storageClass&quot;: &quot;&lt;manifest-declared-class&gt;&quot;,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;storedAt&quot;: &quot;2026-08-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-08-01T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;trustee-signature&gt;&quot;
+}
+</code></pre>
+<p>The receipt proves the trustee's assertion, not continued possession. The
+client should request signed, non-secret readiness attestations periodically
+and prompt replacement before the active set falls below policy.</p>
+<h3 id="54-offline-verification-drill">5.4 Offline verification drill</h3>
+<p>The holder may perform a recovery drill to a temporary local destination. The
+client gathers <code>t</code> destination-encrypted shares, reconstructs <code>RUK</code>, verifies
+the artifact, and then destroys the temporary plaintext without changing the
+identity. Trustees and the client label the session <code>drill</code> in its private
+policy context.</p>
+<p>A drill exercises real recovery authority and leaks recovery timing to the
+selected trustees. It is rate-limited, notified, and never run silently by
+telemetry or a background health check.</p>
+<h3 id="55-recovery-map-and-fresh-device-bootstrap">5.5 Recovery map and fresh-device bootstrap</h3>
+<p>The complete trustee roster cannot be public or sent to every trustee, but a
+fresh device still needs it. After enrollment, the healthy vault creates this
+private <code>ShamirRecoveryMap</code>:</p>
+<pre><code class="language-json">{
+  &quot;recoveryMapVersion&quot;: 1,
+  &quot;recoveryProfileId&quot;: &quot;onym:recovery-profile:trustee-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:recovery-implementation:shamir-trustees-slip39-v1&quot;,
+  &quot;enrollmentId&quot;: &quot;&lt;current-enrollment-id&gt;&quot;,
+  &quot;enrollmentSequence&quot;: 1,
+  &quot;policy&quot;: &quot;&lt;canonical-holder-private-RecoveryPolicy&gt;&quot;,
+  &quot;protectedArtifact&quot;: &quot;&lt;ProtectedRecoveryArtifact-or-private-locators&gt;&quot;,
+  &quot;trusteeManifests&quot;: [&quot;&lt;current-signed-manifest-for-each-trustee&gt;&quot;],
+  &quot;trusteeReceipts&quot;: [&quot;&lt;signed-current-enrollment-receipts&gt;&quot;]
+}
+</code></pre>
+<p>The map contains no <code>RUK</code>, root secret, mnemonic, or trustee share. It does
+contain a sensitive social graph and recovery-routing metadata. The vault
+encrypts it with AES-256-GCM under a separate random 256-bit recovery-map key
+and fresh nonce, binding the implementation profile and a random map ID as
+associated data. The ciphertext may be replicated; the holder stores the map
+key offline as a recovery card, QR, hardware record, or another independently
+chosen private channel.</p>
+<p>On a fresh device, the candidate imports the map ciphertext and key. The vault
+authenticates and decrypts it, verifies policy and receipt signatures, rejects
+rollback, retrieves the current protected artifact, and constructs the
+abstract <code>RecoveryBootstrap</code>. The candidate can then address the current
+trustees and build <code>RecoverySession</code> without the old identity key.</p>
+<p>A trustee or paid provider may additionally offer authenticated lookup of its
+own slot, but the base profile has no public roster discovery. If the holder
+loses every recovery-map key and cannot rediscover enough trustees through
+prearranged relationships or provider accounts, recovery may fail even though
+the shares still exist. The enrollment UI tests recovery-map import and states
+this limitation explicitly.</p>
+<h2 id="6-recovery-session">6. Recovery session</h2>
+<h3 id="61-candidate-request">6.1 Candidate request</h3>
+<p>Using the verified recovery map or a profile-compatible private lookup, the
+recovering vault obtains the enrollment ID, current sequence, policy digest,
+artifact ID, protected artifact and digest, and trustee routes. It then
+generates a fresh HPKE destination key, a fresh Ed25519 session-proof key, and
+a random session ID, and builds and signs the abstract <code>RecoverySession</code>. The
+proof shows control of the request and binds the HPKE key; it does not
+authenticate the old identity. The request includes the bootstrap bindings,
+both destination keys, expiry, and factor evidence permitted for each trustee.</p>
+<p>The old identity cannot be required to sign the request. Authentication comes
+from the pre-enrolled trustee policy: human recognition, an offline recovery
+code, a surviving independent authenticator, institutional proof, or another
+declared mechanism. A trustee does not learn or demand factors enrolled only
+with another trustee.</p>
+<h3 id="62-trustee-decision">6.2 Trustee decision</h3>
+<p>Each trustee independently:</p>
+<ol>
+<li>resolves the exact current enrollment and rejects stale sequences;</li>
+<li>verifies the session signature made by the fresh proof key and its binding
+to the HPKE destination key;</li>
+<li>checks its local candidate policy and allowed factor evidence;</li>
+<li>applies attempt limits, cooldown, independent notification, and veto;</li>
+<li>confirms that the requested artifact digest and recovery mode match;</li>
+<li>decrypts its stored share envelope only inside its protected trustee
+application or service;</li>
+<li>seals the share envelope to the session destination with HPKE; and</li>
+<li>signs an abstract <code>TrusteeContribution</code> or bounded refusal.</li>
+</ol>
+<p>HPKE <code>info</code> includes:</p>
+<pre><code class="language-text">&quot;onym-shamir-recovery-contribution-v1&quot;,
+sessionId,
+enrollmentId,
+enrollmentSequence,
+policyDigest,
+artifactId,
+artifactDigest,
+trusteeComponentId,
+slot,
+destinationKeysDigest,
+expiresAt
+</code></pre>
+<p>A signature or share response from another session, destination, enrollment,
+or sequence is invalid even if the underlying SLIP-0039 words are genuine.</p>
+<h3 id="63-coordination">6.3 Coordination</h3>
+<p>Any party can coordinate the session. The new client may contact trustees
+directly, use one trustee as coordinator, or use a separately operated relay.
+The coordinator may count signed approvals and relay ciphertext, but cannot
+decrypt contributions or lower the threshold.</p>
+<p>The candidate can collect contributions asynchronously until the session
+expires. Only one contribution per distinct current slot counts. Duplicate
+component IDs, member indices, or signatures do not create extra threshold
+weight.</p>
+<h3 id="64-local-reconstruction">6.4 Local reconstruction</h3>
+<p>After receiving at least <code>t</code> valid contributions, the recovering vault:</p>
+<ol>
+<li>verifies every trustee manifest, signature, slot, sequence, policy,
+artifact, session, destination, and expiry binding;</li>
+<li>HPKE-opens contributions with the session destination private key;</li>
+<li>validates outer envelopes and SLIP-0039 checksums;</li>
+<li>rejects mixed identifiers, thresholds, groups, member indices, or duplicate
+shares;</li>
+<li>combines exactly the profile-compatible shares locally to reconstruct
+<code>RUK</code>;</li>
+<li>reconstructs the enrolled associated data from the verified protected-
+artifact header and opens the artifact using AES-256-GCM;</li>
+<li>verifies the identity subject, descriptor digest, artifact schema, and
+recovery mode;</li>
+<li>imports or migrates inside the vault's holder-facing recovery ceremony;</li>
+<li>binds fresh device authentication and executes downstream compromise
+review; and</li>
+<li>destroys plaintext shares, <code>RUK</code>, artifact plaintext, and both session
+private keys from memory on a best-effort basis.</li>
+</ol>
+<p>The client never uploads the reconstructed <code>RUK</code> or plaintext artifact to the
+coordinator, trustees, crash service, or notary.</p>
+<h3 id="65-integrity-without-verifiable-secret-sharing">6.5 Integrity without verifiable secret sharing</h3>
+<p>SLIP-0039 checksums help detect damaged encodings and its recovered-secret
+digest helps reject an incorrect combination. The final AES-GCM tag and
+identity binding provide another mandatory integrity check.</p>
+<p>This profile does not implement Feldman, Pedersen, or another verifiable secret
+sharing scheme. A trustee can submit a well-formed but wrong share and cause
+recovery failure; the basic profile may not identify which trustee cheated.
+The UI says “invalid contribution set,” not “artifact lost,” and preserves
+signed evidence for a private dispute.</p>
+<p>Clients do not auto-correct mnemonic words or silently search broad share
+subsets. Automated correction can transform invalid input into different valid
+input. Any diagnostic retry is explicit, bounded, local, and never reveals
+share contents.</p>
+<h2 id="7-operation-mapping">7. Operation mapping</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract operation</th>
+<th scope="col">Shamir behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enroll</code></td>
+<td>Deliver one HPKE-sealed SLIP-0039 share per trustee and replicate artifact</td>
+</tr>
+<tr>
+<td><code>read-enrollment</code></td>
+<td>Return signed per-trustee sequence, expiry, and non-secret readiness</td>
+</tr>
+<tr>
+<td><code>bootstrap-recovery</code></td>
+<td>Decrypt and verify the holder's recovery map or use declared private trustee/provider lookup</td>
+</tr>
+<tr>
+<td><code>begin-recovery</code></td>
+<td>Create one destination-bound request for the current trustee set</td>
+</tr>
+<tr>
+<td><code>contribute-recovery</code></td>
+<td>Each approving trustee HPKE-seals its stored share to the destination</td>
+</tr>
+<tr>
+<td><code>read-recovery</code></td>
+<td>Aggregate signed non-secret session and contribution status</td>
+</tr>
+<tr>
+<td><code>cancel-recovery</code></td>
+<td>Candidate or enrolled veto cancels collection; trustees refuse later release</td>
+</tr>
+<tr>
+<td><code>finalize-recovery</code></td>
+<td>Client records successful local combine/import and may notify trustees</td>
+</tr>
+<tr>
+<td><code>rotate-enrollment</code></td>
+<td>Create a fresh <code>RUK</code>, artifact, SLIP-0039 set, and enrollment sequence</td>
+</tr>
+<tr>
+<td><code>revoke-enrollment</code></td>
+<td>Every reachable trustee destroys/revokes its old slot; client treats sequence as invalid</td>
+</tr>
+<tr>
+<td><code>export-enrollment</code></td>
+<td>Obtain threshold contributions to a fresh holder-controlled destination</td>
+</tr>
+<tr>
+<td><code>close-enrollment</code></td>
+<td>Revoke policy and request share/artifact deletion from all trustees</td>
+</tr>
+</tbody>
+</table></div><p>No single trustee can complete <code>export-enrollment</code> or recovery. A trustee's
+valid contribution is necessary evidence but not a successful recovery.</p>
+<h2 id="8-rotation-and-trustee-replacement">8. Rotation and trustee replacement</h2>
+<p>This profile does not support in-place addition, removal, or renumbering of one
+ordinary share. Every policy or trustee-set change creates:</p>
+<ul>
+<li>a new random <code>RUK</code>;</li>
+<li>a newly encrypted artifact;</li>
+<li>a fresh SLIP-0039 identifier and complete share set;</li>
+<li>a higher enrollment sequence; and</li>
+<li>new receipts from all newly selected trustees.</li>
+</ul>
+<p>A healthy vault can create this new enrollment directly from the identity
+material it already controls. A recovering vault first obtains <code>t</code> old shares,
+restores locally, and then performs the new enrollment. Only after the new set
+is verified active does it revoke and request deletion of every old share.</p>
+<p>Deletion receipts cannot prove a trustee made no copy. Fresh <code>RUK</code> and
+ciphertext prevent old shares from opening the new enrollment, but old shares
+can still open an old artifact copy. In secret-restoration mode, that old
+artifact may contain the same root secret. Strong revocation therefore
+requires authority migration and downstream support, not merely re-sharing.</p>
+<p>Proactive share refresh without reconstructing the secret and verifiable
+distributed key generation are possible research directions, but are outside
+this v1 profile.</p>
+<h2 id="9-lapse-and-availability">9. Lapse and availability</h2>
+<p>Each trustee defines its own offer and lapse policy. The holder's local
+recovery dashboard computes current readiness from fresh signed status:</p>
+<pre><code class="language-text">active compatible trustees &gt;= t  -&gt; threshold presently reachable
+active compatible trustees &lt;  t  -&gt; recovery endangered
+</code></pre>
+<p>This is not a guarantee of future cooperation. A synchronized outage,
+jurisdictional order, disaster, account compromise, or human refusal can still
+remove several trustees together.</p>
+<p>A paid trustee must declare grace, export, deletion, and whether an unpaid
+record can still approve recovery. A lapsed trustee cannot charge an
+undisclosed emergency fee. The UI prompts a healthy holder to re-share before
+the remaining active set approaches <code>t</code>.</p>
+<p>The policy may mix free human trustees and paid providers. Payment failure at
+one provider does not change the cryptographic threshold or appoint a
+replacement.</p>
+<h2 id="10-human-trustee-experience">10. Human trustee experience</h2>
+<p>A conforming human-trustee application:</p>
+<ol>
+<li>explains that accepting a share creates a security and availability duty;</li>
+<li>verifies the holder's invitation and profile before accepting;</li>
+<li>stores the share under local device authentication and encrypted backup
+rules declared to the holder;</li>
+<li>displays an opaque holder-chosen label locally without publishing the
+social relationship;</li>
+<li>reminds the trustee to review readiness periodically without exposing
+share words;</li>
+<li>shows recovery destination fingerprint, request age, declared reason,
+cooldown, and independent contact instructions;</li>
+<li>requires deliberate approval and never approves from a notification tap;</li>
+<li>supports refusal, suspected-fraud reporting, device migration, and
+holder-requested deletion; and</li>
+<li>does not treat possession of the holder's public profile or a convincing
+story as protocol proof.</li>
+</ol>
+<p>Human recognition is subjective. The holder should prearrange how a trustee
+will recognize a legitimate candidate under device loss and what independent
+contact path to use. The app must not upload address books or infer trustees
+without consent.</p>
+<h2 id="11-trustee-storage-obligations">11. Trustee storage obligations</h2>
+<p>Each trustee protects its share at rest using its declared storage class. A
+service trustee may use an HSM/KMS; a human trustee app may use platform secure
+storage and an encrypted, separately controlled device backup. The manifest
+states whether the share survives device loss and who can restore it.</p>
+<p>A trustee must:</p>
+<ul>
+<li>keep enrollment and recovery private;</li>
+<li>prevent share export through routine logs, UI, support, clipboard, or
+analytics;</li>
+<li>reject stale or malformed outer envelopes;</li>
+<li>authenticate local operators and protect release keys;</li>
+<li>issue readiness, approval, refusal, rotation, and deletion receipts;</li>
+<li>notify under the enrolled policy;</li>
+<li>disclose loss or suspected copy of a share promptly; and</li>
+<li>never transfer the slot to another operator without a full holder-authorized
+re-enrollment.</li>
+</ul>
+<p>Replicating one trustee's share improves that trustee's availability but does
+not add a trustee. If another party can restore the replica independently, the
+operator must disclose that party inside its trust domain.</p>
+<h2 id="12-privacy-boundary">12. Privacy boundary</h2>
+<p>Each trustee can learn that it serves one opaque enrollment, the locally
+chosen holder label if any, its own candidate factors, recovery attempts sent
+to it, payment state, and its own decision. It need not learn the other
+trustees or the holder's messages, names, groups, addresses, balances, or
+applications.</p>
+<p>The client retains the canonical <code>RecoveryPolicy</code> and full trustee array. It
+sends a trustee only the signed share envelope that maps the abstract per-
+trustee authorization: the common policy digest plus that trustee's component,
+slot, share parameters, and enforcement terms. The trustee cannot recompute
+the private full-policy digest, but can verify the holder signature over its
+own complete duties and require all later requests to bind that digest.</p>
+<p>The coordinator can observe which endpoints participate, timing, payload
+sizes, and completion status unless a stronger routing profile hides them. The
+encrypted artifact and shares must not be posted to a public ledger merely to
+coordinate availability.</p>
+<p>The client should contact trustees independently or through privacy-preserving
+transport, pad contribution envelopes where a profile specifies it, and use
+scoped trustee/account keys. These measures reduce linkability; they do not
+hide trustee relationships from a global network observer.</p>
+<p>Recovery receipts remain private. A dispute may disclose the minimum receipt
+necessary to the selected adjudicator. Publicly naming a human trustee can
+create coercion and targeting risk.</p>
+<h2 id="13-payment-and-incentives">13. Payment and incentives</h2>
+<p>Every trustee defines its own payment model. An offer may be:</p>
+<ul>
+<li>voluntary and free;</li>
+<li>reciprocal between identities;</li>
+<li>one-time per enrollment or re-sharing ceremony;</li>
+<li>periodic for protected storage and readiness;</li>
+<li>per reviewed recovery request; or</li>
+<li>institution-funded.</li>
+</ul>
+<p>A threshold enrollment may contain different offers and rails. The client
+shows the total expected cost and the consequences of each independent lapse.
+Payment is made to each selected trustee under its offer, after disclosed
+channel fees, taxes, refunds, UI/broker splits, and contributor shares.</p>
+<p>A trustee earns only for its declared service. It gains no ownership of the
+identity, no right to see other trustees, no vote in unrelated seats, and no
+royalty on the holder's later messages, assets, banking, charity, or recovery.
+Approval cannot be sold to an attacker: a recovery fee buys policy evaluation
+or completed service, not a guaranteed <code>approved</code> decision.</p>
+<h2 id="14-threat-summary">14. Threat summary</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Failure</th>
+<th scope="col">Consequence</th>
+<th scope="col">Mitigation or honest limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fewer than <code>t</code> trustees available</td>
+<td>Permanent or delayed recovery failure</td>
+<td>Choose <code>n - t</code> tolerance, independent domains, readiness checks, timely re-sharing</td>
+</tr>
+<tr>
+<td>Any <code>t</code> trustees collude</td>
+<td>They reconstruct <code>RUK</code> and artifact</td>
+<td>Choose trusted independent parties; threshold defines, not removes, this risk</td>
+</tr>
+<tr>
+<td>Candidate deceives <code>t</code> trustees</td>
+<td>Unauthorized recovery</td>
+<td>Prearranged factors, session-bound destination, cooldown, notification, independent verification</td>
+</tr>
+<tr>
+<td>Coordinator compromised</td>
+<td>Metadata exposure, delay, censorship</td>
+<td>Direct/multiple routes; HPKE prevents share plaintext disclosure</td>
+</tr>
+<tr>
+<td>One share stolen</td>
+<td>No recovery below threshold, but loss of safety margin</td>
+<td>Prompt disclosure and complete re-sharing</td>
+</tr>
+<tr>
+<td>Malicious wrong share</td>
+<td>Recovery fails and culprit may be unclear</td>
+<td>Outer signatures, SLIP-0039 checks, final AEAD; VSS is out of scope</td>
+</tr>
+<tr>
+<td>Mixed old/new shares</td>
+<td>Invalid reconstruction or rollback attempt</td>
+<td>Enrollment sequence, artifact digest, fresh identifier, strict set validation</td>
+</tr>
+<tr>
+<td>Trustee copied an old share</td>
+<td>Old artifact may remain recoverable</td>
+<td>Fresh enrollment protects new artifact; migrate root authority for strong revocation</td>
+</tr>
+<tr>
+<td>Recovering device compromised</td>
+<td>Plaintext is stolen after combination</td>
+<td>Trusted endpoint ceremony, minimal memory lifetime, immediate rotation</td>
+</tr>
+<tr>
+<td>Public trustee graph</td>
+<td>Coercion and correlation</td>
+<td>Private enrollment/receipts, scoped IDs, no public ledger by default</td>
+</tr>
+</tbody>
+</table></div><h2 id="15-conformance-fixtures">15. Conformance fixtures</h2>
+<p>In addition to the abstract suite, the profile publishes and tests:</p>
+<ol>
+<li>generation and combination vectors for 2-of-3, 3-of-5, and boundary
+<code>n = 16</code> SLIP-0039 sets;</li>
+<li>holder-authorized enrollment envelopes and refusal of missing, invalid,
+wrong-key, wrong-trustee, or stale-sequence authorizations, plus a fixture
+proving that one envelope contains no other trustee entry and that an
+unsolicited or reused trustee challenge is refused;</li>
+<li>canonical share words and strict rejection of mixed identifiers, groups,
+thresholds, duplicate indices, invalid checksums, and unsupported
+parameters;</li>
+<li>AES-256-GCM artifact vectors with every associated-data binding changed in
+negative cases;</li>
+<li>enrollment HPKE vectors for each trustee and recovery HPKE vectors for a
+fresh destination;</li>
+<li>recovery-map encryption, authenticated import, current-sequence bootstrap,
+rollback refusal, and failure after all bootstrap paths are lost;</li>
+<li>rejection of a valid share response replayed into another session,
+destination, enrollment, or sequence;</li>
+<li>threshold completion with <code>t</code> contributions and non-completion with
+<code>t - 1</code>;</li>
+<li>malicious well-formed share and final artifact-integrity failure;</li>
+<li>cooldown, veto, refusal, timeout, duplicate trustee, and late contribution;</li>
+<li>full re-sharing on threshold or trustee-set change and refusal of every old
+contribution against the new artifact; and</li>
+<li>log, crash, UI snapshot, clipboard, notification, and analytics scans for
+share words, <code>RUK</code>, artifact plaintext, candidate factors, and destination
+private keys.</li>
+</ol>
+<p>Cross-platform fixtures must run in every supported vault and trustee app.
+Round-tripping through one library alone does not prove interoperability.</p>
+<h2 id="16-status">16. Status</h2>
+<p>This is a proposed implementation profile, not a deployed Onym recovery
+network. Production use requires canonical fixtures, reviewed libraries,
+independent cryptographic and UX assessment, trustee applications, incident
+procedures, full recovery and re-sharing drills, and clear provider/human
+trustee terms.</p>
+<h2 id="references">References</h2>
+<ol>
+<li>Adi Shamir, “How to Share a Secret,” <em>Communications of the ACM</em> 22(11),
+1979: <a href="https://doi.org/10.1145/359168.359176">https://doi.org/10.1145/359168.359176</a></li>
+<li>SatoshiLabs, “SLIP-0039: Shamir's Secret-Sharing for Mnemonic Codes”:
+<a href="https://github.com/satoshilabs/slips/blob/master/slip-0039.md">https://github.com/satoshilabs/slips/blob/master/slip-0039.md</a></li>
+<li>IETF RFC 9180, “Hybrid Public Key Encryption”:
+<a href="https://www.rfc-editor.org/rfc/rfc9180">https://www.rfc-editor.org/rfc/rfc9180</a></li>
+<li>NIST SP 800-38D, “Recommendation for Block Cipher Modes of Operation:
+Galois/Counter Mode (GCM) and GMAC”:
+<a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">https://csrc.nist.gov/pubs/sp/800/38/d/final</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/recovery/Recovery-Trustee-Shamir.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

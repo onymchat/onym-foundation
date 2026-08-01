@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Audit Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Audit Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/audit/Audit.html">
+<meta property="og:title" content="Onym Audit Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/audit/Audit.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow" style="margin-bottom:12px">Audit &amp; attestation</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/audit/Audit.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-audit-contract-boundary">Onym Audit Contract Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>An auditor examines exact bytes under a declared scope and signs what it
+found. The attestation is one institution's visible opinion—never a
+license, a gate, or a substitute for the reader's own trust decision.</p>
+</blockquote>
+<p>This document proposes the technology-neutral boundary for the <strong>audit
+seat</strong>: the institutional service that examines protocol components—code,
+builds, deployments, privacy profiles, conformance claims—and issues signed
+<strong>attestations</strong> other participants may choose to rely on. It gives a
+defined carrier to the audit statements the
+<a href="../WHITEPAPER.html">whitepaper</a> already assumes: notary bundles carry &quot;audit
+and build-provenance statements&quot; (§9.2), directories imply vetting (§15.2),
+the roadmap funds audits before promoting paid listings (Phase 3), and the
+current system's own limitation list says no production-grade independent
+audit program has completed (§19).</p>
+<p>It does not require a particular audit firm, methodology, jurisdiction,
+report format, or assurance framework. Anyone may offer audit services; a
+concrete implementation profile defines report formats and
+methodology-specific evidence. No concrete profile exists yet.</p>
+<p>The product of this seat is the <strong>attestation</strong>, not approval. The word
+<em>certification</em> is deliberately avoided: certification implies an authority
+whose refusal excludes, and this seat must never hold that power
+(whitepaper §3.7: interoperability is permissionless; endorsement is not).</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the auditor, the audit subject, the sponsor of the engagement,
+directories, and relying parties as independently owned components joined by
+versioned interfaces.</p>
+<ul>
+<li>The <strong>auditor</strong> owns its methodology, staffing, professional judgment,
+liability, and reputation. It sells examinations and signs attestations.
+It never acquires authority over the subject's release, operation, or
+participation.</li>
+<li>The <strong>subject</strong> is the owner of the examined component—a UI publisher,
+courier operator, notary provider, registry, bank provider, or SDK
+author. It cooperates with an engagement it accepted; it does not gain a
+veto over honest findings beyond the disclosure terms both parties signed.</li>
+<li>The <strong>engagement sponsor</strong> pays. It may be the subject itself, a
+foundation's commons fund, a directory, or a third party. Who paid is
+part of the attestation.</li>
+<li><strong>Directories</strong> may cite attestations in their inclusion policies. A
+directory citing an attestation adopts a visible input, not a delegated
+authority.</li>
+<li>The <strong>relying party</strong>—a user, group, provider, or another institution—
+decides what any attestation is worth, per issuer, per scope, per its own
+stakes.</li>
+</ul>
+<p>One organization may occupy several roles, but the profile does not merge
+their authority: an auditor that also operates a directory discloses that
+conflict; a foundation that funds an audit does not co-sign its findings.</p>
+<p>The boundary has three interfaces:</p>
+<ol>
+<li>the <strong>engagement</strong> interface between sponsor, subject, and auditor: the
+signed order defining artifact, scope, methodology, fees, and disclosure
+terms;</li>
+<li>the <strong>attestation</strong> interface between auditor and the world: the signed,
+verifiable statement and its revocation channel; and</li>
+<li>the <strong>reliance</strong> interface between attestation and verifier: how a
+client matches an attestation to the exact component in front of it.</li>
+</ol>
+<h2 id="2-what-the-audit-seat-does">2. What the audit seat does</h2>
+<p>A conforming auditor can:</p>
+<ol>
+<li>publish a signed manifest declaring its identity, methodology classes,
+scopes offered, independence policy, and fee offers;</li>
+<li>accept a signed <code>AuditOrder</code> binding an exact artifact, scope,
+methodology, timeline, disclosure policy, and price;</li>
+<li>examine the artifact and produce a content-addressed findings report
+under the order's disclosure rules;</li>
+<li>issue a signed <code>Attestation</code> stating exactly what was examined, how, to
+what result class, with what limitations, and until when;</li>
+<li>supersede or revoke its own attestations when new information
+invalidates them; and</li>
+<li>answer freshness queries about its attestations' current status.</li>
+</ol>
+<p>Methodology classes are open-ended; the initial set this proposal names:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Class</th>
+<th scope="col">What is attested</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>security-review</code></td>
+<td>Manual/assisted examination of code or deployment for vulnerability classes in scope</td>
+</tr>
+<tr>
+<td><code>conformance-run</code></td>
+<td>A component passed a named, versioned conformance suite (§15.3 of the whitepaper)</td>
+</tr>
+<tr>
+<td><code>build-provenance</code></td>
+<td>A distributed artifact reproducibly derives from stated source revisions</td>
+</tr>
+<tr>
+<td><code>privacy-review</code></td>
+<td>A published privacy profile matches observed component behavior in scope</td>
+</tr>
+<tr>
+<td><code>availability-measurement</code></td>
+<td>Declared service levels were measured over a stated window and method</td>
+</tr>
+</tbody>
+</table></div><p>It does not approve releases, license participants, rank providers, operate
+directories under this seat, fix the defects it finds, or acquire any
+standing over components it was not engaged to examine.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-trust-claims-need-an-accountable-author">3.1 Trust claims need an accountable author</h3>
+<p>The system's security story repeatedly reaches the same edge: cryptography
+proves who signed and what hash, but whether code is safe, a build is
+honest, or a privacy profile is true is a judgment (whitepaper §3.5). Today
+those judgments float unattributed—&quot;audited,&quot; says a README. This seat
+forces every such claim into a signed object with a named issuer, an exact
+artifact, a scope, and an expiry, so misplaced trust at least has a return
+address.</p>
+<h3 id="32-directories-need-inputs-not-opinions-of-their-own">3.2 Directories need inputs, not opinions of their own</h3>
+<p>A directory that vets in private becomes an unaccountable quality
+authority. When directories cite attestations, their inclusion policy
+becomes auditable—&quot;we list message couriers with a current
+<code>conformance-run</code> from issuers on this list&quot;—and competing directories can
+weigh the same attestations differently. Curation stays replaceable
+(§15.2) because its evidence is portable.</p>
+<h3 id="33-attestation-must-not-become-gatekeeping">3.3 Attestation must not become gatekeeping</h3>
+<p>The failure mode of every audit regime is drift into licensure: no stamp,
+no market. The boundary blocks the mechanical half of that drift: clients
+must not refuse direct manifest import for lack of attestations, absence of
+an attestation is rendered as absence—not as failure—and no auditor gains
+protocol standing over unexamined components. The social half—users
+preferring attested components—is the point, not the problem.</p>
+<h3 id="34-bytes-drift-opinions-must-not-follow-silently">3.4 Bytes drift; opinions must not follow silently</h3>
+<p>&quot;Audited&quot; is meaningless across releases. Binding every attestation to
+exact hashes means a new build carries no inherited halo: the attestation
+for revision A displays only against revision A. This is what makes the
+seat mechanically checkable by clients rather than a marketing adjective.</p>
+<h3 id="35-paid-examination-is-a-conflict-to-manage-not-deny">3.5 Paid examination is a conflict to manage, not deny</h3>
+<p>Someone pays the auditor, usually the subject—true of every audit industry.
+The boundary makes the payer, the fee model, and declared relationships
+part of the attestation, and makes verdict-independent payment the
+baseline, so relying parties can discount accordingly instead of
+discovering the conflict later.</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">┌────────────────┐   signed AuditOrder    ┌──────────────────────────┐
+│ Sponsor        │───────────────────────&gt;│ Auditor                  │
+│ subject, fund, │                        │ methodology · judgment   │
+│ or third party │                        │ liability · reputation   │
+└────────────────┘                        └───────┬──────────────────┘
+        │ artifact access,                        │ examines exact bytes
+        │ cooperation                             v
+┌───────┴────────┐                        ┌──────────────────────────┐
+│ Subject        │                        │ Findings report          │
+│ component owner│&lt;───disclosure terms────│ (content-addressed,      │
+└────────────────┘                        │  order-scoped)           │
+                                          └───────┬──────────────────┘
+                                                  │ issues
+                                                  v
+                                          ┌──────────────────────────┐
+                     cite as inputs       │ Attestation              │
+┌────────────────┐&lt;───────────────────────│ signed · scoped · bound  │
+│ Directories    │                        │ to hashes · expiring ·   │
+└────────────────┘                        │ revocable                │
+┌────────────────┐    verify + match      └──────────────────────────┘
+│ Relying clients│&lt;──────────────────────────────┘
+└────────────────┘
+
+  No path grants the auditor authority over the subject's participation.
+  Direct manifest import (whitepaper §15.1) never requires this seat.
+</code></pre>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-audit-profile">5.1 Audit Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:audit-profile:attestation-v1&quot;,
+  &quot;interface&quot;: &quot;onym-audit-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;offer-engagement&quot;,
+    &quot;accept-order&quot;,
+    &quot;issue-attestation&quot;,
+    &quot;supersede-attestation&quot;,
+    &quot;revoke-attestation&quot;,
+    &quot;query-status&quot;
+  ],
+  &quot;methodologyClasses&quot;: [
+    &quot;security-review&quot;,
+    &quot;conformance-run&quot;,
+    &quot;build-provenance&quot;,
+    &quot;privacy-review&quot;,
+    &quot;availability-measurement&quot;
+  ],
+  &quot;attestationSchema&quot;: &quot;onym-attestation-v1&quot;,
+  &quot;resultClasses&quot;: [&quot;clear&quot;, &quot;findings-noted&quot;, &quot;fail&quot;, &quot;inconclusive&quot;],
+  &quot;freshness&quot;: &quot;&lt;status-endpoint-and-staleness-model&gt;&quot;,
+  &quot;errorSchema&quot;: &quot;onym-audit-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="52-auditor-manifest">5.2 Auditor Manifest</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;auditor-id&gt;&quot;,
+  &quot;seat&quot;: &quot;audit&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;auditor-identity&gt;&quot;,
+  &quot;auditProfileId&quot;: &quot;onym:audit-profile:attestation-v1&quot;,
+  &quot;methodologies&quot;: [
+    {
+      &quot;class&quot;: &quot;security-review&quot;,
+      &quot;specification&quot;: &quot;&lt;hash-or-url-of-published-methodology&gt;&quot;,
+      &quot;scopesOffered&quot;: [&quot;&lt;seat-and-technology-scopes&gt;&quot;]
+    }
+  ],
+  &quot;independencePolicy&quot;: &quot;&lt;hash-or-url: conflicts, ownership, recusal rules&gt;&quot;,
+  &quot;unsolicitedPolicy&quot;: &quot;&lt;hash-or-url: disclosure, embargo, and contact rules, or none&gt;&quot;,
+  &quot;liability&quot;: &quot;&lt;hash-or-url-of-engagement-liability-terms&gt;&quot;,
+  &quot;statusEndpoint&quot;: &quot;&lt;attestation-freshness-and-revocation-endpoint&gt;&quot;,
+  &quot;offers&quot;: [&quot;&lt;engagement-fee-offer-ids&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;auditor-signature&gt;&quot;
+}
+</code></pre>
+<p>The manifest is the auditor's standing claim about itself. Like a
+registry's policy or a bank's regulatory self-declaration, it is signed and
+auditable, not self-proving: an auditor's competence is established by its
+published methodologies, its track record of attestations, and—
+recursively but honestly—what other institutions attest about it.</p>
+<h3 id="53-audit-order">5.3 Audit Order</h3>
+<p>The engagement contract all parties sign before work begins:</p>
+<pre><code class="language-json">{
+  &quot;orderVersion&quot;: 1,
+  &quot;orderId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;auditor&quot;: &quot;onym:component:&lt;auditor-id&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:component:&lt;subject-component-id&gt;&quot;,
+  &quot;sponsor&quot;: &quot;onym:key:&lt;payer-identity&gt;&quot;,
+  &quot;artifact&quot;: {
+    &quot;source&quot;: &quot;&lt;repository-url-or-archive-hash&gt;&quot;,
+    &quot;revision&quot;: &quot;&lt;commit-or-release-hash&gt;&quot;,
+    &quot;artifactHash&quot;: &quot;&lt;build-hash-when-applicable&gt;&quot;
+  },
+  &quot;methodologyClass&quot;: &quot;security-review&quot;,
+  &quot;scope&quot;: &quot;&lt;hash-or-url: precise inclusion and exclusion list&gt;&quot;,
+  &quot;disclosure&quot;: {
+    &quot;findingsToSubjectFirst&quot;: true,
+    &quot;embargoDays&quot;: 90,
+    &quot;attestationPublication&quot;: &quot;public-on-issuance&quot;,
+    &quot;failPublication&quot;: &quot;public-after-embargo&quot;
+  },
+  &quot;timeline&quot;: {&quot;start&quot;: &quot;2026-08-01&quot;, &quot;reportDue&quot;: &quot;2026-10-01&quot;},
+  &quot;fee&quot;: {&quot;model&quot;: &quot;fixed-verdict-independent&quot;, &quot;offerId&quot;: &quot;&lt;offer-id&gt;&quot;},
+  &quot;signatures&quot;: [&quot;&lt;auditor&gt;&quot;, &quot;&lt;subject&gt;&quot;, &quot;&lt;sponsor&gt;&quot;]
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li><strong>Fees are verdict-independent.</strong> No bonus for <code>clear</code>, no forfeiture on
+<code>fail</code>. Contingent-verdict pricing is nonconforming, full stop.</li>
+<li><strong>Scope is exact and content-addressed</strong> before work begins; scope creep
+or shrinkage is a signed order amendment, not an editorial decision in
+the report.</li>
+<li><strong>Disclosure terms are declared up front</strong>, including whether and when a
+<code>fail</code> result becomes public, and the embargo protecting responsible
+disclosure of exploitable findings.</li>
+<li><strong>The subject's cooperation duties</strong> (artifact access, environment,
+questions answered) are part of the order; obstruction converts the
+result to <code>inconclusive</code> with the obstruction noted, not to silence.</li>
+</ol>
+<h3 id="54-attestation">5.4 Attestation</h3>
+<p>The seat's product:</p>
+<pre><code class="language-json">{
+  &quot;attestationVersion&quot;: 1,
+  &quot;attestationId&quot;: &quot;&lt;random-nonreusable-id&gt;&quot;,
+  &quot;auditor&quot;: &quot;onym:component:&lt;auditor-id&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:component:&lt;subject-component-id&gt;&quot;,
+  &quot;artifact&quot;: {
+    &quot;source&quot;: &quot;&lt;repository-url-or-archive-hash&gt;&quot;,
+    &quot;revision&quot;: &quot;&lt;commit-or-release-hash&gt;&quot;,
+    &quot;artifactHash&quot;: &quot;&lt;build-hash-when-applicable&gt;&quot;
+  },
+  &quot;methodologyClass&quot;: &quot;security-review&quot;,
+  &quot;methodology&quot;: &quot;&lt;hash-of-methodology-version-applied&gt;&quot;,
+  &quot;scope&quot;: &quot;&lt;hash-of-examined-scope&gt;&quot;,
+  &quot;exclusions&quot;: &quot;&lt;hash-or-inline-list-of-what-was-not-examined&gt;&quot;,
+  &quot;result&quot;: &quot;findings-noted&quot;,
+  &quot;severityScale&quot;: &quot;&lt;hash-or-url-of-named-ordered-severity-scale&gt;&quot;,
+  &quot;severityFloor&quot;: &quot;medium&quot;,
+  &quot;findingsReport&quot;: &quot;&lt;content-address-or-null-under-embargo&gt;&quot;,
+  &quot;findingsSummary&quot;: {&quot;critical&quot;: 0, &quot;high&quot;: 1, &quot;resolved&quot;: 1},
+  &quot;engagement&quot;: &quot;commissioned&quot;,
+  &quot;sponsor&quot;: &quot;onym:key:&lt;payer-identity&gt;&quot;,
+  &quot;relationships&quot;: &quot;&lt;declared-conflicts-or-none&gt;&quot;,
+  &quot;orderRef&quot;: &quot;&lt;hash-of-audit-order-or-null-when-unsolicited&gt;&quot;,
+  &quot;issuedAt&quot;: &quot;2026-10-01T00:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2027-10-01T00:00:00Z&quot;,
+  &quot;supersedes&quot;: &quot;&lt;prior-attestation-id-or-null&gt;&quot;,
+  &quot;status&quot;: &quot;&lt;freshness-endpoint-or-epoch&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;auditor-signature&gt;&quot;
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>The attestation binds <strong>exact hashes</strong>. It says nothing about any other
+revision, build, fork, or deployment of the same name.</li>
+<li><code>scope</code> and <code>exclusions</code> together are the complete statement of what was
+and was not examined; a relying party reading only the result class must
+not be more reassured than one reading the full scope.</li>
+<li><code>result</code> classes mean: <code>clear</code>—nothing in scope found at or above
+<code>severityFloor</code> on the named <code>severityScale</code>; <code>findings-noted</code>—issues
+found, enumerated, possibly resolved; <code>fail</code>—the artifact did not meet
+the scope's stated bar; <code>inconclusive</code>—examination could not complete,
+with the reason. <code>severityScale</code> names the ordered scale that
+<code>severityFloor</code> and the <code>findingsSummary</code> buckets use; a <code>clear</code> or
+<code>findings-noted</code> result without both fields is nonconforming, because a
+relying party could not compare it.</li>
+<li><code>sponsor</code> and <code>relationships</code> make the money and conflicts visible in
+the object itself, not in a footnote elsewhere.</li>
+<li><code>expiresAt</code> is mandatory for the judgment classes (<code>security-review</code>,
+<code>privacy-review</code>, <code>conformance-run</code>, <code>availability-measurement</code>), whose
+opinions age with the threat landscape, suite versions, and measurement
+windows. A <code>build-provenance</code> attestation may set it to null: it
+records a reproduction event over fixed bytes, which does not age—
+though it remains revocable like any attestation.</li>
+</ol>
+<h3 id="55-supersession-and-revocation">5.5 Supersession and revocation</h3>
+<p>An auditor may supersede (new attestation, <code>supersedes</code> set—typically after
+re-examination or fix verification) or revoke:</p>
+<pre><code class="language-json">{
+  &quot;revocationVersion&quot;: 1,
+  &quot;attestationId&quot;: &quot;&lt;attestation-id&gt;&quot;,
+  &quot;auditor&quot;: &quot;onym:component:&lt;auditor-id&gt;&quot;,
+  &quot;issuedAt&quot;: &quot;2026-11-15T00:00:00Z&quot;,
+  &quot;statusEpoch&quot;: 42,
+  &quot;effectiveFrom&quot;: &quot;2026-11-15T00:00:00Z&quot;,
+  &quot;reason&quot;: &quot;methodology-error | new-information | compromise-of-auditor-key | withdrawal&quot;,
+  &quot;detail&quot;: &quot;&lt;hash-or-url-or-null&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;auditor-signature&gt;&quot;
+}
+</code></pre>
+<p>Revocation is the auditor's unilateral right and duty: an attestation the
+auditor no longer stands behind must not keep circulating with its
+signature.</p>
+<p>The status endpoint serves a <strong>signed status list</strong>: a timestamped document
+with a monotonically increasing <code>statusEpoch</code> covering the current status of
+every unexpired attestation the auditor has issued. Clients enforce epoch
+monotonicity—a status answer carrying a lower epoch than one already seen
+is a rollback and is rejected—and treat a list older than the profile's
+freshness bounds as <em>stale</em>, never as <code>active</code>. Because the list covers all
+of an issuer's attestations at once, a subject, directory, or provider can
+<strong>staple</strong> the latest signed list alongside a component manifest, letting
+relying clients verify current status without contacting the auditor at
+selection time. Clients apply these freshness rules before high-stakes
+reliance, exactly as they do for registry records.</p>
+<h3 id="56-findings-report">5.6 Findings report</h3>
+<p>The report is content-addressed, referenced from the attestation, and
+released per the order's disclosure terms. Under embargo, the attestation
+may circulate while <code>findingsReport</code> is null and <code>findingsSummary</code> carries
+severity counts only—reliers know something was found and its weight,
+without a public exploit map. After the embargo, the hash link makes the
+published report tamper-evident. A report that never becomes public in a
+<code>public-after-embargo</code> order is a disclosure-term violation attributable to
+whoever withheld it.</p>
+<h3 id="57-unsolicited-attestations">5.7 Unsolicited attestations</h3>
+<p>Independent research needs a conforming carrier: if every attestation
+required the subject's order signature, every component owner would hold a
+veto over being examined at all—the mirror image of the gatekeeping this
+seat refuses—and unsolicited security research would remain the unsigned
+rumor this seat exists to replace. An attestation may therefore issue
+without an order when all of the following hold:</p>
+<ol>
+<li><code>engagement</code> is <code>&quot;unsolicited&quot;</code>, <code>orderRef</code> is null, and the scope
+states that subject cooperation was none;</li>
+<li>the examined artifact is publicly available exactly as hashed—private
+artifacts cannot be examined uninvited;</li>
+<li>disclosure follows the auditor's published <code>unsolicitedPolicy</code>, which
+must include a responsible-disclosure embargo for exploitable findings
+and a documented attempt to reach the subject through its published
+security contact before publication;</li>
+<li>the sponsor, if any, is named as in any attestation; and</li>
+<li>the subject has a right of reply: a signed <code>SubjectResponse</code> referencing
+the attestation, which the auditor's status endpoint must serve
+alongside it and conforming clients display with it.</li>
+</ol>
+<p>Obstruction semantics do not apply—an uncooperative subject owes an
+uninvited examiner nothing, and <code>inconclusive</code> here means only that the
+public artifact did not suffice. Offering to withhold, soften, or delay an
+unsolicited attestation in exchange for payment is nonconforming
+(extortion)—the sharpest case of the rule that neither verdicts nor
+silence are for sale.</p>
+<h2 id="6-common-audit-surface">6. Common audit surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>offer-engagement</code></td>
+<td>Methodology class, scope request</td>
+<td>Fee offer, timeline, disclosure defaults</td>
+</tr>
+<tr>
+<td><code>accept-order</code></td>
+<td>Signed <code>AuditOrder</code></td>
+<td>Engagement begins</td>
+</tr>
+<tr>
+<td><code>issue-attestation</code></td>
+<td>Completed examination</td>
+<td>Signed <code>Attestation</code>, report per disclosure terms</td>
+</tr>
+<tr>
+<td><code>supersede-attestation</code></td>
+<td>New examination of successor artifact</td>
+<td>New attestation with <code>supersedes</code></td>
+</tr>
+<tr>
+<td><code>revoke-attestation</code></td>
+<td>Auditor decision with reason</td>
+<td>Published revocation</td>
+</tr>
+<tr>
+<td><code>query-status</code></td>
+<td>Attestation ID, or none for the full signed status list</td>
+<td>Status-list entry: <code>active</code>, <code>superseded</code>, <code>revoked</code>, <code>expired</code></td>
+</tr>
+<tr>
+<td><code>verify</code></td>
+<td>Attestation + auditor manifest + target manifest</td>
+<td>Local match/no-match decision</td>
+</tr>
+</tbody>
+</table></div><p><code>verify</code> is local and mechanical: signature valid, auditor manifest
+current, and—decisively—the attestation's artifact hashes equal to the
+hashes in the component manifest the client is actually about to use.
+Anything less than exact equality is a non-match.</p>
+<h2 id="7-relying-client-obligations">7. Relying client obligations</h2>
+<p>A conforming UI or application must:</p>
+<ol>
+<li>verify auditor signature, attestation status, expiry, and exact artifact
+match before displaying any attestation as applying to a component;</li>
+<li>display the issuer, methodology class, scope, result class, sponsor, and
+age—an attestation renders as &quot;<em>who</em> attested <em>what</em>, <em>how</em>, <em>paid by
+whom</em>,&quot; never as a bare checkmark;</li>
+<li>render a hash mismatch as <strong>no attestation</strong> for the component at hand
+(with an optional note that another revision was attested), never as a
+degraded pass;</li>
+<li>render absence as absence: an unattested component is unattested, not
+failed, and remains directly importable per whitepaper §15.1;</li>
+<li>render <code>fail</code> and <code>findings-noted</code> results when published—hiding adverse
+attestations while showing favorable ones from the same issuer is
+nonconforming curation;</li>
+<li>apply freshness rules before purchase, group-creation, custody, and
+other high-stakes selections;</li>
+<li>let users choose which auditors they credit, as they choose registries
+and directories, without a hardcoded mandatory issuer; and</li>
+<li>prefer stapled status lists or full-list retrieval over per-attestation
+queries: a <code>query-status</code> call for one attestation ID tells the auditor
+exactly which component the user is about to rely on, so per-ID queries
+are a disclosed last resort, not the default path.</li>
+</ol>
+<p>Attestation summaries, scope text, and report URLs are untrusted input.
+They must not execute code or impersonate client UI.</p>
+<h2 id="8-auditor-obligations">8. Auditor obligations</h2>
+<p>A conforming auditor must:</p>
+<ol>
+<li>publish and follow its manifest: methodologies, independence policy,
+liability terms, offers, and status endpoint;</li>
+<li>examine what the order binds—exact artifact, exact scope—and attest
+nothing broader than it examined;</li>
+<li>price verdict-independently and state the sponsor and relationships in
+every attestation;</li>
+<li>refuse engagements its independence policy forbids, and recuse from
+subjects it owns, operates, or competes with, unless disclosed and
+accepted by the sponsor in the order;</li>
+<li>protect embargoed findings, disclose them per the order's terms, and
+never trade on them;</li>
+<li>issue <code>inconclusive</code> rather than silence when an engagement cannot
+complete, and <code>fail</code> rather than a quiet non-issuance when the order's
+publication terms say so—an auditor's silence must not be purchasable
+after the fact;</li>
+<li>maintain its status endpoint and revoke attestations it no longer
+stands behind, including after auditor key compromise;</li>
+<li>keep examination access bounded to the engagement: artifact and
+environment access is not a license to retain subject secrets,
+credentials, or unrelated data; and</li>
+<li>state its own limits: an attestation is professional judgment under a
+methodology at a point in time, and its manifest's liability terms say
+what the auditor answers for when judgment fails.</li>
+</ol>
+<h2 id="9-subject-and-sponsor-obligations">9. Subject and sponsor obligations</h2>
+<ul>
+<li>The subject provides the bound artifact honestly—attested source must be
+the shipped source, which is what <code>build-provenance</code> attestations exist
+to check—and cooperates per the order.</li>
+<li>The subject may commission re-examination after fixes; it may not demand
+un-issuance of honest results beyond the disclosure terms it signed.</li>
+<li>A sponsor funding audits of components it did not author (a foundation's
+commons program, a directory raising its bar) gains attribution in the
+attestation and nothing else: no findings pre-approval, no verdict
+influence, no early exploit access beyond the order's disclosure terms.</li>
+<li><strong>Verdict shopping</strong> — commissioning serial engagements and publishing
+only the favorable one — is constrained, not prevented: conforming
+auditors publish per their signed disclosure terms (including <code>fail</code>
+results where the order says so), and relying parties may weigh an
+attestation more by what its issuer's terms would have published had it
+gone badly. The boundary makes selective silence expensive and
+detectable, not impossible.</li>
+</ul>
+<h2 id="10-directories-and-attestations">10. Directories and attestations</h2>
+<p>A directory's inclusion policy may cite attestation requirements. A
+conforming citation names accepted issuers (or issuer criteria), required
+methodology classes and scopes, and maximum age. The directory remains a
+replaceable curator (whitepaper §15.2): it adopts attestations as visible
+inputs; it neither issues them under this seat nor gains any power to make
+an unattested component invalid. A directory that also operates an audit
+seat, or accepts payment from subjects it lists, discloses those conflicts
+in its own policy.</p>
+<h2 id="11-payment-at-the-audit-boundary">11. Payment at the audit boundary</h2>
+<p>Auditors publish engagement offers as <code>SeatOffer</code>s: fixed-fee reviews,
+per-suite conformance runs, measurement subscriptions, retainer programs.
+Settlement follows the whitepaper's ordinary seat-payment model; store
+channels are unlikely for institutional engagements but nothing forbids
+them.</p>
+<p>The invariant is direction-of-payment transparency plus verdict
+independence: payment buys examination effort under a methodology; it
+cannot buy a result class, an early un-embargoed exploit, suppression of a
+signed attestation, or display priority in conforming clients. Commons
+funding (a foundation buying audits of widely used components, per roadmap
+Phase 3) uses the same order object with the foundation as sponsor—
+attributed, conflict-checked against its own board rules, and without
+co-signing the findings.</p>
+<h2 id="12-errors-and-lifecycle">12. Errors and lifecycle</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse; explain required profile</td>
+</tr>
+<tr>
+<td><code>scope_unavailable</code></td>
+<td>Auditor</td>
+<td>Decline engagement; no partial silent scope</td>
+</tr>
+<tr>
+<td><code>artifact_mismatch</code></td>
+<td>Verification</td>
+<td>Attestation does not apply; render as absence</td>
+</tr>
+<tr>
+<td><code>attestation_expired</code></td>
+<td>Time</td>
+<td>Render as expired; prompt re-examination interest</td>
+</tr>
+<tr>
+<td><code>attestation_revoked</code></td>
+<td>Status endpoint</td>
+<td>Stop displaying; show reason class</td>
+</tr>
+<tr>
+<td><code>attestation_superseded</code></td>
+<td>Status endpoint</td>
+<td>Re-resolve; display successor</td>
+</tr>
+<tr>
+<td><code>status_unavailable</code></td>
+<td>Network/auditor</td>
+<td>Apply the cached signed status list within freshness bounds and epoch monotonicity; degrade honestly</td>
+</tr>
+<tr>
+<td><code>order_breached</code></td>
+<td>Any party</td>
+<td>Surface as the signed order's dispute matter, not a protocol event</td>
+</tr>
+<tr>
+<td><code>obstruction</code></td>
+<td>Subject</td>
+<td><code>inconclusive</code> result with obstruction noted</td>
+</tr>
+<tr>
+<td><code>issuer_untrusted</code></td>
+<td>Relying party policy</td>
+<td>Display attestation as from an uncredited issuer, or omit per user policy</td>
+</tr>
+</tbody>
+</table></div><p>Attestation lifecycle:</p>
+<pre><code class="language-text">order_signed
+  -&gt; examination
+  -&gt; report_drafted (disclosure terms govern)
+  -&gt; issued: clear | findings-noted | fail | inconclusive
+  -&gt; active
+       -&gt; superseded (new artifact or re-examination)
+       -&gt; revoked   (auditor withdrawal, with reason)
+       -&gt; expired
+</code></pre>
+<p>Both exits from <code>active</code> besides expiry are the auditor's unilateral acts;
+no subject, sponsor, or directory can revoke or extend an attestation it
+did not sign.</p>
+<h2 id="13-security-and-privacy-invariants">13. Security and privacy invariants</h2>
+<ol>
+<li><strong>Attestations bind bytes, not brands.</strong> Exact source revision and
+artifact hash; nothing is inherited by other builds, forks, or names.</li>
+<li><strong>The issuer is always visible.</strong> Every rendered attestation shows who
+judged, under what methodology, at whose expense.</li>
+<li><strong>Scope is the whole claim.</strong> What was excluded travels with what was
+examined; a result class never outruns its scope.</li>
+<li><strong>Absence is not failure, and attestation is not permission.</strong> Direct
+use needs no auditor; no client, directory, or auditor can convert this
+seat into licensure.</li>
+<li><strong>Verdicts are not for sale.</strong> Fees are verdict-independent; sponsors
+are named; conflicts are declared in the attestation itself.</li>
+<li><strong>Opinions expire and can be withdrawn.</strong> Judgment classes carry
+mandatory expiry, provenance facts remain revocable, and epoch-monotonic
+signed status lists make rollback of a revocation detectable.</li>
+<li><strong>Mismatch means silence.</strong> An attestation for other bytes never
+decorates the component at hand.</li>
+<li><strong>Adverse results are as visible as favorable ones</strong>, per the signed
+disclosure terms—selective display is nonconforming wherever it occurs.</li>
+<li><strong>Embargoes protect users, not reputations.</strong> Delay windows exist for
+responsible disclosure; suppression past the signed terms is a breach
+with a named breacher.</li>
+<li><strong>Examination access is bounded.</strong> Auditors keep engagement materials
+confidential, retain no subject credentials, and gain no standing over
+anything they did not examine.</li>
+<li><strong>The seat composes with itself.</strong> Auditors can be subjects: their
+tooling, methodology conformance, and key handling are attestable by
+other auditors, and nothing makes any issuer final.</li>
+<li><strong>Consent is not a veto.</strong> Public artifacts are examinable uninvited
+under the unsolicited form's disclosure duties, with the subject's
+signed reply served alongside; paying for suppression is as
+nonconforming as paying for a verdict.</li>
+</ol>
+<h2 id="14-versioning-and-conformance">14. Versioning and conformance</h2>
+<ul>
+<li><code>AuditProfile</code> changes when operation, result-class, or freshness meaning
+changes; methodology classes are additive capabilities.</li>
+<li>Auditor manifests change on methodology, policy, liability, or key
+changes; auditor key rotation republishes the status endpoint's trust
+root and is surfaced to relying parties.</li>
+<li>Attestations are immutable once signed; corrections are supersessions or
+revocations, never edits.</li>
+<li>Cross-platform fixtures cover: attestation canonical encoding and
+signature verification; exact-hash matching including near-miss vectors
+(right repo, wrong revision; right revision, wrong build); expiry,
+supersession, and revocation display decisions; status-list epoch
+monotonicity, rollback rejection, and stapled-status verification;
+unsolicited-form validation and subject-response display;
+embargoed-report handling;
+sponsor and conflict rendering; absence-vs-fail rendering; and
+issuer-trust filtering.</li>
+<li>A relying client, an auditor, and a directory from three different
+authors must interoperate using only published profiles and fixtures.</li>
+</ul>
+<h2 id="15-concrete-implementation-profiles">15. Concrete implementation profiles</h2>
+<p>No concrete profile exists yet. The natural first profile is
+<code>conformance-run</code> attestation over the conformance suites the roadmap's
+Phase 1 creates: it is the most mechanical methodology class (suite
+version + artifact hash + pass/fail evidence), needs the least professional
+judgment to verify, and exercises the full object lifecycle. <code>security-review</code>
+and <code>build-provenance</code> profiles follow once report-format and
+reproducibility conventions are fixed.</p>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>The audit seat is successfully specified when:</p>
+<ol>
+<li>an institution can publish a manifest, take an order, and issue an
+attestation that any conforming client verifies and correctly matches—
+or refuses to match—against a component manifest, using published
+profiles and fixtures alone;</li>
+<li>no path exists by which an attestation's absence blocks direct manifest
+import, or by which any issuer becomes mandatory;</li>
+<li>every rendered attestation exposes issuer, scope, exclusions, sponsor,
+relationships, result, and age;</li>
+<li>a new release of an attested component displays as unattested until
+re-examined;</li>
+<li>revocations and supersessions propagate to relying clients within the
+profile's freshness bounds;</li>
+<li>adverse results published under signed disclosure terms are rendered
+wherever favorable ones would be;</li>
+<li>verdict-contingent fee arrangements are expressible nowhere in the
+conforming objects;</li>
+<li>an unsolicited attestation of a public artifact verifies and displays
+like any other, with the subject's signed response beside it and no
+subject signature required anywhere; and</li>
+<li>two auditors can attest the same artifact under different methodologies
+and both attestations display side by side without either becoming
+final.</li>
+</ol>
+<h2 id="17-justification-in-one-sentence">17. Justification in one sentence</h2>
+<blockquote>
+<p>The audit seat turns &quot;trust us, it's audited&quot; into a signed, expiring,
+revocable claim about exact bytes by a named institution at a disclosed
+payer's expense—so every other seat's trust story gains an accountable
+author without anyone gaining a gate.</p>
+</blockquote>
+<h2 id="references">References</h2>
+<ol>
+<li>Onym system whitepaper, §3.5, §3.7, §9.2, §15, §17.10, §19:
+<a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
+<li>Onym association naming proposal (claim/issuer display pattern) —
+forward reference to <code>association/Association-Naming.md</code>, an unmerged
+draft on the <code>worktree-association-naming</code> branch</li>
+<li>SLSA, “Supply-chain Levels for Software Artifacts”:
+<a href="https://slsa.dev/spec/">https://slsa.dev/spec/</a></li>
+<li>in-toto attestation framework:
+<a href="https://github.com/in-toto/attestation">https://github.com/in-toto/attestation</a></li>
+<li>Reproducible Builds project:
+<a href="https://reproducible-builds.org/">https://reproducible-builds.org/</a></li>
+<li>IETF RFC 9116, “A File Format to Aid in Security Vulnerability
+Disclosure” (security.txt):
+<a href="https://www.rfc-editor.org/rfc/rfc9116">https://www.rfc-editor.org/rfc/rfc9116</a></li>
+<li>ISO/IEC 17029, “Conformity assessment — General principles and
+requirements for validation and verification bodies”:
+<a href="https://www.iso.org/standard/29352.html">https://www.iso.org/standard/29352.html</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/audit/Audit.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>
