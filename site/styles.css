@@ -61,7 +61,8 @@ main p a:not(.pill),main li a,main td a,figure figcaption a{text-decoration:unde
 .navbar{min-height:58px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-top:6px;padding-bottom:6px}
 .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.02em}
 .brand .mark{display:block;color:var(--text)}
-.brand span{color:var(--muted)}
+.brand .wordmark{color:var(--text)}
+.brand .wordmark span{color:var(--muted)}
 .navlinks{display:flex;gap:22px;font-size:14px;margin-left:auto;align-items:center}
 .navlinks a{color:var(--muted);padding:8px 0}
 .navlinks a[aria-current]:not(.pill){color:var(--text)}

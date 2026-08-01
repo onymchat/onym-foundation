@@ -37,8 +37,7 @@ export function nav({ up, current }) {
   return `<a class="skip" href="#main">Skip to content</a>
 <nav class="site" aria-label="Main">
   <div class="wrap navbar">
-    <a class="brand" href="${up}index.html">${MARK}onym<span>.foundation</span></a>
-    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <a class="brand" href="${up}index.html">${MARK}<span class="wordmark">onym<span>.foundation</span></span></a>
     <div class="navlinks" id="sitemenu">
       <a href="${up}seats.html"${cur('seats')}>Seats</a>
       <a href="${up}governance.html"${cur('governance')}>Governance</a>
