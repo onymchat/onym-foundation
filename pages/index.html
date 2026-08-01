@@ -67,55 +67,112 @@
           <a class="micro" href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest to take a seat — lead@onym.app</a></p>
       </div>
       <figure class="has-alt">
-        <svg class="diagram" viewBox="0 0 1100 400" role="group" aria-label="Diagram: seats arranged around the user, each earning only when chosen; each seat links to its contract document">
-          <g stroke="currentColor" stroke-opacity=".18" fill="none">
-            <path d="M170 105 L470 190"/><path d="M420 105 L505 175"/><path d="M680 105 L595 175"/><path d="M930 105 L630 190"/>
-            <path d="M170 300 L470 215"/><path d="M420 300 L505 230"/><path d="M680 300 L595 230"/><path d="M930 300 L630 215"/>
+        <svg class="diagram seat-wheel" viewBox="0 0 1100 720" role="group" aria-labelledby="seat-wheel-title seat-wheel-desc">
+          <title id="seat-wheel-title">The complete seat economy</title>
+          <desc id="seat-wheel-desc">Sixteen open roles and one open-ended proposal slot form a circle around the user. Every seat earns only when the user chooses it.</desc>
+          <ellipse class="seat-orbit" cx="550" cy="360" rx="440" ry="285"/>
+          <g class="seat-spokes">
+            <line x1="550" y1="360" x2="630.8" y2="79.9"/><line x1="550" y1="360" x2="781.6" y2="117.7"/>
+            <line x1="550" y1="360" x2="901.1" y2="188.2"/><line x1="550" y1="360" x2="973.2" y2="282"/>
+            <line x1="550" y1="360" x2="988.1" y2="386.3"/><line x1="550" y1="360" x2="943.9" y2="487"/>
+            <line x1="550" y1="360" x2="846.4" y2="570.6"/><line x1="550" y1="360" x2="708.9" y2="625.8"/>
+            <line x1="550" y1="360" x2="550" y2="645"/><line x1="550" y1="360" x2="391.1" y2="625.8"/>
+            <line x1="550" y1="360" x2="253.6" y2="570.6"/><line x1="550" y1="360" x2="156.1" y2="487"/>
+            <line x1="550" y1="360" x2="111.9" y2="386.3"/><line x1="550" y1="360" x2="126.8" y2="282"/>
+            <line x1="550" y1="360" x2="198.9" y2="188.2"/><line x1="550" y1="360" x2="318.4" y2="117.7"/>
+            <line x1="550" y1="360" x2="469.2" y2="79.9"/>
           </g>
-          <a href="contracts/identity/UI-Identity.html" aria-label="User identity — read the identity vault boundary">
-            <rect x="450" y="165" width="200" height="66" rx="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
-            <text x="550" y="194" text-anchor="middle" font-size="13" fill="currentColor" font-weight="600">USER</text>
-            <text x="550" y="213" text-anchor="middle" font-size="10.5" class="svgmut">chooses every seat</text>
+
+          <a class="seat-node" href="seats.html" aria-label="Interface — explore this seat">
+            <rect x="555.8" y="52.9" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="630.8" y="76.9">Interface</text>
+            <text class="seat-earning" x="630.8" y="94.9">app pricing</text>
           </a>
-          <g>
-            <rect x="90" y="42" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="170" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">Interface</text>
-            <text x="170" y="86" text-anchor="middle" font-size="10" class="svgmut">app pricing</text>
-          </g>
-          <a href="contracts/message/UI-Message.html" aria-label="Message carriage — read the contract">
-            <rect x="340" y="42" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="420" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">Message carriage</text>
-            <text x="420" y="86" text-anchor="middle" font-size="10" class="svgmut">subscriptions</text>
+          <a class="seat-node" href="contracts/message/UI-Message.html" aria-label="Message carriage — read the contract">
+            <rect x="706.6" y="90.7" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="781.6" y="114.7">Message carriage</text>
+            <text class="seat-earning" x="781.6" y="132.7">subscriptions</text>
           </a>
-          <a href="contracts/blob/UI-Blob.html" aria-label="Media storage — read the contract">
-            <rect x="600" y="42" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="680" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">Media storage</text>
-            <text x="680" y="86" text-anchor="middle" font-size="10" class="svgmut">storage plans</text>
+          <a class="seat-node" href="contracts/blob/UI-Blob.html" aria-label="Media storage — read the contract">
+            <rect x="826.1" y="161.2" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="901.1" y="185.2">Media storage</text>
+            <text class="seat-earning" x="901.1" y="203.2">storage plans</text>
           </a>
-          <a href="contracts/notary/UI-Notary.html" aria-label="Group verification — read the contract">
-            <rect x="850" y="42" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="930" y="68" text-anchor="middle" font-size="11.5" fill="currentColor">Group verification</text>
-            <text x="930" y="86" text-anchor="middle" font-size="10" class="svgmut">per-op fees</text>
+          <a class="seat-node" href="contracts/notary/UI-Notary.html" aria-label="Group verification — read the contract">
+            <rect x="898.2" y="255" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="973.2" y="279">Group verification</text>
+            <text class="seat-earning" x="973.2" y="297">per-op fees</text>
           </a>
-          <a href="contracts/association/Association-Naming.html" aria-label="Naming — read the contract proposal, in review">
-            <rect x="90" y="300" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="170" y="326" text-anchor="middle" font-size="11.5" fill="currentColor">Naming</text>
-            <text x="170" y="344" text-anchor="middle" font-size="10" class="svgmut">issuance fees</text>
+          <a class="seat-node" href="seats.html" aria-label="Submission and fees — explore this seat">
+            <rect x="913.1" y="359.3" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="988.1" y="383.3">Submission &amp; fees</text>
+            <text class="seat-earning" x="988.1" y="401.3">submission fees</text>
           </a>
-          <a href="contracts/bank/UI-Bank.html" aria-label="Banking — read the contract proposal, in review">
-            <rect x="340" y="300" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="420" y="326" text-anchor="middle" font-size="11.5" fill="currentColor">Banking</text>
-            <text x="420" y="344" text-anchor="middle" font-size="10" class="svgmut">payment fees</text>
+          <a class="seat-node" href="contracts/audit/Audit.html" aria-label="Audit and attestation — read the contract">
+            <rect x="868.9" y="460" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="943.9" y="484">Audit &amp; attestation</text>
+            <text class="seat-earning" x="943.9" y="502">engagement fees</text>
           </a>
-          <a href="contracts/audit/Audit.html" aria-label="Audit — read the contract">
-            <rect x="600" y="300" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="680" y="326" text-anchor="middle" font-size="11.5" fill="currentColor">Audit</text>
-            <text x="680" y="344" text-anchor="middle" font-size="10" class="svgmut">engagement fees</text>
+          <a class="seat-node" href="contracts/arbitration/Arbitration.html" aria-label="Arbitration — read the contract">
+            <rect x="771.4" y="543.6" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="846.4" y="567.6">Arbitration</text>
+            <text class="seat-earning" x="846.4" y="585.6">dispute fees</text>
           </a>
-          <a href="seats.html" aria-label="See all seats">
-            <rect x="850" y="300" width="160" height="62" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
-            <text x="930" y="326" text-anchor="middle" font-size="11.5" fill="currentColor">+ 9 more seats</text>
-            <text x="930" y="344" text-anchor="middle" font-size="10" class="svgmut">each earning when chosen</text>
+          <a class="seat-node" href="seats.html" aria-label="Directories — explore this seat">
+            <rect x="633.9" y="598.8" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="708.9" y="622.8">Directories</text>
+            <text class="seat-earning" x="708.9" y="640.8">listing services</text>
+          </a>
+          <a class="seat-node seat-node-open" href="mailto:lead@onym.app?subject=New%20seat%20proposal" aria-label="Anything else — propose a new seat">
+            <rect x="475" y="618" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="550" y="642">anything else...</text>
+            <text class="seat-earning" x="550" y="660">propose a seat</text>
+          </a>
+          <a class="seat-node" href="contracts/sponsor/Sponsor.html" aria-label="Sponsorship — read the contract">
+            <rect x="316.1" y="598.8" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="391.1" y="622.8">Sponsorship</text>
+            <text class="seat-earning" x="391.1" y="640.8">funds the commons</text>
+          </a>
+          <a class="seat-node" href="contracts/recovery/Recovery-Trustee.html" aria-label="Recovery trustee — read the contract">
+            <rect x="178.6" y="543.6" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="253.6" y="567.6">Recovery trustee</text>
+            <text class="seat-earning" x="253.6" y="585.6">published fees</text>
+          </a>
+          <a class="seat-node" href="contracts/recruitment/Recruitment.html" aria-label="Recruitment — read the contract">
+            <rect x="81.1" y="460" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="156.1" y="484">Recruitment</text>
+            <text class="seat-earning" x="156.1" y="502">milestone fees</text>
+          </a>
+          <a class="seat-node" href="contracts/acquisition/Acquisition.html" aria-label="Acquisition — read the contract">
+            <rect x="36.9" y="359.3" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="111.9" y="383.3">Acquisition</text>
+            <text class="seat-earning" x="111.9" y="401.3">per-order fees</text>
+          </a>
+          <a class="seat-node" href="contracts/lead/Lead-Generation.html" aria-label="Distribution — read the contract">
+            <rect x="51.8" y="255" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="126.8" y="279">Distribution</text>
+            <text class="seat-earning" x="126.8" y="297">campaign fees</text>
+          </a>
+          <a class="seat-node" href="contracts/charity/Charity.html" aria-label="Charitable coordination — read the contract">
+            <rect x="123.9" y="161.2" width="150" height="54" rx="10"/>
+            <text class="seat-name seat-name-long" x="198.9" y="185.2">Charitable coordination</text>
+            <text class="seat-earning" x="198.9" y="203.2">service fees</text>
+          </a>
+          <a class="seat-node" href="contracts/bank/UI-Bank.html" aria-label="Banking and payments — read the contract proposal">
+            <rect x="243.4" y="90.7" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="318.4" y="114.7">Banking &amp; payments</text>
+            <text class="seat-earning" x="318.4" y="132.7">payment fees</text>
+          </a>
+          <a class="seat-node" href="contracts/association/Association-Naming.html" aria-label="Naming and credentials — read the contract proposal">
+            <rect x="394.2" y="52.9" width="150" height="54" rx="10"/>
+            <text class="seat-name" x="469.2" y="76.9">Naming &amp; credentials</text>
+            <text class="seat-earning" x="469.2" y="94.9">issuance fees</text>
+          </a>
+
+          <a class="seat-user" href="contracts/identity/UI-Identity.html" aria-label="User identity — read the identity vault boundary">
+            <circle cx="550" cy="360" r="84"/>
+            <text class="seat-user-label" x="550" y="356">USER</text>
+            <text class="seat-user-note" x="550" y="380">chooses every seat</text>
           </a>
         </svg>
         <ul class="diagram-alt">

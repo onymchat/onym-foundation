@@ -204,6 +204,24 @@ footer{border-top:1px solid var(--border);padding:56px 0 40px;font-size:14px;col
 .diagram text{font-family:var(--font-mono)}
 .diagram .svgmut{fill:var(--muted)}
 .diagram a:hover{opacity:.55}
+.seat-wheel{max-height:760px}
+.seat-wheel .seat-orbit{fill:none;stroke:currentColor;stroke-opacity:.16;stroke-width:1.25}
+.seat-wheel .seat-spokes{fill:none;stroke:currentColor;stroke-opacity:.11;stroke-width:1}
+.seat-wheel .seat-node rect{fill:var(--canvas);stroke:currentColor;stroke-opacity:.34;stroke-width:1.15;transition:fill .18s ease,stroke-opacity .18s ease,stroke-width .18s ease}
+.seat-wheel .seat-node text,.seat-wheel .seat-user text{pointer-events:none;text-anchor:middle}
+.seat-wheel .seat-name{fill:currentColor;font-size:10.2px}
+.seat-wheel .seat-name-long{font-size:9.4px}
+.seat-wheel .seat-earning{fill:var(--muted);font-size:8.7px}
+.seat-wheel .seat-node-open rect{fill:var(--surface);stroke-dasharray:4 4;stroke-opacity:.62}
+.seat-wheel .seat-node-open .seat-name{font-style:italic}
+.seat-wheel .seat-user circle{fill:var(--surface);stroke:currentColor;stroke-width:1.8;transition:fill .18s ease}
+.seat-wheel .seat-user-label{fill:currentColor;font-size:14px;font-weight:600}
+.seat-wheel .seat-user-note{fill:var(--muted);font-size:10px}
+.seat-wheel a.seat-node:hover,.seat-wheel a.seat-user:hover{opacity:1}
+.seat-wheel a.seat-node:hover rect{fill:var(--surface);stroke-opacity:.9;stroke-width:1.5}
+.seat-wheel a.seat-user:hover circle{fill:var(--canvas)}
+.seat-wheel a:focus-visible{outline:none}
+.seat-wheel a:focus-visible rect,.seat-wheel a:focus-visible circle{stroke:var(--accent);stroke-opacity:1;stroke-width:3}
 figure figcaption{font-size:14px;color:var(--muted);margin-top:14px}
 /* small screens: stacked cards replace scaled SVG text */
 .diagram-alt{display:none;list-style:none;margin:0;padding:0}

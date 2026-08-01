@@ -42,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/sponsor/Sponsor-Onym.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/16e5bad66202e52fde4d7529f4d2854414ed6a2d/sponsor/Sponsor-Onym.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-sponsor-onym-foundation-implementation">Onym Sponsor: Onym Foundation Implementation</h1>
@@ -99,8 +99,8 @@ receipts, promise recognition, appoint directors, or authorize spending.</p>
 <td>Foundation-controlled acknowledgements inventory only</td>
 </tr>
 <tr>
-<td>Endowment</td>
-<td>Segregated permanent, restricted, and board-designated funds</td>
+<td>Funds</td>
+<td>Founding Fund (current-use), board-designated reserve, restricted funds, permanent endowment</td>
 </tr>
 <tr>
 <td>Ordinary spending rule</td>
@@ -108,7 +108,7 @@ receipts, promise recognition, appoint directors, or authorize spending.</p>
 </tr>
 <tr>
 <td>Annual endowment draw</td>
-<td>At most 4% of trailing twelve quarter-end values, subject to law/restriction/prudence</td>
+<td>Targets 5% of trailing twelve quarter-end average values, subject to law/restriction/prudence</td>
 </tr>
 <tr>
 <td>Sponsor board votes</td>
@@ -380,11 +380,13 @@ The Foundation does not promise to hold a donated token or invest in a
 sponsor's business.</p>
 <h2 id="9-endowment-spending-rule">9. Endowment spending rule</h2>
 <h3 id="91-ordinary-annual-appropriation">9.1 Ordinary annual appropriation</h3>
-<p>The maximum ordinary annual appropriation is:</p>
+<p>Ordinary annual distributions from the permanent endowment target 5% of its
+average value measured at the previous twelve quarter-ends. The maximum
+ordinary annual appropriation is:</p>
 <pre><code class="language-text">spendingBase = average of the prior twelve calendar quarter-end
                endowment market values
 
-ordinaryMaximum = floor(spendingBase * 4%)
+ordinaryMaximum = floor(spendingBase * 5%)
 
 lawfulMaximum = amount permitted after donor restrictions, applicable law,
                 liquidity, prudence, and underwater-fund review
@@ -395,24 +397,32 @@ annualAppropriation = min(ordinaryMaximum, lawfulMaximum,
 <p>If fewer than twelve quarter-end values exist, the average uses every complete
 quarter, but no ordinary endowment appropriation occurs until four complete
 quarters exist. Direct operating contributions may fund earlier work.</p>
+<p>Unrestricted founding and supporting contributions are current-use funding
+held in the Founding Fund unless their accepted terms expressly designate
+them as permanent; they are not subject to this endowment rule. Donor
+restrictions and accepted gift terms override this general spending policy.</p>
 <p>Investment-management and custody fees are reported separately. The legal
-documents determine whether they count inside or outside the four-percent
+documents determine whether they count inside or outside the five-percent
 limit; the adopted profile must not hide the treatment.</p>
 <h3 id="92-exceptional-appropriation">9.2 Exceptional appropriation</h3>
-<p>An additional draw above the ordinary maximum requires:</p>
+<p>By a two-thirds vote of disinterested directors, the board may approve
+distributions of up to 7% of the same spending base for one financial year
+to meet a time-limited strategic or emergency need. An exceptional
+appropriation additionally requires:</p>
 <ol>
-<li>a documented emergency or time-limited exceptional opportunity within the
+<li>a documented emergency or time-limited strategic opportunity within the
 Foundation purpose;</li>
 <li>written legal, restriction, liquidity, and long-term-impact analysis;</li>
 <li>at least 14 days of public notice unless disclosure would worsen an actual
-emergency;</li>
-<li>seven affirmative votes from the nine-seat board, including at least four
-affirmative non-sponsor directors; and</li>
-<li>a separate public resolution and restoration plan.</li>
+emergency; and</li>
+<li>a separate public resolution stating the amount, the reasons, the expected
+effect on the endowment, and a restoration plan.</li>
 </ol>
-<p>The additional draw may not exceed one percent of the same spending base in a
-fiscal year unless governing law requires or a court/regulator authorizes a
-different action.</p>
+<p>A director with a conflict of interest in the appropriation does not count as
+disinterested, must not participate in the related discussion or vote, and is
+not counted toward quorum for the matter. Distributions above the 5% target
+may not occur in more than two consecutive financial years, unless governing
+law requires or a court/regulator authorizes a different action.</p>
 <h2 id="10-spending-governance">10. Spending governance</h2>
 <p>Any director, including a Sponsor Director, may introduce a proposal. Sponsor
 Council and community proposals require one director to sponsor them before a
@@ -579,7 +589,7 @@ being mistaken for a live fundraising offer.</p>
 </tr>
 <tr>
 <td>Board overspends endowment</td>
-<td>4% trailing-average cap and exceptional 1% supermajority rule</td>
+<td>5% trailing-average target; 7% one-year ceiling by disinterested supermajority, never more than two consecutive years above 5%</td>
 </tr>
 <tr>
 <td>Hidden restriction is ignored</td>

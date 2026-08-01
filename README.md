@@ -84,6 +84,3 @@ server config. The canonical origin is `https://onym.foundation`.
   Estonian legal/accounting counsel before the founding round opens for real
   money. The 5%/7% figures are proposed internal governance limits, not
   requirements of Estonian law.
-- The upstream `sponsor/Sponsor-Onym.md` contract still carries the earlier
-  4%-draft endowment rule; propose a matching revision in `onym-system` and
-  re-pin, then remove the "revision pending" notes on Governance and Sponsors.

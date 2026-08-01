@@ -6,7 +6,7 @@
 export const REPO = 'onymchat/onym-system';
 
 export const REFS = {
-  main: '87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f',
+  main: '16e5bad66202e52fde4d7529f4d2854414ed6a2d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
 };
