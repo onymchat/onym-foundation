@@ -157,9 +157,6 @@ tr:last-child td{border-bottom:0}
 .tile-head h3{font-size:16px}
 .tile p{font-size:14px;color:var(--text)}
 .tile p b{color:var(--text);font-weight:500}
-.tile-more{display:none;border-top:1px dashed var(--border);padding-top:10px;font-size:14px;color:var(--muted)}
-.tile:hover .tile-more,.tile:focus-within .tile-more{display:block}
-@media(hover:none){.tile-more{display:block}}
 .tile .cta{font-size:14px;font-weight:500;margin-top:auto;padding:6px 0}
 .seatflow{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:8px}
 .centerrow{display:flex;justify-content:center}
