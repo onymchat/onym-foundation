@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
-import { REPO, REFS, DOCS, SITE_ORIGIN, parseFrontmatter, headingId, resolveMdHref } from './docs.mjs';
+import { REPO, REFS, DOCS, DOCUMENT_NOTICES, SITE_ORIGIN, parseFrontmatter, headingId, resolveMdHref } from './docs.mjs';
 import { head, nav, footer } from './partials.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -70,6 +70,7 @@ export function pageHtml(docPath, meta, entry, bodyHtml, title) {
   const sha = REFS[entry.ref];
   const github = `https://github.com/${REPO}/blob/${sha}/${docPath}`;
   const latest = `https://github.com/${REPO}/blob/${entry.ref}/${docPath}`;
+  const notice = DOCUMENT_NOTICES[docPath];
 
   const chips = [];
   if (meta.status) chips.push(`<span class="tag">${esc(meta.status)}</span>`);
@@ -99,7 +100,7 @@ ${nav({ up, current: 'seats' })}
       ${entry.seat ? `<p class="eyebrow mb12">${esc(entry.seat)}</p>` : ''}
       <div class="badges">${chips.join('')}</div>
     </header>
-    <div class="doc">
+${notice ? `    <aside class="note mt20"><b>Consistency notice:</b> ${esc(notice)} <a href="${up}remediation.html">Remediation plan →</a></aside>\n` : ''}    <div class="doc">
 ${bodyHtml}
     </div>
     <p class="fnote">This document is maintained in the public
@@ -114,7 +115,7 @@ ${footer({ up })}
 }
 
 function sitemap(docPaths) {
-  const pages = ['', 'seats.html', 'governance.html', 'transparency.html', 'sponsors.html', 'pledge.html',
+  const pages = ['', 'seats.html', 'governance.html', 'transparency.html', 'remediation.html', 'sponsors.html', 'pledge.html',
     ...docPaths.map(p => 'contracts/' + p.replace(/\.md$/, '.html'))];
   const rows = pages.map(p => `  <url><loc>${SITE_ORIGIN}/${p}</loc></url>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${rows}\n</urlset>\n`;

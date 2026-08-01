@@ -1,0 +1,92 @@
+<!--page {"title": "Institutional remediation — Onym Foundation", "desc": "The concrete work required to turn Onym's divided-authority design into a consistent, replaceable, and accountable institution.", "ogDesc": "A public ledger for the constitutional work still to do.", "path": "remediation.html"}-->
+<main id="main">
+  <header class="hero hero-short wrap">
+    <span class="chip"><span class="dot"></span>Active remediation plan — no claim of completion</span>
+    <h1 class="h1-sm">From divided authority to accountable power.</h1>
+    <p class="lede">The architecture is promising; the constitution is not finished. This page records what this Foundation repository can repair, what belongs in the protocol repository, and what must be proven before money or decentralization claims are allowed.</p>
+    <p class="micro mt16"><a href="https://github.com/onymchat/onym-foundation/blob/main/governance/REMEDIATION.md">Versioned work ledger on GitHub →</a></p>
+  </header>
+
+  <section class="sect">
+    <div class="wrap">
+      <div class="shead">
+        <div><p class="number">01</p><h2>Decisions made here</h2></div>
+        <p class="slede">One proposal, generated from one policy file. Still non-operational and subject to Estonian legal review.</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><p class="stat mono">{{policy.endowment.ordinaryMaximumPercent}}%</p><p class="micro mt10">Maximum ordinary annual endowment appropriation from the trailing {{policy.endowment.valuationQuarterEnds}} quarter-end average.</p></div>
+        <div class="card"><p class="stat mono">{{policy.endowment.exceptionalMaximumPercent}}%</p><p class="micro mt10">Maximum exceptional appropriation for one financial year.</p></div>
+        <div class="card"><p class="stat mono">{{policy.board.exceptionalApprovalVotes}}/{{policy.board.totalSeats}}</p><p class="micro mt10">Exceptional approval, including at least {{policy.board.exceptionalMinimumNonSponsorVotes}} non-sponsor directors: {{policy.board.exceptionalMinimumEcosystemVotes}} Ecosystem and {{policy.board.exceptionalMinimumPublicInterestVotes}} Public-Interest Directors. A conflicted director cannot participate or count toward quorum.</p></div>
+      </div>
+      <p class="note mt20 maxw680">The pinned upstream whitepaper and sponsor profile currently disagree with each other and with their own example record. Those pages carry visible consistency warnings. The Foundation will not accept money until the authoritative drafts and final legal documents agree.</p>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap">
+      <div class="shead">
+        <div><p class="number">02</p><h2>Foundation-owned work</h2></div>
+        <p class="slede">Governance and accountability this institution must supply rather than delegate to protocol prose.</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><h3>Constitutional consistency</h3><p class="micro mt8">Generate numeric claims from one machine-readable policy; publish document precedence; fail closed on conflicts.</p></div>
+        <div class="card"><h3>All nine directors</h3><p class="micro mt8">Give Sponsor, Ecosystem, and Public-Interest Directors separate electorates, plus a time-bounded founding transition—not only a donor electorate.</p></div>
+        <div class="card"><h3>Money and custody</h3><p class="micro mt8">Publish the founding budget, custody matrix, investment policy, gift terms, conflicts, complaints, and reports before conversion.</p></div>
+        <div class="card"><h3>Concentration</h3><p class="micro mt8">Disclose common control and material infrastructure in grants, procurement, catalogs, and Foundation-funded defaults.</p></div>
+        <div class="card"><h3>Incident ownership</h3><p class="micro mt8">Every grant and service agreement names an incident coordinator and one complaint path. Modularity cannot become a blame maze.</p></div>
+        <div class="card"><h3>Legal adoption</h3><p class="micro mt8">The MTÜ articles and adopted policies—not this website—must lawfully implement the proposal.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap">
+      <div class="shead">
+        <div><p class="number">03</p><h2>Protocol-owned work</h2></div>
+        <p class="slede">The Foundation can fund and publish this work, but cannot pretend a website implements it.</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><h3>One vocabulary</h3><p class="micro mt8">Canonical seat types, profile IDs, schema IDs, manifest envelopes, signatures, and revocation.</p></div>
+        <div class="card"><h3>Identity continuity</h3><p class="micro mt8">Descriptor, capabilities, seat keys, rotation, revocation, recovery, and secure operator succession.</p></div>
+        <div class="card"><h3>Exit tests</h3><p class="micro mt8">Full state export, third-party conformance, provider replacement, and governed notary migration.</p></div>
+        <div class="card"><h3>Commercial constitution</h3><p class="micro mt8">Canonical offers and entitlements plus real billing-broker insolvency, complaint, audit, and provider-exit duties.</p></div>
+        <div class="card"><h3>Route accountability</h3><p class="micro mt8">A named assembler or incident coordinator for composed failures, without giving it identity sovereignty.</p></div>
+        <div class="card"><h3>Draft repair</h3><p class="micro mt8">Resolve the missing bank dependency, notary replacement conflict, and Foundation constants in `onym-system`.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap">
+      <div class="shead">
+        <div><p class="number">04</p><h2>Proof before claims</h2></div>
+        <p class="slede">The test is whether the original operators can disappear without taking identity, relationships, or state with them.</p>
+      </div>
+      <ol class="afterlist maxw760">
+        <li>Import a non-default manifest and remove the default Discovery catalog.</li>
+        <li>Use independently authored UI, relay, blob, read, and submission components.</li>
+        <li>Export all local state and migrate a group under its actual governance rule.</li>
+        <li>Rotate compromised operator and identity keys without silent rollback.</li>
+        <li>Publish every failure, data loss, switching cost, control-group overlap, and responsible incident owner.</li>
+      </ol>
+      <p class="note mt20 maxw680">Until this drill passes, the honest description is “blueprint for replaceability,” not “decentralized institution.”</p>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap">
+      <div class="shead">
+        <div><p class="number">05</p><h2>Activation gates</h2></div>
+        <p class="slede">Any failed gate keeps the Foundation non-operational.</p>
+      </div>
+      <ul class="checklist">
+        <li><span class="box" aria-hidden="true"></span>Upstream and local money/vote rules agree</li>
+        <li><span class="box" aria-hidden="true"></span>MTÜ articles implement all three board classes and the transition</li>
+        <li><span class="box" aria-hidden="true"></span>Budget, custody, gift, investment, conflict, privacy, incident, complaint, and retention policies published</li>
+        <li><span class="box" aria-hidden="true"></span>Legal entity, lawful board, custody, and signature authority exist</li>
+        <li><span class="box" aria-hidden="true"></span>Every pledge is re-consented against the final terms</li>
+        <li><span class="box" aria-hidden="true"></span>Control-group and material-infrastructure concentration disclosed</li>
+      </ul>
+    </div>
+  </section>
+</main>

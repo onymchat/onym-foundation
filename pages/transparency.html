@@ -1,7 +1,7 @@
 <!--page {"title": "Transparency — Onym Foundation", "desc": "The public sponsor register, spending record, reports, and conflict register. Mostly a promise today — recorded here from the first euro onward.", "ogDesc": "Recognition is labeled. Influence is capped. Books are open.", "path": "transparency.html", "current": "transparency"}-->
 <main id="main">
   <header class="hero hero-short wrap">
-    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
+    <span class="chip"><span class="dot"></span>In formation — founding pledges open · no money accepted</span>
     <h1 class="h1-sm">Recognition is labeled. Influence is capped. Books are open.</h1>
     <p class="lede">Mostly a promise today. Everything below fills in from the first euro onward — nothing is backdated, nothing is deleted.</p>
   </header>
@@ -38,7 +38,7 @@
         <div class="empty">Donor restrictions in force — none yet</div>
       </div>
       <div class="grid3 mt14">
-        <div class="empty">Annual endowment distribution calculation (5% target) — none yet</div>
+        <div class="empty">Annual endowment appropriation calculation ({{policy.endowment.ordinaryMaximumPercent}}% ordinary ceiling) — none yet</div>
         <div class="empty">Exceptional distributions and voting record — none yet</div>
         <div class="empty">Asset allocation and investment fees — published once funds are invested</div>
       </div>
@@ -121,11 +121,12 @@
         <a class="card" href="contracts/sponsor/Sponsor.html">Sponsor contract boundary <span class="tag">draft</span> →</a>
         <a class="card" href="contracts/sponsor/Sponsor-Onym.html">Onym Foundation sponsor profile <span class="tag">draft</span> →</a>
         <a class="card" href="contracts/WHITEPAPER.html">System whitepaper <span class="tag">draft</span> →</a>
+        <a class="card" href="remediation.html">Institutional remediation plan <span class="tag">active</span> →</a>
         <a class="card" href="https://github.com/onymchat/onym-system">Public repository →</a>
       </div>
       <div class="grid2 mt14">
         <div class="empty">Charter (MTÜ articles) — being drafted; published here before registration.</div>
-        <div class="empty">Endowment &amp; distribution policy (5% target, 7% exception) — being drafted; published here before the round opens for conversion.</div>
+        <div class="empty">Endowment &amp; distribution policy ({{policy.endowment.ordinaryMaximumPercent}}% ordinary ceiling, {{policy.endowment.exceptionalMaximumPercent}}% exceptional ceiling) — being drafted; published here before the round opens for conversion.</div>
         <div class="empty">Investment Policy Statement — asset allocation, risk limits, custody, rebalancing, permitted assets, fee limits; published before any funds are invested.</div>
         <div class="empty">Three-year founding budget — published before any pledge converts.</div>
       </div>

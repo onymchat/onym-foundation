@@ -62,7 +62,7 @@ export function nav({ up, current }) {
 
 export function footer({ up, simple = false }) {
   const groups = simple ? '' : `    <div class="fgroups">
-      <div><span class="eyebrow">Foundation</span><a href="${up}governance.html">Governance</a><a href="${up}transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Foundation</span><a href="${up}governance.html">Governance</a><a href="${up}transparency.html">Transparency</a><a href="${up}remediation.html">Remediation plan</a><a href="mailto:lead@onym.app">Contact</a></div>
       <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="${up}seats.html">Seats</a><a href="${up}contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
       <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
       <div><span class="eyebrow">Legal</span><a href="${up}governance.html#status">Status notice</a><a href="${up}governance.html#legal">Imprint</a></div>

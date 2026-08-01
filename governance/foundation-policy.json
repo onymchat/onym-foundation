@@ -1,0 +1,30 @@
+{
+  "policyId": "onym-foundation-governance-draft-v2",
+  "status": "proposed_non_operational",
+  "lastUpdated": "2026-08-01",
+  "board": {
+    "totalSeats": 9,
+    "sponsorSeats": 3,
+    "ecosystemSeats": 3,
+    "publicInterestSeats": 3,
+    "ordinaryApprovalVotes": 6,
+    "ordinaryMinimumNonSponsorVotes": 4,
+    "ordinaryMinimumEcosystemVotes": 2,
+    "ordinaryMinimumPublicInterestVotes": 2,
+    "exceptionalApprovalVotes": 7,
+    "exceptionalMinimumNonSponsorVotes": 4,
+    "exceptionalMinimumEcosystemVotes": 2,
+    "exceptionalMinimumPublicInterestVotes": 2
+  },
+  "endowment": {
+    "ordinaryMaximumBasisPoints": 500,
+    "exceptionalMaximumBasisPoints": 700,
+    "valuationQuarterEnds": 12,
+    "minimumCompleteQuarters": 4,
+    "maximumConsecutiveExceptionalYears": 2
+  },
+  "transition": {
+    "initialDirectorMaximumTermMonths": 12,
+    "firstClassElectionDeadlineDaysAfterFirstContribution": 180
+  }
+}
