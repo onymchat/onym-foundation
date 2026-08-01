@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
 import { REPO, REFS, DOCS, SITE_ORIGIN, parseFrontmatter, headingId, resolveMdHref } from './docs.mjs';
+import { head, nav, footer } from './partials.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = path.join(ROOT, 'site');
@@ -58,53 +59,33 @@ export function pageHtml(docPath, meta, entry, bodyHtml, title) {
   const sha = REFS[entry.ref];
   const github = `https://github.com/${REPO}/blob/${sha}/${docPath}`;
   const latest = `https://github.com/${REPO}/blob/${entry.ref}/${docPath}`;
-  const urlPath = '/contracts/' + docPath.replace(/\.md$/, '.html');
 
   const chips = [];
   if (meta.status) chips.push(`<span class="tag">${esc(meta.status)}</span>`);
   if (entry.review) chips.push('<span class="tag">proposal — in review</span>');
   if (meta.date) chips.push(`<span class="tag">${esc(meta.date)}</span>`);
-  if (meta.proposed) chips.push(`<span class="mono" style="font-size:11px">proposed by ${esc(meta.proposed)}</span>`);
-  chips.push(`<a class="mono" style="font-size:11px" href="${github}">source on GitHub →</a>`);
+  if (meta.proposed) chips.push(`<span class="metaline">proposed by ${esc(meta.proposed)}</span>`);
+  chips.push(`<a class="metaline" href="${github}">source on GitHub →</a>`);
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} — Onym Foundation</title>
-<meta name="description" content="${esc(title)} — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
-<link rel="canonical" href="${SITE_ORIGIN}${urlPath}">
-<meta property="og:title" content="${esc(title)} — Onym Foundation">
-<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
-<meta property="og:type" content="article">
-<meta property="og:url" content="${SITE_ORIGIN}${urlPath}">
-<meta property="og:image" content="${SITE_ORIGIN}/assets/og-card.png">
-<meta name="theme-color" content="#f5f5f7">
-<link rel="icon" type="image/png" sizes="32x32" href="${up}assets/favicon-32.png">
-<link rel="apple-touch-icon" href="${up}assets/apple-touch-icon.png">
-<link rel="stylesheet" href="${up}styles.css">
+${head({
+    title: `${title} — Onym Foundation`,
+    desc: `${title} — an open, technology-neutral contract document from the Onym system repository, rendered for reading.`,
+    ogDesc: 'Every seat is defined by an open contract. Read it here.',
+    ogType: 'article',
+    path: 'contracts/' + docPath.replace(/\.md$/, '.html'),
+    up,
+  })}
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
-<nav class="site" aria-label="Main">
-  <div class="wrap navbar">
-    <a class="brand" href="${up}index.html"><img src="${up}assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
-    <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
-    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
-    <div class="navlinks" id="sitemenu">
-      <a href="${up}seats.html" aria-current="page">Seats</a>
-      <a href="${up}governance.html">Governance</a>
-      <a href="${up}transparency.html">Transparency</a>
-      <a class="pill accent" href="${up}sponsors.html">Become a founding sponsor</a>
-    </div>
-  </div>
-</nav>
+${nav({ up, current: 'seats' })}
 <main id="main">
   <article class="wrap docpage">
     <p class="mono docback"><a href="${up}index.html">← Foundation</a> · <a href="${up}seats.html">All seats</a></p>
     <header>
-      ${entry.seat ? `<p class="eyebrow" style="margin-bottom:12px">${esc(entry.seat)}</p>` : ''}
+      ${entry.seat ? `<p class="eyebrow mb12">${esc(entry.seat)}</p>` : ''}
       <div class="badges">${chips.join('')}</div>
     </header>
     <div class="doc">
@@ -115,18 +96,7 @@ ${bodyHtml}
       The repository is the authoritative source — <a href="${latest}">latest version on ${esc(entry.ref)} →</a></p>
   </article>
 </main>
-<footer>
-  <div class="wrap">
-    <div class="fgroups">
-      <div><span class="eyebrow">Foundation</span><a href="${up}governance.html">Governance</a><a href="${up}transparency.html">Transparency</a><a href="mailto:lead@onym.app">Contact</a></div>
-      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="${up}seats.html">Seats</a><a href="${up}contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/${REPO}">Source repository</a></div>
-      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
-      <div><span class="eyebrow">Legal</span><a href="${up}governance.html#status">Status notice</a><a href="${up}governance.html#legal">Imprint</a></div>
-    </div>
-    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
-  </div>
-</footer>
-<script src="${up}main.js"></script>
+${footer({ up })}
 </body>
 </html>
 `;

@@ -11,23 +11,29 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://onym.foundation/contracts/identity/UI-Identity-BIP39.html">
 <meta property="og:image" content="https://onym.foundation/assets/og-card.png">
-<meta name="theme-color" content="#f5f5f7">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
 <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
 <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/InstrumentSans-Variable.woff2">
+<script src="../../theme.js"></script>
 <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <nav class="site" aria-label="Main">
   <div class="wrap navbar">
-    <a class="brand" href="../../index.html"><img src="../../assets/icon-nav.png" alt="" width="21" height="21">onym<span>.foundation</span></a>
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg>onym<span>.foundation</span></a>
     <span class="chip"><span class="dot"></span>In formation — Estonian MTÜ · founding round open</span>
-    <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
     <div class="navlinks" id="sitemenu">
       <a href="../../seats.html" aria-current="page">Seats</a>
       <a href="../../governance.html">Governance</a>
       <a href="../../transparency.html">Transparency</a>
       <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
     </div>
   </div>
 </nav>
@@ -36,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="mono" style="font-size:11px">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="mono" style="font-size:11px" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/identity/UI-Identity-BIP39.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/87e03c8aeccf8d621723ad791bcb7c8d5ab2bc8f/identity/UI-Identity-BIP39.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-ui-identity-bip-39-implementation">Onym UI ↔ Identity: BIP-39 Implementation</h1>

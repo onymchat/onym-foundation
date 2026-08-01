@@ -61,7 +61,7 @@ if (!fs.existsSync(CHROME)) {
       await page.close();
     });
 
-    await t.test('mobile menu collapses and toggles', async () => {
+    await t.test('mobile menu collapses, toggles, and closes on Escape/navigation', async () => {
       const page = await browser.newPage();
       await page.setViewport({ width: 390, height: 844 });
       await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
@@ -73,6 +73,64 @@ if (!fs.existsSync(CHROME)) {
       const open = await page.$eval('#sitemenu', el => getComputedStyle(el).display !== 'none');
       assert.ok(open, 'menu should open on click');
       assert.equal(await page.$eval('.menubtn', el => el.getAttribute('aria-expanded')), 'true');
+      await page.keyboard.press('Escape');
+      assert.equal(await page.$eval('.menubtn', el => el.getAttribute('aria-expanded')), 'false', 'Escape closes the menu');
+      assert.ok(await page.evaluate(() => document.activeElement.classList.contains('menubtn')), 'focus returns to the button');
+      await page.click('.menubtn');
+      await page.evaluate(() => {
+        document.addEventListener('click', e => e.preventDefault(), true);
+        document.querySelector('#sitemenu a').click();
+      });
+      assert.equal(await page.$eval('.menubtn', el => el.getAttribute('aria-expanded')), 'false', 'selecting a link closes the menu');
+      await page.close();
+    });
+
+    await t.test('self-hosted fonts load', async () => {
+      const page = await browser.newPage();
+      await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
+      const fonts = await page.evaluate(async () => {
+        await document.fonts.ready;
+        return {
+          sans: document.fonts.check('600 16px "Instrument Sans"'),
+          mono: document.fonts.check('400 12px "IBM Plex Mono"'),
+        };
+      });
+      assert.ok(fonts.sans, 'Instrument Sans should be loaded');
+      assert.ok(fonts.mono, 'IBM Plex Mono should be loaded');
+      await page.close();
+    });
+
+    await t.test('dark mode: tokens, SVG ink, code blocks, axe', async () => {
+      const page = await browser.newPage();
+      await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
+      await page.setViewport({ width: 1280, height: 900 });
+      await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
+      assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+        'rgb(15, 17, 21)', 'canvas should be charcoal in dark mode');
+      assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.diagram text')).fill),
+        'rgb(243, 244, 246)', 'diagram ink should follow the theme');
+      const results = await new AxePuppeteer(page).analyze();
+      const bad = results.violations.filter(v => v.impact === 'serious' || v.impact === 'critical');
+      assert.deepEqual(bad.map(v => `${v.id} — ${v.help}`), [], JSON.stringify(bad, null, 2).slice(0, 2000));
+      await page.goto(base + '/contracts/message/UI-Message.html', { waitUntil: 'networkidle0' });
+      const pre = await page.evaluate(() => {
+        const s = getComputedStyle(document.querySelector('.doc pre'));
+        return { bg: s.backgroundColor, fg: s.color };
+      });
+      assert.deepEqual(pre, { bg: 'rgb(23, 26, 32)', fg: 'rgb(243, 244, 246)' }, 'code blocks use dark surface tokens');
+      await page.close();
+    });
+
+    await t.test('manual theme choice persists across pages', async () => {
+      const page = await browser.newPage();
+      await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
+      await page.click('.themebtn'); // system → light
+      await page.click('.themebtn'); // light → dark
+      assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark');
+      await page.goto(base + '/seats.html', { waitUntil: 'networkidle0' });
+      assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark', 'choice survives navigation');
+      assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+        'rgb(15, 17, 21)');
       await page.close();
     });
 

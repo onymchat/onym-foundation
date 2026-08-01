@@ -18,8 +18,10 @@ jobs:
       - uses: browser-actions/setup-chrome@v1
         id: chrome
       - run: npm ci
-      - name: Build contract pages from pinned commits
+      - name: Build pages and contract documents
         run: npm run build
+      - name: Generated output is committed (no drift)
+        run: git diff --exit-code -- site
       - name: Internal links and anchors
         run: npm run check:links
       - name: HTML validation

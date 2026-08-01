@@ -12,14 +12,23 @@ dependency: plain HTML, one stylesheet, one small script.
 
 | Path | What it is |
 |---|---|
-| `site/*.html` | The six pages: home, seats, governance, transparency, sponsors, pledge (+ `404.html`) |
-| `site/contracts/**` | Pre-rendered seat contract documents — **generated, do not edit by hand** |
-| `site/styles.css`, `site/main.js` | The design system and the only script (mobile nav, scroll reveal, mailto builders) |
-| `site/_headers` | Deployment headers (CSP etc.) in Netlify/Cloudflare Pages format |
+| `pages/*.html` | **Page sources** (content + a `<!--page {…}-->` meta comment) — edit these |
+| `tools/partials.mjs` | Shared head/nav/footer chrome used by both builders — edit nav/footer here |
+| `site/*.html`, `site/contracts/**` | **Generated output** — never edit by hand; CI fails on drift |
+| `site/styles.css` | The design system: semantic light/dark tokens, type scale, utilities |
+| `site/theme.js`, `site/main.js` | Pre-paint theme application; menu, theme toggle, scroll reveal, mailto builders |
+| `site/assets/fonts/` | Self-hosted Instrument Sans (variable) + IBM Plex Mono, with OFL licenses |
+| `site/_headers` | Deployment headers (CSP without `unsafe-inline`, etc.) in Netlify/Cloudflare Pages format |
 | `tools/docs.mjs` | Manifest of contract documents with **pinned commit SHAs** |
-| `tools/build-contracts.mjs` | Fetches the pinned docs and renders `site/contracts/` + `sitemap.xml` |
+| `tools/build-pages.mjs`, `tools/build-contracts.mjs` | `npm run build` renders `site/` from `pages/` and the pinned docs + `sitemap.xml` |
 | `tools/check-links.mjs` | Internal link and anchor checker |
-| `tests/` | Unit tests (render/resolution) and browser tests (390px/1440px layout, mobile menu, axe accessibility) |
+| `tests/` | Unit tests (render/resolution) and browser tests (390px/1440px layout, mobile menu, fonts, dark mode, theme persistence, axe) |
+
+The site has a system-aware dark theme with a manual Auto/Light/Dark control in
+the navigation; the choice persists in `localStorage` and is applied by
+`theme.js` before first paint. All colors flow through the semantic tokens at
+the top of `styles.css` — style components through tokens, never with literal
+colors.
 
 ## Preview locally
 
@@ -28,8 +37,9 @@ python3 -m http.server 8080 --directory site
 # → http://localhost:8080
 ```
 
-Any static file server works; no build step is needed to preview pages you
-edit by hand.
+Any static file server works. After editing `pages/`, `tools/partials.mjs`,
+or `tools/docs.mjs`, run `npm run build` and commit the regenerated `site/`
+output together with the source change — CI fails if they drift.
 
 ## Update contract content
 
