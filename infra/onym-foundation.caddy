@@ -1,0 +1,46 @@
+# onym.foundation — static site served from the same droplet as onym.app.
+#
+# This file is owned by the onym-foundation repo and deployed by its
+# deploy script into /etc/caddy/sites.d/ on the onym-web droplet. The
+# main /etc/caddy/Caddyfile (owned by onym-website) imports that
+# directory, so the two sites deploy independently without touching
+# each other's config.
+#
+# TLS is auto-provisioned by Caddy via Let's Encrypt as soon as DNS for
+# onym.foundation points at the droplet (DNS-only / grey cloud in
+# Cloudflare, so the ACME challenge reaches Caddy directly).
+
+www.onym.foundation {
+	redir https://onym.foundation{uri} permanent
+}
+
+onym.foundation {
+	root * /var/www/onym-foundation
+
+	try_files {path} {path}.html {path}/
+	encode gzip
+	file_server
+
+	# Any error renders the designed 404 page (status code preserved).
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+
+	header {
+		# Mirrors site/_headers (the Netlify/Cloudflare Pages copy of
+		# the same policy). Keep the two in sync.
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' mailto:; frame-ancestors 'none'"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+
+	# HTML always revalidates (matches onym.app's policy) so a deploy
+	# is visible on the next request; self-hosted fonts cache for a week.
+	@html path_regexp (\.html$|/$)
+	header @html Cache-Control "no-cache"
+	@fonts path /assets/fonts/*
+	header @fonts Cache-Control "public, max-age=604800"
+}

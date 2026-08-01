@@ -1,0 +1,70 @@
+name: Deploy
+
+# Deploys onym.foundation to the SAME droplet that serves onym.app
+# (droplet "onym-web") by running deploy/deploy.sh: DNS via Cloudflare,
+# content via rsync, its own Caddy vhost in /etc/caddy/sites.d/.
+# Manual trigger only, independent of onym-website's release workflow.
+#
+# Org/repo SECRETS used:
+#   DO_TOKEN or DO_API_KEY  DigitalOcean API token
+#   CF_API_TOKEN            Cloudflare token with DNS:Edit on onym.foundation
+#   DEPLOY_SSH_KEY          private key the onym-web droplet trusts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-onym-foundation
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_TOKEN || secrets.DO_API_KEY }}
+
+      - name: Verify committed output is current
+        run: |
+          npm ci
+          npm run build
+          git diff --exit-code -- site
+
+      - name: Write SSH key
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Deploy
+        env:
+          DO_API_KEY: ${{ secrets.DO_TOKEN || secrets.DO_API_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          SSH_KEY_PATH: /home/runner/.ssh/deploy_key
+        run: ./deploy/deploy.sh
+
+      - name: Verify live site
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://onym.foundation/ || true)
+            [ "$code" = "200" ] && { echo "https://onym.foundation is up (200)"; exit 0; }
+            echo "attempt $i: got '$code' (TLS may still be provisioning), retrying in 10s"
+            sleep 10
+          done
+          echo "::warning::Site did not return 200 within 2 minutes — check Caddy logs on the droplet."

@@ -204,7 +204,7 @@ footer{border-top:1px solid var(--border);padding:56px 0 40px;font-size:14px;col
 .diagram text{font-family:var(--font-mono)}
 .diagram .svgmut{fill:var(--muted)}
 .diagram a:hover{opacity:.55}
-.seat-wheel{max-height:760px}
+.seat-wheel{max-width:900px;margin-inline:auto}
 .seat-wheel .seat-orbit{fill:none;stroke:currentColor;stroke-opacity:.16;stroke-width:1.25}
 .seat-wheel .seat-spokes{fill:none;stroke:currentColor;stroke-opacity:.11;stroke-width:1}
 .seat-wheel .seat-node rect{fill:var(--canvas);stroke:currentColor;stroke-opacity:.34;stroke-width:1.15;transition:fill .18s ease,stroke-opacity .18s ease,stroke-width .18s ease}

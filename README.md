@@ -66,10 +66,25 @@ CI runs all three plus a fresh contract build on every push.
 
 ## Deployment
 
-Deploy the `site/` directory to any static host. On Netlify/Cloudflare Pages
-the `_headers` file applies the security headers (CSP, Referrer-Policy,
-X-Content-Type-Options, frame denial); on other hosts translate it into the
-server config. The canonical origin is `https://onym.foundation`.
+The site is served by Caddy from the **same DigitalOcean droplet as
+onym.app** (`onym-web`), under `/var/www/onym-foundation` with its own vhost
+in `/etc/caddy/sites.d/onym-foundation.caddy` (source: `infra/`). The main
+Caddyfile — owned by the onym-website repo — imports that directory, so the
+two sites deploy independently. DNS (`onym.foundation`, `www`) points at the
+droplet's reserved IP, DNS-only in Cloudflare so Caddy's ACME works.
+
+- **CI deploy**: run the manual **Deploy** workflow (Actions →
+  Deploy → Run workflow). It rebuilds, verifies no drift, and runs
+  `deploy/deploy.sh` using the org secrets (`DO_TOKEN`/`DO_API_KEY`,
+  `CF_API_TOKEN`, `DEPLOY_SSH_KEY`).
+- **Local deploy**: `ENV_FILE=~/Developer/onym-infra/.env ./deploy/deploy.sh`
+  (needs an SSH key the droplet trusts; default `~/.ssh/id_ed25519`).
+
+The script is idempotent and never creates a droplet. Security headers are
+set in the Caddy vhost; `site/_headers` is the equivalent policy for
+Netlify/Cloudflare Pages hosts and is excluded from the droplet sync — keep
+the two in sync when the policy changes. The canonical origin is
+`https://onym.foundation`.
 
 ## Content notes
 
