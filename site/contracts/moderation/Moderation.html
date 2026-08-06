@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Moderation Authority Contract Boundary — Onym Foundation</title>
+<meta name="description" content="Onym Moderation Authority Contract Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/moderation/Moderation.html">
+<meta property="og:title" content="Onym Moderation Authority Contract Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/moderation/Moderation.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/InstrumentSans-Variable.woff2">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow mb12">Moderation authority</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/92aefa739fe39c01c0b969427af2ea7ef4920ce7/moderation/Moderation.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-moderation-authority-contract-boundary">Onym Moderation Authority Contract Boundary</h1>
+<p><strong>Proposal draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>A moderation authority decides published violation classes over users who
+consented to its mandate before any case existed. Its verdicts are
+executed mechanically by the interface that carries them, reach exactly
+one device and the identities named in the case, and expire or fall to
+appeal on the schedule the user could read before agreeing.</p>
+</blockquote>
+<p>This document proposes the technology-neutral boundary for the
+<strong>moderation seat</strong>: the institutional service that receives signed reports
+of prohibited content or behavior (child sexual abuse material, credible
+violence, and the other classes its manifest declares), conducts a case
+with notice and a response window, and issues signed verdicts that a
+conforming interface executes as <strong>device marks</strong> — durable per-device
+state such as Apple DeviceCheck bits or Android Play Integrity device
+recall values — and as identity refusals inside that interface.</p>
+<p>The seat exists because the interface seat cannot ship without it: every
+major distribution channel requires user-generated-content applications to
+provide reporting, blocking, and abuser removal. Onym accepts the
+requirement and refuses its usual shape — a hidden trust-and-safety desk
+inside the app vendor with unreviewable power. Moderation here is a
+<strong>separately owned, competing, consent-bound seat</strong> whose entire authority
+is enumerated in this contract.</p>
+<p>Two scope statements up front:</p>
+<ol>
+<li><strong>This is an interface-layer sanction, not a protocol one.</strong> A banned
+device cannot use the interfaces that consented users selected; the
+underlying protocol remains open, and a determined abuser with custom
+software is out of this seat's reach. The seat removes abuse from the
+surfaces people actually use and raises its cost everywhere else; it
+does not claim to expel anyone from an open protocol, and manifests
+must not pretend otherwise.</li>
+<li><strong>The moderation authority is not a court of the protocol.</strong> It has no
+standing over users who never accepted its mandate, no power over other
+seats' state, no protocol-wide blacklist, and no authority to amend the
+contracts under which existing groups operate. Where conduct is also a
+crime, lawful reporting obligations to real authorities are untouched
+and outrank everything in this document.</li>
+</ol>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the reporter, the moderation authority, the interface, the
+device-mark platform, and the accused as independently owned components
+joined by versioned interfaces.</p>
+<ul>
+<li>The <strong>user</strong> consents at onboarding to the moderation authority (or
+authorities, by violation class) named in the interface's manifest. The
+mandate is signed before any case exists — consent precedes the
+conflict, exactly as an arbitration clause precedes its dispute
+(<a href="../arbitration/Arbitration.html">../arbitration/Arbitration.md</a> §3.2).</li>
+<li>The <strong>reporter</strong> is a user who received or witnessed violating content
+and chooses to disclose it. Disclosure is voluntary, comes from the
+reporter's own device, and carries cryptographic proof of authenticity.
+Nothing in this seat weakens end-to-end encryption to make reporting
+possible.</li>
+<li>The <strong>moderation authority</strong> owns its procedure, violation-class
+definitions, professional judgment, and reputation. It sells case
+disposition under its published manifest. Anyone may operate one;
+authorities compete for selection by interfaces and their users.</li>
+<li>The <strong>interface</strong> is the enforcement rail. Its vendor holds the only
+write path to the device-mark platform (the platform scopes marks to
+the app vendor's credentials), and it executes valid verdicts
+mechanically — it decides nothing, delays nothing, and adds nothing.</li>
+<li>The <strong>device-mark platform</strong> (Apple DeviceCheck, Google Play Integrity
+device recall) is durable per-device storage attested by the platform
+vendor. It stores two states this contract defines; it judges nothing.</li>
+<li>The <strong>accused</strong> holds identity keys and a device. They receive notice,
+a response window, a reasoned verdict, and a declared appeal path.</li>
+</ul>
+<p>One organization may occupy several roles, but the profile does not merge
+their authority: an interface vendor that also operates a moderation
+authority discloses this in both manifests, and its verdicts remain
+subject to every constraint here — the merged organization gains no
+shortcut past notice, reasoning, expiry, or appeal.</p>
+<p>The boundary has five interfaces:</p>
+<ol>
+<li>the <strong>mandate</strong> interface: how a user consents to a named authority's
+published manifest at onboarding, before any case exists;</li>
+<li>the <strong>report</strong> interface: how a reporter files signed, voluntarily
+disclosed evidence;</li>
+<li>the <strong>case</strong> interface: notice, response, evidence, decision deadline;</li>
+<li>the <strong>verdict</strong> interface: the signed object that dismisses, marks, or
+bans — with reasoning, duration, and appeal path; and</li>
+<li>the <strong>enforcement</strong> interface: how a verdict becomes exactly two
+device-mark states and an identity refusal inside consenting
+interfaces, and nothing else.</li>
+</ol>
+<h2 id="2-what-the-moderation-seat-does">2. What the moderation seat does</h2>
+<p>A conforming moderation authority can:</p>
+<ol>
+<li>publish a signed manifest declaring its violation classes, per-class
+procedure and ban terms, evidence rules, decision timelines,
+confidentiality policy, fee offers, and appeal path;</li>
+<li>accept mandate designation by interfaces whose users will consent to
+it at onboarding;</li>
+<li>receive signed <code>Report</code> objects from consented users, weighted by the
+reporter's authority-local track record;</li>
+<li>open a case, serve notice to the accused through the interface, and
+hold the response window its manifest declares;</li>
+<li>issue a signed, reasoned <code>Verdict</code> — case opening (interim), dismissal,
+or ban — within the decision deadline;</li>
+<li>conduct the declared appeal path, including reversal verdicts; and</li>
+<li>answer status queries about its own cases within its confidentiality
+rules, and publish the anonymized statistics its manifest promises.</li>
+</ol>
+<p>It does not solicit reports, monitor content, scan devices, hold keys,
+read anything a reporter did not disclose, ban outside its consented
+population, write device marks itself, maintain a protocol-wide
+blacklist, or acquire jurisdiction over anyone by deciding one case well.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-distribution-requires-moderation-moderation-must-not-require-a-master">3.1 Distribution requires moderation; moderation must not require a master</h3>
+<p>App store review guidelines make reporting, blocking, and abuser removal
+a condition of distributing any user-generated-content application. An
+interface without this seat does not ship. The conventional answer — the
+vendor's own opaque enforcement desk — concentrates exactly the power
+Onym exists to separate: one party naming the user, presenting the
+interface, and deciding who may exist on the network. This contract
+supplies the required function as a bounded, replaceable, consent-bound
+seat instead.</p>
+<h3 id="32-consent-must-precede-the-case">3.2 Consent must precede the case</h3>
+<p>A moderator imposed after the offense is chosen by the accuser. The
+mandate is signed at onboarding, when the user is nobody's accused and
+nobody's accuser: which authority, which violation classes, what
+procedure, what ban terms, what appeal. After signing, neither the
+interface nor the authority can swap the rules for existing users without
+fresh consent. A user who dislikes an authority's record chooses an
+interface that names a different one — that market choice is the
+system's check on moderation power.</p>
+<h3 id="33-identity-bans-are-free-to-evade-device-marks-are-not">3.3 Identity bans are free to evade; device marks are not</h3>
+<p>Identity keys cost nothing to mint, so a key-only ban invites instant
+reincarnation. Platform device marks survive app reinstallation and
+device reset, making the cheapest evasion path cost a physical device.
+That is also why the sanction is grave: a device mark punishes hardware
+that may later carry a different, innocent person. The contract answers
+with the tightest bounds in this repository — declared durations,
+mandatory appeal, a new-holder appeal class, and a default disposition
+of dismissal when the authority goes silent.</p>
+<h3 id="34-evidence-must-not-become-surveillance">3.4 Evidence must not become surveillance</h3>
+<p>End-to-end encryption is load-bearing for every other seat. The only
+conforming evidence is what a <strong>recipient</strong> of the content voluntarily
+discloses from their own device, with proof the accused actually
+authored it — a sender signature or envelope commitment the disclosed
+plaintext verifies against. The authority sees single messages that one
+party to the conversation chose to reveal; it never sees mailboxes,
+keys, or anything undisclosed. Report thresholds, scanning obligations,
+or client-side detection are nonconforming per se.</p>
+<h3 id="35-undecided-must-be-a-defined-outcome">3.5 Undecided must be a defined outcome</h3>
+<p>Authorities fail: they vanish, stall, or are compromised. If a stalled
+case leaves a device marked indefinitely, the authority has acquired
+hostage power the seat must not hold. Every case therefore carries a
+decision deadline from the manifest, and the default disposition at the
+deadline is <strong>dismissal with the case mark cleared</strong> — the worst-case
+authority is an absent one, never an omnipotent one (the same rule the
+arbitration seat applies to absent arbiters).</p>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">onboarding (before any case)
+     │  user signs ModerationMandate
+     │  naming the interface's declared authority
+     v
+┌─────────────┐  signed Report        ┌─────────────────────────────┐
+│ Reporter    │──────────────────────&gt;│ Moderation Authority        │
+│ (discloses  │  disclosed content    │ manifest · procedure ·      │
+│  own copy + │  + authenticity proof │ judgment · reputation       │
+│  authenticity│                      └───────┬──────────────▲──────┘
+│  proof)     │                               │ CaseNotice   │ Response,
+└─────────────┘                               v              │ evidence
+                                      ┌──────────────────────┴──────┐
+                                      │ Accused                     │
+                                      │ notice · response window ·  │
+                                      │ appeal                      │
+                                      └─────────────────────────────┘
+                                              │ signed Verdict
+                                              v
+┌─────────────────────────────────────────────────────────────────┐
+│ Interface (enforcement rail)                                    │
+│ validates verdict shape + mandate · executes mechanically       │
+└──────────────┬──────────────────────────────┬───────────────────┘
+               │ device-mark write            │ identity refusal
+               v                              v
+   ┌───────────────────────┐      ┌───────────────────────────┐
+   │ Device-mark platform  │      │ This interface refuses    │
+   │ mark 1: open case     │      │ the named identity keys   │
+   │ mark 2: banned        │      │ (its own surface only)    │
+   └───────────────────────┘      └───────────────────────────┘
+
+   No verdict reaches a user who never signed the mandate. No mark
+   moves without a signed verdict. Absent authority -&gt; dismissal and
+   a cleared case mark at the deadline.
+</code></pre>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-moderation-profile">5.1 Moderation Profile</h3>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:moderation-profile:consent-bound-v1&quot;,
+  &quot;interface&quot;: &quot;onym-moderation-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;accept-mandate&quot;,
+    &quot;file-report&quot;,
+    &quot;serve-notice&quot;,
+    &quot;respond&quot;,
+    &quot;submit-evidence&quot;,
+    &quot;issue-verdict&quot;,
+    &quot;appeal&quot;,
+    &quot;query-status&quot;
+  ],
+  &quot;mandateSchema&quot;: &quot;onym-moderation-mandate-v1&quot;,
+  &quot;reportSchema&quot;: &quot;onym-moderation-report-v1&quot;,
+  &quot;verdictSchema&quot;: &quot;onym-moderation-verdict-v1&quot;,
+  &quot;markStates&quot;: [&quot;case-open&quot;, &quot;banned&quot;],
+  &quot;errorSchema&quot;: &quot;onym-moderation-errors-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<h3 id="52-authority-manifest">5.2 Authority Manifest</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;authority-id&gt;&quot;,
+  &quot;seat&quot;: &quot;moderation&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;authority-identity&gt;&quot;,
+  &quot;moderationProfileId&quot;: &quot;onym:moderation-profile:consent-bound-v1&quot;,
+  &quot;violationClasses&quot;: [
+    {
+      &quot;classId&quot;: &quot;csam&quot;,
+      &quot;definition&quot;: &quot;&lt;hash-or-url: exact prohibited-content definition&gt;&quot;,
+      &quot;responseWindow&quot;: &quot;P3D&quot;,
+      &quot;decisionDeadline&quot;: &quot;P7D&quot;,
+      &quot;banTerm&quot;: &quot;permanent&quot;,
+      &quot;appealWindow&quot;: &quot;P30D&quot;,
+      &quot;appealEffect&quot;: &quot;non-suspensive&quot;,
+      &quot;lawfulReporting&quot;: &quot;&lt;hash-or-url: statutory reporting the authority performs&gt;&quot;
+    },
+    {
+      &quot;classId&quot;: &quot;credible-violence&quot;,
+      &quot;definition&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+      &quot;responseWindow&quot;: &quot;P7D&quot;,
+      &quot;decisionDeadline&quot;: &quot;P14D&quot;,
+      &quot;banTerm&quot;: &quot;P365D&quot;,
+      &quot;appealWindow&quot;: &quot;P30D&quot;,
+      &quot;appealEffect&quot;: &quot;non-suspensive&quot;
+    },
+    {
+      &quot;classId&quot;: &quot;unsolicited-pornography&quot;,
+      &quot;definition&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+      &quot;responseWindow&quot;: &quot;P7D&quot;,
+      &quot;decisionDeadline&quot;: &quot;P14D&quot;,
+      &quot;banTerm&quot;: &quot;P90D&quot;,
+      &quot;appealWindow&quot;: &quot;P30D&quot;,
+      &quot;appealEffect&quot;: &quot;suspensive&quot;
+    }
+  ],
+  &quot;evidenceRules&quot;: &quot;&lt;hash-or-url: disclosure and authenticity requirements&gt;&quot;,
+  &quot;reputationPolicy&quot;: &quot;&lt;hash-or-url: how reporter track records weight intake&gt;&quot;,
+  &quot;newHolderAppeal&quot;: &quot;&lt;hash-or-url: procedure for a device's new owner&gt;&quot;,
+  &quot;appellate&quot;: &quot;self | onym:component:&lt;appellate-authority-id&gt;&quot;,
+  &quot;confidentiality&quot;: &quot;&lt;hash-or-url: what is published, what stays private&gt;&quot;,
+  &quot;statistics&quot;: &quot;&lt;hash-or-url: promised anonymized transparency reporting&gt;&quot;,
+  &quot;offers&quot;: [&quot;&lt;fee-offer-ids&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2027-06-30T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;authority-signature&gt;&quot;
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>every class declares five terms — response window, decision deadline,
+ban term, appeal window, and appeal effect (<code>suspensive</code>: the ban does
+not execute until the appeal window passes unused or the appeal
+concludes; <code>non-suspensive</code>: the ban executes at once and appeal can
+only reverse it); a class missing any of them is invalid at mandate
+validation. Where appeals are heard is the manifest-level <code>appellate</code>
+declaration, shared by all classes;</li>
+<li><code>banTerm</code> is <code>permanent</code> or a declared duration; permanent terms are
+only valid on classes whose definition the manifest justifies as
+warranting them, and every permanent ban remains appealable and
+subject to the new-holder procedure;</li>
+<li>class definitions are content-addressed: a user consents to exact
+wording, and the authority cannot edit the definition under existing
+mandates; and</li>
+<li>an authority operated by (or affiliated with) an interface vendor
+states so in the manifest, or is nonconforming.</li>
+</ol>
+<h3 id="53-moderation-mandate">5.3 Moderation Mandate</h3>
+<p>Signed by the user at onboarding, countersigned by the interface:</p>
+<pre><code class="language-json">{
+  &quot;mandateVersion&quot;: 1,
+  &quot;user&quot;: &quot;onym:key:&lt;user-identity&gt;&quot;,
+  &quot;interface&quot;: &quot;onym:component:&lt;interface-id&gt;&quot;,
+  &quot;authority&quot;: &quot;onym:component:&lt;authority-id&gt;&quot;,
+  &quot;manifestHash&quot;: &quot;&lt;hash-of-authority-manifest-consented-to&gt;&quot;,
+  &quot;classes&quot;: [&quot;csam&quot;, &quot;credible-violence&quot;, &quot;unsolicited-pornography&quot;],
+  &quot;deviceBinding&quot;: &quot;&lt;platform-scoped-device-reference&gt;&quot;,
+  &quot;acceptedAt&quot;: &quot;2026-08-06T00:00:00Z&quot;,
+  &quot;signatures&quot;: [&quot;&lt;user&gt;&quot;, &quot;&lt;interface&gt;&quot;]
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>the interface presents the manifest's classes, terms, and appeal
+paths before signing, with the same prominence its own contract
+requires for economics disclosures
+(<a href="../interface/Interface.html">../interface/Interface.md</a> §7);</li>
+<li>the mandate binds the user only for the classes and manifest hash it
+names; manifest changes bind new mandates, never existing ones;</li>
+<li><code>deviceBinding</code> is a platform-scoped reference (the profile defines
+it); it lets a verdict name the device without creating a global
+device identifier;</li>
+<li>a mandate binds one identity–device pair: a user running the
+interface on several devices signs one mandate per device, and a
+case names the mandate(s) whose devices the evidence concerns —
+device marks reach only the devices so named, while the identity
+refusal in a ban verdict covers the named keys on every surface of
+the consenting interface for the ban's duration; and</li>
+<li>withdrawal is leaving the interface. Withdrawal ends exposure to new
+cases; it does not clear marks already set by valid verdicts —
+otherwise every ban would be voidable by re-onboarding.</li>
+</ol>
+<h3 id="54-report">5.4 Report</h3>
+<pre><code class="language-json">{
+  &quot;reportVersion&quot;: 1,
+  &quot;reportId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;reporter&quot;: &quot;onym:key:&lt;reporter-identity&gt;&quot;,
+  &quot;reporterMandate&quot;: &quot;&lt;hash-of-reporter's-mandate&gt;&quot;,
+  &quot;accused&quot;: &quot;onym:key:&lt;accused-identity&gt;&quot;,
+  &quot;classId&quot;: &quot;unsolicited-pornography&quot;,
+  &quot;evidence&quot;: [
+    {
+      &quot;disclosedContent&quot;: &quot;&lt;the specific message or media, from the reporter's device&gt;&quot;,
+      &quot;authenticityProof&quot;: &quot;&lt;sender-signature-or-envelope-commitment binding content to accused key&gt;&quot;,
+      &quot;context&quot;: &quot;&lt;hash-or-inline: conversation context the reporter chooses to add&gt;&quot;
+    }
+  ],
+  &quot;filedAt&quot;: &quot;2026-08-06T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;reporter-signature&gt;&quot;
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>every evidence item verifies against the accused's key — content
+without an authenticity proof is a complaint, not evidence, and
+cannot alone support a verdict;</li>
+<li>the reporter discloses only items they legitimately received; an
+authority that requests broader disclosure (&quot;send us the whole
+conversation&quot;) is nonconforming;</li>
+<li>reports are free to file — no bond, no fee — and carry weight per
+the authority's published reputation policy: a reporter's
+authority-local track record of upheld versus dismissed reports
+scales intake priority and, per manifest, may gate case-opening for
+lesser classes; and</li>
+<li>reporter identity is visible to the authority, never to the accused
+unless the reporter consents; retaliation against inferred reporters
+is itself a violation class authorities should declare.</li>
+</ol>
+<h3 id="55-case-notice-and-response">5.5 Case Notice and Response</h3>
+<pre><code class="language-json">{
+  &quot;noticeVersion&quot;: 1,
+  &quot;caseId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;authority&quot;: &quot;onym:component:&lt;authority-id&gt;&quot;,
+  &quot;accused&quot;: &quot;onym:key:&lt;accused-identity&gt;&quot;,
+  &quot;mandateRef&quot;: &quot;&lt;hash-of-accused's-mandate&gt;&quot;,
+  &quot;classId&quot;: &quot;unsolicited-pornography&quot;,
+  &quot;evidenceSummary&quot;: &quot;&lt;hash: the disclosed items the case rests on&gt;&quot;,
+  &quot;responseDeadline&quot;: &quot;2026-08-13T00:00:00Z&quot;,
+  &quot;decisionDeadline&quot;: &quot;2026-08-20T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;authority-signature&gt;&quot;
+}
+</code></pre>
+<p>The notice is served through the interface, which must present it to the
+accused with the evidence, the class definition consented to, and the
+response path. The response mirrors the report's shape: signed
+statements and counter-evidence (for example, proof of context that
+changes the disclosed item's meaning). A missing response does not
+concede the case; it proceeds to decision on the record — no-show is a
+weakness, not a confession. On case opening, the authority issues an
+interim <code>open-case</code> verdict (§5.6) setting the <strong>case-open mark</strong>; it is procedural state,
+not a sanction, and the interface must not degrade service on it beyond
+displaying the case's existence to the device holder.</p>
+<h3 id="56-verdict">5.6 Verdict</h3>
+<pre><code class="language-json">{
+  &quot;verdictVersion&quot;: 1,
+  &quot;caseId&quot;: &quot;&lt;same-id&gt;&quot;,
+  &quot;authority&quot;: &quot;onym:component:&lt;authority-id&gt;&quot;,
+  &quot;mandateRef&quot;: &quot;&lt;hash-of-accused's-mandate&gt;&quot;,
+  &quot;accusedKeys&quot;: [&quot;onym:key:&lt;accused-identity&gt;&quot;],
+  &quot;deviceBinding&quot;: &quot;&lt;platform-scoped-device-reference&gt;&quot;,
+  &quot;classId&quot;: &quot;unsolicited-pornography&quot;,
+  &quot;disposition&quot;: &quot;open-case | dismiss | ban&quot;,
+  &quot;marks&quot;: {&quot;case-open&quot;: false, &quot;banned&quot;: true},
+  &quot;banExpires&quot;: &quot;2026-11-06T00:00:00Z&quot;,
+  &quot;reasoning&quot;: &quot;&lt;content-address: findings against the consented class definition&gt;&quot;,
+  &quot;appealDeadline&quot;: &quot;2026-09-05T00:00:00Z&quot;,
+  &quot;decidedAt&quot;: &quot;2026-08-18T00:00:00Z&quot;,
+  &quot;signature&quot;: &quot;&lt;authority-signature&gt;&quot;,
+  &quot;final&quot;: false
+}
+</code></pre>
+<p>Normative constraints:</p>
+<ol>
+<li>a verdict names exactly one case, the identity keys the evidence
+verified against, and the device from the accused's mandate; it
+cannot add devices, keys, or classes the case never contained;</li>
+<li><code>reasoning</code> is mandatory — an unexplained ban is nonconforming even
+where confidentiality keeps it private between authority and accused;</li>
+<li><code>banExpires</code> is required unless the consented class term is
+<code>permanent</code>; the interface clears the banned mark at expiry on the
+verdict's own authority, no further object needed;</li>
+<li><code>final</code> is false until the appeal deadline passes or the declared
+appeal concludes; whether a non-final ban executes meanwhile follows
+the class's consented <code>appealEffect</code>; a reversal on appeal is a new
+verdict that clears marks;</li>
+<li>dismissals clear the case-open mark and are reported to the reporter
+(adjusting their track record) without disclosing the accused's
+response beyond the outcome; and</li>
+<li>an <code>open-case</code> verdict is the interim object issued at case opening:
+its only permitted effect is <code>marks: {&quot;case-open&quot;: true}</code>, it carries
+no <code>banExpires</code> and no <code>appealDeadline</code> (the response window is the
+accused's remedy), it is never <code>final</code>, and it is superseded by the
+case's terminal verdict or by the decision-deadline default.</li>
+</ol>
+<h3 id="57-device-marks-and-enforcement-binding">5.7 Device marks and enforcement binding</h3>
+<p>The abstract rail is two per-device states scoped to the interface
+vendor's platform credentials:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Mark</th>
+<th scope="col">Meaning</th>
+<th scope="col">Set by</th>
+<th scope="col">Cleared by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>case-open</code></td>
+<td>A moderation case exists against this device</td>
+<td>Valid interim <code>open-case</code> verdict (§5.6)</td>
+<td>Dismissal, ban verdict (superseded), or decision-deadline default</td>
+</tr>
+<tr>
+<td><code>banned</code></td>
+<td>A final ban verdict is in force</td>
+<td>Valid ban verdict</td>
+<td>Verdict expiry, reversal on appeal, or new-holder appeal verdict</td>
+</tr>
+</tbody>
+</table></div><p>The interface executes verdicts mechanically:</p>
+<ul>
+<li>it validates verdict shape — authority signature, mandate reference to
+a mandate its user actually signed, class within the mandate, marks
+consistent with disposition, expiry present where required — never the
+verdict's wisdom;</li>
+<li>a device whose <code>banned</code> mark is set is refused service by this
+interface: the application declines to operate and displays the
+verdict reference, the authority's contact, and the appeal path
+(including the new-holder path) — a silent brick is nonconforming;</li>
+<li>the named identity keys are refused within this interface's surfaces
+for the ban's duration — on every device, not only the marked ones —
+while device marks reach only the devices the verdict names; the
+interface does not propagate the refusal to couriers, notaries, or
+any other seat; and</li>
+<li>the authority may publish its verdicts (anonymized per its
+confidentiality policy); other interfaces and seats MAY consult them
+but are bound only by verdicts under mandates their own users signed.</li>
+</ul>
+<p>The authority's key can sign verdicts; it can never write marks. The
+interface can write marks; it can never originate them. A compromised
+authority key is bounded to its consented population and is remedied by
+interfaces revoking the designation and clearing marks set after the
+compromise time the authority reports.</p>
+<h2 id="6-common-moderation-surface">6. Common moderation surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accept-mandate</code></td>
+<td>Interface designation, manifest hash</td>
+<td>Authority countersignature or refusal</td>
+</tr>
+<tr>
+<td><code>file-report</code></td>
+<td>Signed <code>Report</code> with authenticity proofs</td>
+<td>Intake per reputation policy</td>
+</tr>
+<tr>
+<td><code>serve-notice</code></td>
+<td>Case opened</td>
+<td><code>CaseNotice</code> to accused via interface; case-open mark set</td>
+</tr>
+<tr>
+<td><code>respond</code></td>
+<td>Accused response within window</td>
+<td>Case at issue</td>
+</tr>
+<tr>
+<td><code>submit-evidence</code></td>
+<td>Signed items per evidence rules</td>
+<td>Entered into record</td>
+</tr>
+<tr>
+<td><code>issue-verdict</code></td>
+<td>Closed record, within deadline</td>
+<td>Signed <code>Verdict</code> to accused, reporter (outcome only), and interface</td>
+</tr>
+<tr>
+<td><code>appeal</code></td>
+<td>Within appeal window, per declared path</td>
+<td>Review; reversal verdict on success</td>
+</tr>
+<tr>
+<td><code>query-status</code></td>
+<td>Case ID, party credential</td>
+<td>Stage and deadlines, per confidentiality</td>
+</tr>
+</tbody>
+</table></div><p>Every operation is deadline-bearing, and the manifest's windows drive
+the calendar. A blown decision deadline is a dismissal, not an
+extension nobody consented to.</p>
+<h2 id="7-incentives">7. Incentives</h2>
+<h3 id="71-why-the-authority-is-paid-and-how-it-must-not-be">7.1 Why the authority is paid, and how it must not be</h3>
+<p>Authorities publish fee offers as <code>SeatOffer</code>s. Two conforming revenue
+sources exist:</p>
+<ul>
+<li><strong>interface fees</strong>: interfaces (whose distribution depends on this
+seat existing and whose users demand a habitable network) pay their
+designated authorities by subscription or per-decided-case rates; and</li>
+<li><strong>foundation grants</strong>: moderation of the gravest classes is a public
+good; the sponsor seat (<a href="../sponsor/Sponsor.html">../sponsor/Sponsor.md</a>)
+may fund conforming authorities so that no interface skips designating
+one on cost grounds.</li>
+</ul>
+<p>The invariants: fees are <strong>outcome-independent</strong> — per case decided,
+never per ban issued; no bounty, forfeiture, or volume bonus may make
+banning more profitable than dismissing; and no party to a live case may
+pay the authority anything beyond the pre-published rate. An authority
+whose income rises with its ban rate has a business model this contract
+rejects.</p>
+<h3 id="72-why-the-reporter-reports">7.2 Why the reporter reports</h3>
+<p>Reporting is free, low-friction, and consequential: upheld reports build
+the reporter's authority-local track record, which raises the priority
+and weight of their future reports. There is deliberately <strong>no reporter
+bounty</strong> — paid reporting industrializes false accusation. Track records
+are pseudonymous, local to one authority, non-transferable, and not a
+purchasable asset; the reputation policy is published so reporters know
+what their standing means.</p>
+<h3 id="73-why-the-user-respects-the-mandate">7.3 Why the user respects the mandate</h3>
+<p>The mandate is legitimate to its subjects because it is:</p>
+<ul>
+<li><strong>consented</strong> — signed at onboarding against exact, content-addressed
+class definitions, never imposed retroactively;</li>
+<li><strong>symmetric</strong> — the same signature that exposes the user to cases
+gives them standing to report, and every user is likelier to need
+protection than to face a case;</li>
+<li><strong>procedural</strong> — notice before sanction, a response window, reasoned
+verdicts, declared durations, and appeal are rights no conventional
+platform gives its banned users;</li>
+<li><strong>bounded</strong> — the worst outcome is losing one interface on one device
+for a declared term, with the path back written down in advance; and</li>
+<li><strong>competitive</strong> — authorities are inspectable before consent (track
+records, statistics, audit-seat attestations of procedure
+conformance), and an authority that bans capriciously loses the
+interfaces that carry it, because those interfaces lose users.</li>
+</ul>
+<p>The interface's incentive closes the loop: it needs a designated
+authority to be distributable at all, and it needs a <em>fair</em> one to keep
+users who read the mandate before signing. Competition among
+authorities disciplines both overreach and neglect.</p>
+<h2 id="8-party-obligations">8. Party obligations</h2>
+<p>Conforming interfaces must:</p>
+<ol>
+<li>present the authority's manifest — classes, terms, appeal — before
+mandate signing, with consent-surface prominence, and never bury it
+in unrelated terms;</li>
+<li>execute valid verdicts promptly and mechanically, and refuse invalid
+ones (bad signature, no mandate, class outside mandate, missing
+expiry) with the error surfaced to the authority;</li>
+<li>serve notices to the accused faithfully and provide a working
+response path even to users the interface finds odious;</li>
+<li>display ban state honestly — verdict reference, authority contact,
+appeal path, expiry — and never silently degrade service instead;</li>
+<li>clear marks on dismissal, expiry, reversal, and decision-deadline
+default without waiting to be asked; and</li>
+<li>never write marks absent a valid verdict, including under pressure
+from stores, states, or its own commercial interest — an interface
+that needs to remove content for other lawful reasons does so under
+its own contract's disclosed policies, not by forging this seat's
+sanction.</li>
+</ol>
+<p>Conforming moderation authorities must:</p>
+<ol>
+<li>publish and follow the manifest: definitions, windows, terms,
+confidentiality, statistics, fees;</li>
+<li>open cases only on conforming reports from consented reporters
+against consented accused, within declared classes;</li>
+<li>verify authenticity proofs before treating disclosed content as
+evidence of authorship;</li>
+<li>serve notice and hold the response window before any ban verdict —
+the case-open mark is the only pre-verdict effect;</li>
+<li>decide on the record, against the consented class definition, within
+the deadline, with signed reasoning;</li>
+<li>keep case materials under the declared confidentiality terms, retain
+disclosed content no longer than the case and its appeal require,
+and never reuse it commercially;</li>
+<li>perform the lawful statutory reporting its manifest declares for
+classes such as CSAM, and nothing beyond it;</li>
+<li>publish the promised anonymized statistics consistently — not only
+the numbers that flatter it; and</li>
+<li>operate verdict-signing keys separately from operational keys and
+report compromise immediately to designating interfaces.</li>
+</ol>
+<p>Conforming reporters must disclose only what they received, only
+truthfully, and accept that a track record of dismissed reports reduces
+their weight; conforming accused parties respond through the signed
+path, without out-of-band pressure on the authority or retaliation
+against suspected reporters.</p>
+<h2 id="9-relationship-to-other-seats">9. Relationship to other seats</h2>
+<ul>
+<li><strong>The interface seat</strong> gains the reporting/blocking/removal capability
+its distribution channels require
+(<a href="../interface/Interface.html">../interface/Interface.md</a>), without
+acquiring judicial power itself; designating an authority is part of
+its disclosed manifest.</li>
+<li><strong>The identity seat</strong> is untouched: no verdict reaches root material,
+rotation, or recovery, and a banned identity's keys remain
+cryptographically valid everywhere the mandate does not reach.</li>
+<li><strong>The arbitration seat</strong> is the structural sibling — chosen ex ante,
+bounded stake, default disposition — but the seats never merge:
+arbitration disposes of escrowed money between order parties;
+moderation disposes of interface access for mandate signers. An
+authority's fee disputes with an interface are arbitrable like any
+other order.</li>
+<li><strong>The audit seat</strong> (<a href="../audit/Audit.html">../audit/Audit.md</a>) attests
+authorities (procedure conformance, deadline performance, statistics
+honesty) and interfaces (mark handling matches verdicts). An attested
+track record is what makes pre-consent inspection real.</li>
+<li><strong>Discovery providers</strong>
+(<a href="../discovery/Discovery.html">../discovery/Discovery.md</a>) may list
+authorities and their attested records; listing is curation, never a
+license.</li>
+<li><strong>The sponsor seat</strong> may grant-fund gravest-class moderation as a
+public good under its existing recognition bounds.</li>
+</ul>
+<h2 id="10-errors-and-lifecycle">10. Errors and lifecycle</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse designation at interface</td>
+</tr>
+<tr>
+<td><code>no_mandate</code></td>
+<td>Verdict validation</td>
+<td>Interface refuses execution; authority notified</td>
+</tr>
+<tr>
+<td><code>class_outside_mandate</code></td>
+<td>Verdict validation</td>
+<td>Refused; only consented classes bind</td>
+</tr>
+<tr>
+<td><code>authenticity_unverified</code></td>
+<td>Evidence intake</td>
+<td>Item is complaint, not evidence; cannot alone support a verdict</td>
+</tr>
+<tr>
+<td><code>reporter_unconsented</code></td>
+<td>Report intake</td>
+<td>Report refused; reporting requires a mandate</td>
+</tr>
+<tr>
+<td><code>window_closed</code></td>
+<td>Time</td>
+<td>Late response enters record at authority's declared discretion; late filing of appeal is refused</td>
+</tr>
+<tr>
+<td><code>no_response</code></td>
+<td>Accused</td>
+<td>Decide on record per manifest</td>
+</tr>
+<tr>
+<td><code>decision_overdue</code></td>
+<td>Authority</td>
+<td>Dismissal; interface clears case-open mark</td>
+</tr>
+<tr>
+<td><code>verdict_invalid</code></td>
+<td>Interface validation</td>
+<td>Not executed; bad shape, signature, or bounds</td>
+</tr>
+<tr>
+<td><code>mark_write_failed</code></td>
+<td>Platform</td>
+<td>Retry; verdict remains valid; identity refusal applies meanwhile</td>
+</tr>
+<tr>
+<td><code>appeal_filed</code></td>
+<td>Within window</td>
+<td>Ban executes or suspends per the class's consented <code>appealEffect</code></td>
+</tr>
+<tr>
+<td><code>new_holder_claim</code></td>
+<td>Device transfer</td>
+<td>New-holder appeal per manifest; expedited review</td>
+</tr>
+<tr>
+<td><code>authority_key_compromise</code></td>
+<td>Authority report</td>
+<td>Interfaces suspend designation; marks set after compromise time cleared</td>
+</tr>
+</tbody>
+</table></div><p>Case lifecycle:</p>
+<pre><code class="language-text">mandate_signed (onboarding, before any case)
+  -&gt; report_filed (authenticity verified, reputation weighted)
+       -&gt; intake_declined -&gt; closed (reporter record adjusted)
+       -&gt; case_opened -&gt; notice_served -&gt; case-open mark set
+            -&gt; responded | no_response
+            -&gt; decided within deadline
+                 -&gt; dismissed -&gt; marks cleared -&gt; closed
+                 -&gt; banned -&gt; banned mark set -&gt; [appeal?]
+                      -&gt; upheld -&gt; runs to banExpires -&gt; mark cleared -&gt; closed
+                      -&gt; reversed -&gt; marks cleared -&gt; closed
+            -&gt; decision_overdue -&gt; dismissed -&gt; marks cleared -&gt; closed
+</code></pre>
+<p>Every path terminates. There is no state in which a mark waits on a
+silent authority forever, and no path in which silence bans anyone.</p>
+<h2 id="11-security-and-privacy-invariants">11. Security and privacy invariants</h2>
+<ol>
+<li><strong>Jurisdiction is signed consent.</strong> An authority decides only cases
+against users whose mandate names it, for classes the mandate lists,
+under the manifest hash consented to; nothing can be moderated into
+its docket afterward.</li>
+<li><strong>Marks move only on verdicts.</strong> No interface discretion, no
+authority write access, no platform-initiated state; every mark
+transition traces to one signed, validated object or a declared
+expiry or deadline default.</li>
+<li><strong>Evidence is recipient-disclosed or it is nothing.</strong> No scanning,
+no client-side detection, no key or plaintext demands, no metadata
+dragnets; the E2EE floor of every other seat is the floor of every
+case.</li>
+<li><strong>Notice precedes sanction.</strong> The banned mark is set only after the
+response window a consented class declared; the case-open mark is
+procedural and must not degrade service.</li>
+<li><strong>Every ban has a shape.</strong> Named keys, one device, a consented
+class, signed reasoning, a duration or a justified permanent term,
+and an appeal path — a sanction missing any element is invalid at
+every conforming interface.</li>
+<li><strong>Undecided is dismissal.</strong> Deadline passage clears marks by
+default; authority absence is a scheduled non-event, never a freeze.</li>
+<li><strong>Verdicts bind the consenting surface only.</strong> No protocol-wide
+blacklist exists; other seats may consult published verdicts but are
+bound only by their own users' mandates; couriers, notaries, and
+registries are unreachable by this seat.</li>
+<li><strong>Fees are ban-independent.</strong> Per-case, never per-ban; no bounties
+for reporters; no revenue path that pays for severity.</li>
+<li><strong>Reputation is local and unownable.</strong> Reporter track records are
+per-authority, pseudonymous, non-transferable, and not a market.</li>
+<li><strong>The device is not the person, and the contract knows it.</strong> New-
+holder appeal is mandatory, ban terms are declared, and permanent
+terms are the justified exception — the mark's persistence across
+resale is treated as the liability it is.</li>
+<li><strong>Law outranks the label.</strong> Statutory reporting duties for the
+gravest content are performed as declared; no mandate waives the
+accused's legal rights or the reporter's; manifests must not claim
+otherwise.</li>
+<li><strong>The seat is optional at the protocol layer.</strong> Direct protocol
+use never requires a mandate; an interface that ships without a
+designated authority answers to its distribution channel, not to
+this contract.</li>
+</ol>
+<h2 id="12-versioning-and-conformance">12. Versioning and conformance</h2>
+<ul>
+<li><code>ModerationProfile</code> changes when operation, mandate, report, verdict,
+or mark meaning changes; violation classes are additive per authority
+manifest, and class definitions are immutable once consented.</li>
+<li>Mandates are immutable; a manifest change binds only mandates signed
+after it. Verdicts are immutable; corrections travel as reversal
+verdicts through the declared appeal path, never edits.</li>
+<li>Cross-platform fixtures cover: mandate validation (manifest hash
+mismatch, missing class terms); report authenticity verification
+(valid proof, forged proof, proofless complaint); notice and window
+arithmetic including timezone-hostile boundaries; verdict shape
+validation at interfaces (no mandate, class outside mandate, missing
+expiry, marks inconsistent with disposition, open-case verdicts
+carrying sanction effects); suspensive versus non-suspensive appeal
+execution; decision-deadline
+default execution; expiry clearing; reversal clearing; and
+new-holder appeal progression.</li>
+<li>An authority, an interface, and reporter/accused clients from three
+different authors must interoperate using only published profiles and
+fixtures.</li>
+</ul>
+<h2 id="13-concrete-implementation-profiles">13. Concrete implementation profiles</h2>
+<p>Two device-mark platform profiles accompany this boundary:</p>
+<ul>
+<li><strong><a href="../moderation/Moderation-DeviceCheck.html">Moderation-DeviceCheck.md</a></strong> — Apple
+DeviceCheck: two per-device bits scoped to the interface vendor's
+Apple developer account, written server-side on verdict execution;
+and</li>
+<li><strong><a href="../moderation/Moderation-Device-Recall.html">Moderation-Device-Recall.md</a></strong> —
+Google Play Integrity device recall: per-device recall values scoped
+to the app, written server-side, read inside integrity verdicts.</li>
+</ul>
+<p>Both platforms scope marks to the interface vendor's credentials, which
+matches this contract's rule that verdicts bind the consenting surface
+only: vendor A's marks are physically invisible to vendor B.</p>
+<h2 id="14-acceptance-criteria">14. Acceptance criteria</h2>
+<p>The moderation seat is successfully specified when:</p>
+<ol>
+<li>a user can read an authority's classes, terms, and appeal path
+before consenting, and no case can reach them under terms they never
+saw;</li>
+<li>a report with verified authenticity proof can proceed through
+notice, response, verdict, and mark execution using only published
+profiles and fixtures;</li>
+<li>no verdict lacking a mandate, reasoning, duration (or justified
+permanent term), or appeal path executes at any conforming
+interface;</li>
+<li>an authority that disappears costs the accused nothing: marks clear
+on schedule without its participation;</li>
+<li>no conforming object can express scanning obligations, key or
+plaintext demands, per-ban compensation, or reporter bounties;</li>
+<li>a banned device holder can see why, until when, and how to appeal —
+including as the device's new owner;</li>
+<li>a second authority and a second interface can adopt the profiles
+without coordination with the first; and</li>
+<li>the protocol remains fully usable by clients that never signed any
+mandate, and every document in this seat says so plainly.</li>
+</ol>
+<h2 id="15-justification-in-one-sentence">15. Justification in one sentence</h2>
+<blockquote>
+<p>The moderation seat gives every interface the abuse-removal power its
+distribution requires, as a service its users chose while they were
+nobody's accused — one whose whole authority is a reasoned, signed,
+expiring verdict against terms they could read, and whose worst
+failure mode is a dismissal on schedule.</p>
+</blockquote>
+<h2 id="references">References</h2>
+<ol>
+<li>Onym system whitepaper, §1 and §3 (the governing minimum-authority
+rule and the design principles), §7 (interface seat), §17
+(economics): <a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
+<li>Onym interface contract (consent surfaces, disclosed economics):
+<a href="../interface/Interface.html">../interface/Interface.md</a></li>
+<li>Onym arbitration boundary (consent-ex-ante, default dispositions):
+<a href="../arbitration/Arbitration.html">../arbitration/Arbitration.md</a></li>
+<li>Onym audit seat (attested authority track records):
+<a href="../audit/Audit.html">../audit/Audit.md</a></li>
+<li>Onym discovery boundary (listing without gatekeeping):
+<a href="../discovery/Discovery.html">../discovery/Discovery.md</a></li>
+<li>Onym sponsor contract (public-good funding path):
+<a href="../sponsor/Sponsor.html">../sponsor/Sponsor.md</a></li>
+<li>Apple DeviceCheck (per-device two-bit state):
+<a href="https://developer.apple.com/documentation/devicecheck">https://developer.apple.com/documentation/devicecheck</a></li>
+<li>Google Play Integrity device recall:
+<a href="https://developer.android.com/google/play/integrity/device-recall">https://developer.android.com/google/play/integrity/device-recall</a></li>
+<li>App Store Review Guidelines §1.2 (user-generated content
+requirements):
+<a href="https://developer.apple.com/app-store/review/guidelines/#user-generated-content">https://developer.apple.com/app-store/review/guidelines/#user-generated-content</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/moderation-seat/moderation/Moderation.md">latest version on moderation-seat →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="../../remediation.html">Remediation plan</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>
