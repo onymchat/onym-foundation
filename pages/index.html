@@ -69,7 +69,7 @@
       <figure class="has-alt">
         <svg class="diagram seat-wheel" viewBox="0 0 900 900" role="group" aria-labelledby="seat-wheel-title seat-wheel-desc">
           <title id="seat-wheel-title">The complete seat economy</title>
-          <desc id="seat-wheel-desc">Fifteen open roles and one open-ended proposal slot form a circle around the user. Each role is selected by the person, group, buyer, or legal authority entitled to choose it.</desc>
+          <desc id="seat-wheel-desc">Fifteen open roles and one open-ended proposal slot form a circle around the user; the newest proposal, the moderation authority, is listed with the seat contracts below. Each role is selected by the person, group, buyer, or legal authority entitled to choose it.</desc>
           <circle class="seat-orbit" cx="450" cy="450" r="370"/>
           <g class="seat-spokes">
             <line x1="450" y1="450" x2="450" y2="80"/><line x1="450" y1="450" x2="591.6" y2="108.2"/>
@@ -179,6 +179,7 @@
           <li class="tile"><div class="tile-head"><h3>Banking</h3><span class="tag">in review</span></div><p>Earns payment fees. <a href="contracts/bank/UI-Bank.html">Proposal →</a></p></li>
           <li class="tile"><div class="tile-head"><h3>Audit</h3></div><p>Earns engagement fees. <a href="contracts/audit/Audit.html">Contract →</a></p></li>
           <li class="tile"><div class="tile-head"><h3>Discovery</h3></div><p>Finds compatible instances across every seat. <a href="contracts/discovery/Discovery.html">Contract →</a></p></li>
+          <li class="tile"><div class="tile-head"><h3>Moderation</h3><span class="tag">in review</span></div><p>Earns per case decided, never per ban. <a href="contracts/moderation/Moderation.html">Proposal →</a></p></li>
           <li class="tile"><div class="tile-head"><h3>+ 7 more seats</h3></div><p>Each earning when chosen. <a href="seats.html">All seats →</a></p></li>
         </ul>
         <figcaption class="mono">Every role is open to implementation. Authority and payment follow the actual chooser.</figcaption>
@@ -198,8 +199,32 @@
         <a href="contracts/recovery/Recovery-Trustee.html">Recovery trustee</a> ·
         <a href="contracts/sponsor/Sponsor.html">Sponsorship</a> ·
         <a href="contracts/bank/UI-Bank.html">Banking</a><span class="tag">in review</span> ·
-        <a href="contracts/association/Association-Naming.html">Naming</a><span class="tag">in review</span>.
+        <a href="contracts/association/Association-Naming.html">Naming</a><span class="tag">in review</span> ·
+        <a href="contracts/moderation/Moderation.html">Moderation authority</a><span class="tag">in review</span>.
         <a href="contracts/identity/UI-Identity.html">Identity</a> is not a seat — it stays with the person.</p>
+    </div>
+  </section>
+
+  <section class="sect" id="safety">
+    <div class="wrap step">
+      <div class="shead">
+        <div>
+          <p class="number">03</p>
+          <h2>User safety without a master switch</h2>
+        </div>
+        <p class="slede">Encrypted does not mean lawless. A proposed moderation seat lets users report abuse — child sexual abuse material, credible violence, unsolicited pornography — to an independent authority they accepted when they joined, and lets apps keep banned devices out. The powers stay separate: the authority judges, the app enforces, and neither can read anyone's messages. <a href="contracts/moderation/Moderation.html">The moderation proposal →</a><br><span class="micro">Proposal in review — no moderation authority operates yet.</span></p>
+      </div>
+      <div class="grid4">
+        <div class="card"><p class="number">01 · REPORT</p><h3>You disclose what you received</h3><p class="micro">Reporting shares the specific offending message from your own device, with cryptographic proof of who sent it. Nothing else leaves your phone — nobody scans anything.</p></div>
+        <div class="card"><p class="number">02 · CASE</p><h3>A case, not a black box</h3><p class="micro">The accused is notified, sees the evidence and the exact rule they agreed to at onboarding, and gets a response window before any decision.</p></div>
+        <div class="card"><p class="number">03 · VERDICT</p><h3>Signed, reasoned, expiring</h3><p class="micro">Bans carry written reasons, published durations, and an appeal path — including for a device's next owner. An authority that goes silent means dismissal, never a freeze.</p></div>
+        <div class="card"><p class="number">04 · ENFORCEMENT</p><h3>The app executes, mechanically</h3><p class="micro">A banned device stops working in apps that adopted the authority — marked via Apple DeviceCheck or Google Play device recall, so reinstalling doesn't reset it. The open protocol itself is untouched.</p></div>
+      </div>
+      <div class="grid3">
+        <div class="card"><p class="t16m">No scanning, no backdoors — evidence exists only when a recipient chooses to disclose it.</p></div>
+        <div class="card"><p class="t16m">Judges never profit from convictions — authorities earn per case decided, never per ban.</p></div>
+        <div class="card"><p class="t16m">Consent precedes the case — the rules you can be judged by are the rules you signed.</p></div>
+      </div>
     </div>
   </section>
 
@@ -207,7 +232,7 @@
     <div class="wrap step">
       <div class="shead">
         <div>
-          <p class="number">03</p>
+          <p class="number">04</p>
           <h2>Where the Foundation stands</h2>
         </div>
         <p class="slede">Outside the transaction ring. Arrows go out — to audits, grants, infrastructure, standards, recognition. Never into the message path or any seat's revenue.</p>
@@ -241,7 +266,7 @@
     <div class="wrap step">
       <div class="shead">
         <div>
-          <p class="number">04</p>
+          <p class="number">05</p>
           <h2>Why sponsors, why now</h2>
         </div>
         <p class="slede">The network's commons — independent audits, conformance test suites, reference infrastructure, grants to seat pioneers — need funding before the seat economy can pay for itself. Founding sponsors make that possible, and are remembered for it.</p>
@@ -259,7 +284,7 @@
     <div class="wrap step">
       <div class="shead">
         <div>
-          <p class="number">05</p>
+          <p class="number">06</p>
           <h2>Money can fund the mission. It cannot buy a majority.</h2>
         </div>
         <p class="slede">{{policy.board.sponsorSeats}} sponsor directors, {{policy.board.ecosystemSeats}} ecosystem directors, {{policy.board.publicInterestSeats}} independent public-interest directors. {{policy.board.nonSponsorSeats}} seats have non-contribution selection routes. Chair and treasurer: never sponsors. <a href="governance.html">Selection, transition, and spending rules →</a><br><span class="micro">Proposed governance — no entity or board exists yet.</span></p>
