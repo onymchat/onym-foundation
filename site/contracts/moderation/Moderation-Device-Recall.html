@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/74a77d2c34269065315b6370c38d907eb06c8151/moderation/Moderation-Device-Recall.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/92aefa739fe39c01c0b969427af2ea7ef4920ce7/moderation/Moderation-Device-Recall.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-device-mark-google-play-integrity-device-recall-implementation">Onym Moderation ↔ Device Mark: Google Play Integrity Device Recall Implementation</h1>
@@ -223,6 +223,15 @@ clean state, not an error.</li>
 <p>The backend binds the enrollment to the mandate's <code>deviceBinding</code>
 identifier at first verified token; integrity tokens are not stable
 identifiers, and the binding stays a vendor-local record.</p>
+<p>The linkage model of the DeviceCheck profile §5 applies verbatim:
+<strong>reading is stateless</strong> (recall values are the sole state the refusal
+consults, which is what survives reinstall), <strong>writing and
+reconciliation are session-mediated</strong> (the identity-signature/token
+pair presented in one session is the only token-to-enrollment linkage,
+refreshed every session and restored when a mandated identity returns
+after a reinstall), and a value-set device whose session identity
+resolves no active verdict routes to the authority's
+re-identification/new-holder procedure.</p>
 <p>Reconciliation is lazy, exactly as in the DeviceCheck profile §6: the
 backend reconciles stored verdict state (expiry, reversal, deadline
 default) against recall values whenever a token is presented, and
@@ -234,9 +243,13 @@ gate-check-required degradation also apply unchanged.</p>
 <p>Identical to the DeviceCheck profile §6 with one platform difference:
 <code>deviceRecall.write</code> requires a <strong>fresh integrity token from the target
 device</strong>. A write against an absent device therefore always queues and
-executes on the device's next token presentation. The identity refusal
-named in the verdict applies at the backend immediately, so the queue
-delay confers no access.</p>
+executes in the device's next session that presents a token together
+with an identity the enrollment's mandate names; the <code>case-open</code> write
+executes in the notice-service session. The identity refusal named in
+the verdict applies at the backend immediately, so the queue delay
+confers no access — and, as on iOS, a queued device-mark write can be
+outrun by wiping the app before it lands (DeviceCheck profile §8),
+which manifests must not conceal.</p>
 <h2 id="7-error-mapping">7. Error mapping</h2>
 <div class="tscroll"><table><thead>
 <tr>
@@ -317,7 +330,10 @@ implemented behavior in any current Onym repository.</li>
 <p>Fixtures must cover: token verdict validation with and without recall
 values; write authorization and quota backoff; verdict-to-value
 execution for every disposition; queued writes against an absent
-device; lazy reconciliation (expiry, reversal, deadline default);
+device and their execution at the next mandated-identity session;
+identity-mediated re-linking after reinstall; routing of a value-set
+device with an unresolvable session identity to re-identification;
+lazy reconciliation (expiry, reversal, deadline default);
 <code>bitThird</code> remaining untouched through every path; grace-window and
 gate-check-required degradation including the no-Play-services case;
 and new-holder progression.</p>
@@ -328,8 +344,11 @@ and new-holder progression.</p>
 and the app refusing service with the full ban UX, using only the
 vendor's own Cloud project credentials;</li>
 <li>reinstalling the app (or clearing its data) on the banned device
-restores the refusal without any backend account state for the
-user;</li>
+restores the refusal from the recall values alone — the refusal
+decision consults no backend account state, though the vendor's
+verdict and enrollment records (sanction state under the interface
+contract's disclosed carve-out) exist and are consulted for
+reconciliation and appeal routing;</li>
 <li>expiry, reversal, and deadline defaults clear values with nothing
 beyond the passage of time and one token presentation;</li>
 <li>no code path outside verdict execution and reconciliation can reach

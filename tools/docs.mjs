@@ -10,7 +10,7 @@ export const REFS = {
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
-  'moderation-seat': '74a77d2c34269065315b6370c38d907eb06c8151',
+  'moderation-seat': '92aefa739fe39c01c0b969427af2ea7ef4920ce7',
 };
 
 // path → { ref, seat? (eyebrow label for abstract seat boundaries), review? }

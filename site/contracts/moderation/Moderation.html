@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Moderation authority</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/74a77d2c34269065315b6370c38d907eb06c8151/moderation/Moderation.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/92aefa739fe39c01c0b969427af2ea7ef4920ce7/moderation/Moderation.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-authority-contract-boundary">Onym Moderation Authority Contract Boundary</h1>
@@ -145,8 +145,8 @@ it at onboarding;</li>
 reporter's authority-local track record;</li>
 <li>open a case, serve notice to the accused through the interface, and
 hold the response window its manifest declares;</li>
-<li>issue a signed, reasoned <code>Verdict</code> — dismissal, case closure, or ban —
-within the decision deadline;</li>
+<li>issue a signed, reasoned <code>Verdict</code> — case opening (interim), dismissal,
+or ban — within the decision deadline;</li>
 <li>conduct the declared appeal path, including reversal verdicts; and</li>
 <li>answer status queries about its own cases within its confidentiality
 rules, and publish the anonymized statistics its manifest promises.</li>
@@ -275,6 +275,7 @@ arbitration seat applies to absent arbiters).</p>
       &quot;decisionDeadline&quot;: &quot;P7D&quot;,
       &quot;banTerm&quot;: &quot;permanent&quot;,
       &quot;appealWindow&quot;: &quot;P30D&quot;,
+      &quot;appealEffect&quot;: &quot;non-suspensive&quot;,
       &quot;lawfulReporting&quot;: &quot;&lt;hash-or-url: statutory reporting the authority performs&gt;&quot;
     },
     {
@@ -283,7 +284,8 @@ arbitration seat applies to absent arbiters).</p>
       &quot;responseWindow&quot;: &quot;P7D&quot;,
       &quot;decisionDeadline&quot;: &quot;P14D&quot;,
       &quot;banTerm&quot;: &quot;P365D&quot;,
-      &quot;appealWindow&quot;: &quot;P30D&quot;
+      &quot;appealWindow&quot;: &quot;P30D&quot;,
+      &quot;appealEffect&quot;: &quot;non-suspensive&quot;
     },
     {
       &quot;classId&quot;: &quot;unsolicited-pornography&quot;,
@@ -291,7 +293,8 @@ arbitration seat applies to absent arbiters).</p>
       &quot;responseWindow&quot;: &quot;P7D&quot;,
       &quot;decisionDeadline&quot;: &quot;P14D&quot;,
       &quot;banTerm&quot;: &quot;P90D&quot;,
-      &quot;appealWindow&quot;: &quot;P30D&quot;
+      &quot;appealWindow&quot;: &quot;P30D&quot;,
+      &quot;appealEffect&quot;: &quot;suspensive&quot;
     }
   ],
   &quot;evidenceRules&quot;: &quot;&lt;hash-or-url: disclosure and authenticity requirements&gt;&quot;,
@@ -307,9 +310,13 @@ arbitration seat applies to absent arbiters).</p>
 </code></pre>
 <p>Normative constraints:</p>
 <ol>
-<li>every class declares all five time terms — response window, decision
-deadline, ban term, appeal window, and (via <code>appellate</code>) where appeal
-goes; a class missing any of them is invalid at mandate validation;</li>
+<li>every class declares five terms — response window, decision deadline,
+ban term, appeal window, and appeal effect (<code>suspensive</code>: the ban does
+not execute until the appeal window passes unused or the appeal
+concludes; <code>non-suspensive</code>: the ban executes at once and appeal can
+only reverse it); a class missing any of them is invalid at mandate
+validation. Where appeals are heard is the manifest-level <code>appellate</code>
+declaration, shared by all classes;</li>
 <li><code>banTerm</code> is <code>permanent</code> or a declared duration; permanent terms are
 only valid on classes whose definition the manifest justifies as
 warranting them, and every permanent ban remains appealable and
@@ -344,7 +351,13 @@ requires for economics disclosures
 names; manifest changes bind new mandates, never existing ones;</li>
 <li><code>deviceBinding</code> is a platform-scoped reference (the profile defines
 it); it lets a verdict name the device without creating a global
-device identifier; and</li>
+device identifier;</li>
+<li>a mandate binds one identity–device pair: a user running the
+interface on several devices signs one mandate per device, and a
+case names the mandate(s) whose devices the evidence concerns —
+device marks reach only the devices so named, while the identity
+refusal in a ban verdict covers the named keys on every surface of
+the consenting interface for the ban's duration; and</li>
 <li>withdrawal is leaving the interface. Withdrawal ends exposure to new
 cases; it does not clear marks already set by valid verdicts —
 otherwise every ban would be voidable by re-onboarding.</li>
@@ -406,7 +419,7 @@ statements and counter-evidence (for example, proof of context that
 changes the disclosed item's meaning). A missing response does not
 concede the case; it proceeds to decision on the record — no-show is a
 weakness, not a confession. On case opening, the authority issues an
-interim verdict setting the <strong>case-open mark</strong>; it is procedural state,
+interim <code>open-case</code> verdict (§5.6) setting the <strong>case-open mark</strong>; it is procedural state,
 not a sanction, and the interface must not degrade service on it beyond
 displaying the case's existence to the device holder.</p>
 <h3 id="56-verdict">5.6 Verdict</h3>
@@ -418,7 +431,7 @@ displaying the case's existence to the device holder.</p>
   &quot;accusedKeys&quot;: [&quot;onym:key:&lt;accused-identity&gt;&quot;],
   &quot;deviceBinding&quot;: &quot;&lt;platform-scoped-device-reference&gt;&quot;,
   &quot;classId&quot;: &quot;unsolicited-pornography&quot;,
-  &quot;disposition&quot;: &quot;dismiss | ban&quot;,
+  &quot;disposition&quot;: &quot;open-case | dismiss | ban&quot;,
   &quot;marks&quot;: {&quot;case-open&quot;: false, &quot;banned&quot;: true},
   &quot;banExpires&quot;: &quot;2026-11-06T00:00:00Z&quot;,
   &quot;reasoning&quot;: &quot;&lt;content-address: findings against the consented class definition&gt;&quot;,
@@ -439,11 +452,17 @@ where confidentiality keeps it private between authority and accused;</li>
 <code>permanent</code>; the interface clears the banned mark at expiry on the
 verdict's own authority, no further object needed;</li>
 <li><code>final</code> is false until the appeal deadline passes or the declared
-appeal concludes; a reversal on appeal is a new verdict that clears
-marks; and</li>
+appeal concludes; whether a non-final ban executes meanwhile follows
+the class's consented <code>appealEffect</code>; a reversal on appeal is a new
+verdict that clears marks;</li>
 <li>dismissals clear the case-open mark and are reported to the reporter
 (adjusting their track record) without disclosing the accused's
-response beyond the outcome.</li>
+response beyond the outcome; and</li>
+<li>an <code>open-case</code> verdict is the interim object issued at case opening:
+its only permitted effect is <code>marks: {&quot;case-open&quot;: true}</code>, it carries
+no <code>banExpires</code> and no <code>appealDeadline</code> (the response window is the
+accused's remedy), it is never <code>final</code>, and it is superseded by the
+case's terminal verdict or by the decision-deadline default.</li>
 </ol>
 <h3 id="57-device-marks-and-enforcement-binding">5.7 Device marks and enforcement binding</h3>
 <p>The abstract rail is two per-device states scoped to the interface
@@ -460,7 +479,7 @@ vendor's platform credentials:</p>
 <tr>
 <td><code>case-open</code></td>
 <td>A moderation case exists against this device</td>
-<td>Valid interim verdict at case opening</td>
+<td>Valid interim <code>open-case</code> verdict (§5.6)</td>
 <td>Dismissal, ban verdict (superseded), or decision-deadline default</td>
 </tr>
 <tr>
@@ -481,8 +500,10 @@ interface: the application declines to operate and displays the
 verdict reference, the authority's contact, and the appeal path
 (including the new-holder path) — a silent brick is nonconforming;</li>
 <li>the named identity keys are refused within this interface's surfaces
-for the ban's duration; the interface does not propagate the refusal
-to couriers, notaries, or any other seat; and</li>
+for the ban's duration — on every device, not only the marked ones —
+while device marks reach only the devices the verdict names; the
+interface does not propagate the refusal to couriers, notaries, or
+any other seat; and</li>
 <li>the authority may publish its verdicts (anonymized per its
 confidentiality policy); other interfaces and seats MAY consult them
 but are bound only by verdicts under mandates their own users signed.</li>
@@ -731,7 +752,7 @@ public good under its existing recognition bounds.</li>
 <tr>
 <td><code>appeal_filed</code></td>
 <td>Within window</td>
-<td>Ban executes or suspends per manifest's declared appeal effect</td>
+<td>Ban executes or suspends per the class's consented <code>appealEffect</code></td>
 </tr>
 <tr>
 <td><code>new_holder_claim</code></td>
@@ -816,7 +837,9 @@ mismatch, missing class terms); report authenticity verification
 (valid proof, forged proof, proofless complaint); notice and window
 arithmetic including timezone-hostile boundaries; verdict shape
 validation at interfaces (no mandate, class outside mandate, missing
-expiry, marks inconsistent with disposition); decision-deadline
+expiry, marks inconsistent with disposition, open-case verdicts
+carrying sanction effects); suspensive versus non-suspensive appeal
+execution; decision-deadline
 default execution; expiry clearing; reversal clearing; and
 new-holder appeal progression.</li>
 <li>An authority, an interface, and reporter/accused clients from three
@@ -870,8 +893,9 @@ failure mode is a dismissal on schedule.</p>
 </blockquote>
 <h2 id="references">References</h2>
 <ol>
-<li>Onym system whitepaper, §1 (minimum authority), §7 (interface seat),
-§17 (economics): <a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
+<li>Onym system whitepaper, §1 and §3 (the governing minimum-authority
+rule and the design principles), §7 (interface seat), §17
+(economics): <a href="../WHITEPAPER.html">../WHITEPAPER.md</a></li>
 <li>Onym interface contract (consent surfaces, disclosed economics):
 <a href="../interface/Interface.html">../interface/Interface.md</a></li>
 <li>Onym arbitration boundary (consent-ex-ante, default dispositions):

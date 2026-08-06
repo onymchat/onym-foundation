@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/74a77d2c34269065315b6370c38d907eb06c8151/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/92aefa739fe39c01c0b969427af2ea7ef4920ce7/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-device-mark-apple-devicecheck-implementation">Onym Moderation ↔ Device Mark: Apple DeviceCheck Implementation</h1>
@@ -225,6 +225,30 @@ device/account pair) is the clean state, not an error.</li>
 tokens are ephemeral and cannot serve as identifiers; the binding is a
 vendor-local record, which keeps the abstract contract's promise that
 no global device identifier is created.</p>
+<p>Because tokens are unlinkable, the profile is explicit about what needs
+linkage and what does not:</p>
+<ul>
+<li><strong>Reading is stateless.</strong> The bits are the sole state the refusal
+decision consults: any fresh token can be queried, and a set <code>bit1</code>
+refuses service regardless of whether the backend can resolve the
+enrollment. This is what survives reinstall.</li>
+<li><strong>Writing and reconciliation are session-mediated.</strong> Every gate check
+runs inside a session authenticated by an identity key (mandate
+signing, launch, notice delivery). The (identity signature, device
+token) pair presented together in one session is the only
+token-to-enrollment linkage, and it is refreshed at every session —
+including the first session after a reinstall, when the user restores
+a mandated identity. The backend never links a token to an enrollment
+any other way.</li>
+<li><strong>Unresolvable state routes to re-identification.</strong> A device whose
+bits are set but whose session identity resolves to no active verdict
+(fresh identity after a wipe, or a new device holder) is shown the
+re-identification path: the ban UX displays the governing verdict
+when the session resolves one, and otherwise the authority's
+new-holder/re-identification procedure, whose outcome is a reversal
+verdict (clearing the bits) or a confirmation that names the holder's
+session identity and restores linkage.</li>
+</ul>
 <p>Profile requirement — offline and gate-evasion window: the gate check
 runs at launch and at least once per declared interval (default <code>P1D</code>)
 while the app runs. A device that cannot reach the backend operates on
@@ -240,10 +264,14 @@ the designation, mandate reference to a mandate this vendor
 countersigned, class within mandate, marks consistent with
 disposition, <code>banExpires</code> present unless the consented class term is
 <code>permanent</code>;</li>
-<li>resolves <code>deviceBinding</code> to the enrollment; if the device has not
-presented a token recently, the write is queued and executes on the
-next token presentation (<code>mark_write_failed</code> semantics: retry, with
-identity refusal already in force at the backend);</li>
+<li>resolves <code>deviceBinding</code> to the enrollment; if the device has no
+live session, the write is queued and executes in the next session
+that presents a token together with an identity the enrollment's
+mandate names (<code>mark_write_failed</code> semantics: retry, with the
+identity refusal already in force at the backend). The <code>case-open</code>
+write has a natural execution point: notice service (Moderation.md
+§5.5) requires a connected session of the accused, and the write
+executes in that session;</li>
 <li>calls <code>update_two_bits</code> with the target bit state; and</li>
 <li>schedules the clearing action the verdict itself authorizes:
 <code>banExpires</code> → clear <code>bit1</code>; decision deadline with no verdict →
@@ -253,10 +281,15 @@ clear <code>bit0</code> and record the dismissal default.</li>
 which the banned app cannot always supply (the user may have deleted
 it). Profile requirement: the backend clears bits <strong>lazily</strong> — the next
 time any app install on that device presents a token, the backend
-reconciles stored verdict state (expiry passed, reversal recorded,
-deadline default) before answering the gate check. A device that never
-returns keeps stale bits in Apple's storage, but no conforming gate
-ever acts on them without reconciliation, so the stale state is inert.</p>
+reconciles verdict state before answering the gate check. Resolution is
+session-mediated (§5): when the session's identity resolves the
+enrollment, the backend applies expiry, reversal, and deadline defaults
+directly; when it resolves nothing, the holder is routed to the
+re-identification procedure, which terminates in a reversal (bits
+cleared) or a confirmation (linkage restored, after which expiry runs
+normally). A device that never returns keeps stale bits in Apple's
+storage, but no conforming gate ever acts on them without
+reconciliation, so the stale state is inert.</p>
 <h2 id="7-error-mapping">7. Error mapping</h2>
 <div class="tscroll"><table><thead>
 <tr>
@@ -324,6 +357,15 @@ dependency must be disclosed in the interface's manifest.</li>
 <li><strong>Simulator and enterprise-signed builds</strong> have no DeviceCheck
 support; conforming builds must fail toward gate-check-required, not
 toward unmoderated operation.</li>
+<li><strong>A queued ban write can be outrun.</strong> A ban verdict against a device
+with no live session executes only when a mandated identity next
+authenticates from it (§6). A user who wipes the app before the
+write lands and never again presents a mandated identity from that
+device keeps its bits clean; the identity refusal at the backend
+still holds for the named keys, so what escapes is the device mark,
+not access under the banned identity. This is the honest cost of
+unlinkable tokens, and manifests must not claim device marking is
+unconditional.</li>
 <li><strong>No Onym implementation exists yet.</strong> No current Onym repository
 implements any part of this profile; everything above is profile
 requirement, none of it is implemented behavior.</li>
@@ -333,9 +375,11 @@ requirement, none of it is implemented behavior.</li>
 development endpoint; query/update round-trip including the
 &quot;bit state not found&quot; clean state; verdict-to-bit execution for every
 disposition; lazy reconciliation (expiry passed while device absent,
-deadline default, reversal); queued writes on token absence; grace-
-window and gate-check-required degradation; and new-holder fast-track
-progression.</p>
+deadline default, reversal); queued writes on token absence and their
+execution at the next mandated-identity session; identity-mediated
+re-linking after reinstall; routing of a bit-set device with an
+unresolvable session identity to re-identification; grace-window and
+gate-check-required degradation; and new-holder fast-track progression.</p>
 <h2 id="10-acceptance-criteria">10. Acceptance criteria</h2>
 <p>This profile is successfully implemented when:</p>
 <ol>
@@ -343,7 +387,11 @@ progression.</p>
 the app refusing service with the full ban UX, using only the
 vendor's DeviceCheck credentials;</li>
 <li>deleting and reinstalling the app on the banned device restores the
-refusal without any backend account state for the user;</li>
+refusal from the bits alone — the refusal decision consults no
+backend account state, though the vendor's verdict and enrollment
+records (sanction state under the interface contract's disclosed
+carve-out) exist and are consulted for reconciliation and appeal
+routing;</li>
 <li>expiry, reversal, and deadline defaults clear marks with no action
 by the authority or the user beyond the passage of time and one
 token presentation;</li>
