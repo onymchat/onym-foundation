@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../index.html">← Foundation</a> · <a href="../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">The system model</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/00000000ed8164ae7efef4f20c114cb3a22bf813/WHITEPAPER.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/d78165fbfc364656b4bcb508264fa5d9a3d02234/WHITEPAPER.md">source on GitHub →</a></div>
     </header>
     <aside class="note mt20"><b>Consistency notice:</b> Known draft conflict: this whitepaper states a 4% ordinary endowment rule, while the Foundation proposal selects 5% ordinary and 7% exceptional limits. No rule is in force; the upstream drafts must be harmonized before the Foundation accepts money. <a href="../remediation.html">Remediation plan →</a></aside>
     <div class="doc">
@@ -571,6 +571,13 @@ privacy-degrading.</li>
 <p>The interface seat's own obligations — honest presentation, bounded
 authority, protected consent surfaces, disclosed economics, and permanent
 exit — are specified in <a href="interface/Interface.html">interface/Interface.md</a>.</p>
+<p>Distribution channels additionally require user-generated-content
+applications to support abuse reporting, blocking, and abuser removal. The
+proposed contract boundary supplying that capability without an in-house
+enforcement desk — consent-bound, competing moderation authorities whose
+signed, expiring, appealable verdicts the interface executes as platform
+device marks — is specified in
+<a href="moderation/Moderation.html">moderation/Moderation.md</a>.</p>
 <p>A malicious UI can steal secrets or lie about transaction intent. Open source,
 reproducible builds, signed releases, independent distributions, hardware-backed
 key isolation, and conformance tests reduce this risk but do not eliminate it.</p>
@@ -1529,6 +1536,11 @@ selection authority, private outcomes, and finite recruiter milestones.</li>
 <li>Conformance suites for every open seat.</li>
 <li>An audit-seat contract for signed, expiring, revocable attestations bound
 to exact artifacts (<a href="audit/Audit.html">audit/Audit.md</a>).</li>
+<li>A moderation-seat contract for consent-bound abuse adjudication with
+recipient-disclosed evidence, notice and response windows, reasoned
+expiring verdicts, and interface-executed device marks
+(<a href="moderation/Moderation.html">moderation/Moderation.md</a>), with Apple
+DeviceCheck and Google Play Integrity device recall profiles.</li>
 <li>A non-custodial payment capability profile and additional financial-services
 application profiles.</li>
 <li>Group-state migration between notary deployments.</li>

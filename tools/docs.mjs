@@ -6,11 +6,10 @@
 export const REPO = 'onymchat/onym-system';
 
 export const REFS = {
-  main: '00000000ed8164ae7efef4f20c114cb3a22bf813',
+  main: 'd78165fbfc364656b4bcb508264fa5d9a3d02234',
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
-  'moderation-seat': '92aefa739fe39c01c0b969427af2ea7ef4920ce7',
 };
 
 // path → { ref, seat? (eyebrow label for abstract seat boundaries), review? }
@@ -45,9 +44,9 @@ export const DOCS = {
   'bank/UI-Bank.md':                    { ref: 'worktree-bank-boundary', seat: 'Banking & payments', review: true },
   'bank/UI-Bank-Stellar.md':            { ref: 'worktree-bank-boundary', review: true },
   'association/Association-Naming.md':  { ref: 'worktree-association-naming', seat: 'Naming & credentials', review: true },
-  'moderation/Moderation.md':           { ref: 'moderation-seat', seat: 'Moderation authority', review: true },
-  'moderation/Moderation-DeviceCheck.md':   { ref: 'moderation-seat', review: true },
-  'moderation/Moderation-Device-Recall.md': { ref: 'moderation-seat', review: true },
+  'moderation/Moderation.md':           { ref: 'main', seat: 'Moderation authority' },
+  'moderation/Moderation-DeviceCheck.md':   { ref: 'main' },
+  'moderation/Moderation-Device-Recall.md': { ref: 'main' },
 };
 
 export const SITE_ORIGIN = 'https://onym.foundation';

@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/92aefa739fe39c01c0b969427af2ea7ef4920ce7/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/d78165fbfc364656b4bcb508264fa5d9a3d02234/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-device-mark-apple-devicecheck-implementation">Onym Moderation ↔ Device Mark: Apple DeviceCheck Implementation</h1>
@@ -109,7 +109,7 @@ abstract contract and a declared mitigation applies.</li>
 </tr>
 <tr>
 <td>Mark persistence</td>
-<td>Bits persist across app reinstallation and device state resets, per Apple's fraud-state design</td>
+<td>Bits persist across app reinstallation as documented platform behavior; persistence across device erase and restore paths is Apple's fraud-state design intent and must be verified and disclosed per deployment (§8)</td>
 </tr>
 </tbody>
 </table></div><h2 id="2-ownership-mapping">2. Ownership mapping</h2>
@@ -366,6 +366,17 @@ still holds for the named keys, so what escapes is the device mark,
 not access under the banned identity. This is the honest cost of
 unlinkable tokens, and manifests must not claim device marking is
 unconditional.</li>
+<li><strong>Reset persistence is asserted, not yet tested.</strong> Apple documents
+the bits as per-device fraud state; whether they survive every
+erase and restore path (full device wipe, migration to a
+replacement device, refurbishment) has not been verified by this
+project. Conformance testing must exercise these paths and the
+deployment must disclose the result — the same caveat the Android
+sibling carries for factory reset
+(<a href="../moderation/Moderation-Device-Recall.html">Moderation-Device-Recall.md</a> §8.1).
+Until verified, no manifest may present reset survival as
+unconditional; the abstract contract's evasion-cost rationale
+(Moderation.md §3.3) is stated with the same qualification.</li>
 <li><strong>No Onym implementation exists yet.</strong> No current Onym repository
 implements any part of this profile; everything above is profile
 requirement, none of it is implemented behavior.</li>
@@ -415,7 +426,7 @@ can read or write the other's bits.</li>
     </div>
     <p class="fnote">This document is maintained in the public
       <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
-      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/moderation-seat/moderation/Moderation-DeviceCheck.md">latest version on moderation-seat →</a></p>
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/moderation/Moderation-DeviceCheck.md">latest version on main →</a></p>
   </article>
 </main>
 <footer>
