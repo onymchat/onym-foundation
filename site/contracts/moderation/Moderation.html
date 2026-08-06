@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Moderation authority</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/14373778780e754679d7a4d57b623c781c126330/moderation/Moderation.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b8a53f9f2c19b871082c9a543f90cc227b91201d/moderation/Moderation.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-authority-contract-boundary">Onym Moderation Authority Contract Boundary</h1>
@@ -303,7 +303,7 @@ arbitration seat applies to absent arbiters).</p>
   &quot;evidenceRules&quot;: &quot;&lt;hash-or-url: disclosure and authenticity requirements&gt;&quot;,
   &quot;reputationPolicy&quot;: &quot;&lt;hash-or-url: how reporter track records weight intake&gt;&quot;,
   &quot;newHolderAppeal&quot;: &quot;&lt;hash-or-url: procedure for a device's new owner&gt;&quot;,
-  &quot;appellate&quot;: &quot;self | onym:component:&lt;appellate-authority-id&gt;&quot;,
+  &quot;appellate&quot;: &quot;onym:component:&lt;external-appellate-authority-id&gt;&quot;,
   &quot;confidentiality&quot;: &quot;&lt;hash-or-url: what is published, what stays private&gt;&quot;,
   &quot;statistics&quot;: &quot;&lt;hash-or-url: promised anonymized transparency reporting&gt;&quot;,
   &quot;offers&quot;: [&quot;&lt;fee-offer-ids&gt;&quot;],
@@ -323,14 +323,16 @@ declaration, shared by all classes;</li>
 <li><code>banTerm</code> is <code>permanent</code> or a declared duration; permanent terms are
 only valid on classes whose definition the manifest justifies as
 warranting them, <strong>and only where the manifest's <code>appellate</code> names
-an authority other than the issuer</strong> — a permanent ban remains
+an authority other than the issuer</strong> (<code>self</code> remains valid only for
+manifests declaring no permanent class) — a permanent ban remains
 appealable at that external appellate for as long as it is in
 force, not merely within the appeal window, and remains subject to
 the new-holder procedure, so no permanent sanction depends on its
-issuer staying alive;</li>
+issuer staying alive (on issuer failure the appellate is
+successor-of-record under §5.7's forum rule);</li>
 <li>class definitions are content-addressed: a user consents to exact
 wording, and the authority cannot edit the definition under existing
-mandates; and</li>
+mandates;</li>
 <li>an authority operated by (or affiliated with) an interface vendor
 states so in the manifest, or is nonconforming; and</li>
 <li><code>validUntil</code> bounds the authority's power to accept new mandates and
@@ -338,8 +340,8 @@ open new cases, not to finish live process: cases opened before
 expiry proceed to their declared deadlines, appeals of in-force bans
 remain hearable for as long as the ban runs, and an authority whose
 manifest lapses without renewal or declared succession is defunct —
-open cases fall to the dismissal default and interfaces may revoke
-the designation (§5.7).</li>
+open cases fall to the dismissal default and interfaces revoke the
+designation under §5.7's bounded procedure.</li>
 </ol>
 <h3 id="53-moderation-mandate">5.3 Moderation Mandate</h3>
 <p>Signed by the user at onboarding, countersigned by the interface:</p>
@@ -374,7 +376,13 @@ refusal in a ban verdict covers the named keys on every surface of
 the consenting interface for the ban's duration; and</li>
 <li>withdrawal is leaving the interface. Withdrawal ends exposure to new
 cases; it does not clear marks already set by valid verdicts —
-otherwise every ban would be voidable by re-onboarding.</li>
+otherwise every ban would be voidable by re-onboarding — and it
+neither dissolves a case already opened nor tolls its windows:
+notice is constructively served when made available on the
+interface's declared notice path for the enrollment, the case
+proceeds on the record as <code>no_response</code>, and the resulting verdict
+binds and executes under the profiles' queued-write rules. Going
+dark mid-case is a weak defense, not an exit.</li>
 </ol>
 <h3 id="54-report">5.4 Report</h3>
 <pre><code class="language-json">{
@@ -407,7 +415,7 @@ conversation&quot;) is nonconforming;</li>
 the authority's published reputation policy: a reporter's
 authority-local track record of upheld versus dismissed reports
 scales intake priority and, per manifest, may gate case-opening for
-lesser classes; and</li>
+lesser classes;</li>
 <li>reporter identity is visible to the authority, never to the accused
 unless the reporter consents; retaliation against inferred reporters
 is itself a violation class authorities should declare; and</li>
@@ -460,6 +468,7 @@ displaying the case's existence to the device holder.</p>
   &quot;disposition&quot;: &quot;open-case | dismiss | ban&quot;,
   &quot;marks&quot;: {&quot;case-open&quot;: false, &quot;banned&quot;: true},
   &quot;banExpires&quot;: &quot;2026-12-16T00:00:00Z&quot;,
+  &quot;executeAfter&quot;: &quot;2026-09-17T00:00:00Z&quot;,
   &quot;reasoning&quot;: &quot;&lt;content-address: findings against the consented class definition&gt;&quot;,
   &quot;appealDeadline&quot;: &quot;2026-09-17T00:00:00Z&quot;,
   &quot;decidedAt&quot;: &quot;2026-08-18T00:00:00Z&quot;,
@@ -488,6 +497,14 @@ shifts execution, the interface derives the operative expiry as
 execution time plus <code>banTerm</code> and records it in its write log. The
 interface clears the banned mark at expiry on the verdict's own
 authority, no further object needed;</li>
+<li><code>executeAfter</code> makes execution timing machine-checkable: required on
+every ban verdict, it must equal <code>decidedAt</code> in a <code>non-suspensive</code>
+class and <code>appealDeadline</code> in a <code>suspensive</code> one — the example above
+shows the suspensive case, where the marks field states the target
+state and <code>executeAfter</code> says when writing it becomes conforming. A
+missing or inconsistent <code>executeAfter</code> is <code>verdict_invalid</code>; no
+interface writes the banned mark before it; a filed appeal
+supersedes the timestamp per the class's appeal effect;</li>
 <li><code>final</code> is false until the appeal deadline passes or the declared
 appeal concludes; whether a non-final ban executes meanwhile follows
 the class's consented <code>appealEffect</code>; a reversal on appeal is a new
@@ -496,8 +513,10 @@ verdict that clears marks;</li>
 (adjusting their track record) without disclosing the accused's
 response beyond the outcome; and</li>
 <li>an <code>open-case</code> verdict is the interim object issued at case opening:
-its only permitted effect is <code>marks: {&quot;case-open&quot;: true}</code>, it carries
-no <code>banExpires</code> and no <code>appealDeadline</code> (the response window is the
+its only permitted effect is <code>marks: {&quot;case-open&quot;: true}</code>; its
+<code>reasoning</code> is required and states the intake basis — the verified
+reports the case rests on; it carries no <code>banExpires</code>, no
+<code>executeAfter</code>, and no <code>appealDeadline</code> (the response window is the
 accused's remedy), it is never <code>final</code>, and it is superseded by the
 case's terminal verdict or by the decision-deadline default.</li>
 </ol>
@@ -522,8 +541,8 @@ vendor's platform credentials:</p>
 <tr>
 <td><code>banned</code></td>
 <td>An executed ban verdict is in force</td>
-<td>Valid ban verdict, at execution per the class's <code>appealEffect</code> and the verdict's finality (§5.6 constraints 3–4)</td>
-<td>Verdict expiry, reversal on appeal, new-holder appeal verdict, or designation revocation</td>
+<td>Valid ban verdict, at or after its <code>executeAfter</code> (§5.6 constraints 3–4)</td>
+<td>Verdict expiry, reversal on appeal, new-holder appeal verdict, or designation revocation where no forum survives (§5.7)</td>
 </tr>
 </tbody>
 </table></div><p>The interface executes verdicts mechanically:</p>
@@ -531,10 +550,10 @@ vendor's platform credentials:</p>
 <li>it validates verdict shape — authority signature, mandate reference to
 a mandate its user actually signed, class within the mandate, marks
 consistent with disposition, expiry present where required, and
-execution timing permitted by the class's <code>appealEffect</code> at this
-verdict's finality (a non-final ban in a <code>suspensive</code> class is valid
-but not yet executable, and writing its mark early is nonconforming) —
-never the verdict's wisdom;</li>
+<code>executeAfter</code> present, consistent with the class's <code>appealEffect</code>
+(§5.6 constraint 4), and already reached — a valid ban before its
+<code>executeAfter</code> is stored, not executed, and writing its mark early is
+nonconforming — never the verdict's wisdom;</li>
 <li>a device whose <code>banned</code> mark is set is refused service by this
 interface: the application declines to operate and displays the
 verdict reference, the authority's contact, and the appeal path
@@ -551,16 +570,36 @@ but are bound only by verdicts under mandates their own users signed.</li>
 <p>The authority's key can sign verdicts; it can never write marks. The
 interface can write marks; it can never originate them. A compromised
 authority key is bounded to its consented population, and the remedy
-does not depend on the authority's candor. An interface that
-determines, on its own evidence, that the designated authority's key is
-compromised, or that the authority is unreachable or defunct, revokes
-the designation — a public, disclosed act recorded in its write log —
-and <strong>revocation clears every mark that designation set</strong>: open cases
-fall to the dismissal default and in-force bans end early rather than
-survive their issuer's failure, the same absent-authority-is-a-non-event
-rule applied everywhere else. An authority that reports its own
-compromise names the compromise time, and marks set after that time
-clear immediately even where the designation itself survives.</p>
+depends neither on the authority's candor nor on the interface's
+discretion. An interface <strong>must</strong> revoke a designation on exactly two
+triggers, and on no other:</p>
+<ol>
+<li>the authority reports its own compromise (naming the compromise
+time — marks set after that time clear immediately even where the
+designation itself survives); or</li>
+<li>a bounded unreachability procedure completes: signed status queries
+unanswered for a declared window (default: twice the manifest's
+longest <code>decisionDeadline</code>), every attempt recorded in the
+interface's write log, and the determination published before any
+mark changes.</li>
+</ol>
+<p>Revocation is a public, disclosed, write-logged act, and the record is
+audit-attestable — a premature or pretextual revocation (store
+pressure, commercial interest, a vendor voiding its own authority's
+inconvenient verdicts) is provable nonconformance, not a quiet switch.
+Its effect on marks follows one rule, stated here and applied wherever
+authority failure appears in this document:</p>
+<blockquote>
+<p><strong>A mark stands only while a living forum can hear a claim against
+it.</strong></p>
+</blockquote>
+<p>On revocation: open cases fall to the dismissal default and their
+case-open marks clear. Issued bans persist exactly as long as their
+appeal recourse does — a ban whose manifest names an external
+<code>appellate</code> (mandatory for permanent classes, §5.2 constraint 2) runs
+to its declared expiry or permanent term with that appellate acting as
+successor-of-record for appeals and new-holder claims; a ban whose only
+forum was the dead issuer clears with the revocation.</p>
 <h2 id="6-common-moderation-surface">6. Common moderation surface</h2>
 <div class="tscroll"><table><thead>
 <tr>
@@ -621,18 +660,24 @@ sources exist:</p>
 <ul>
 <li><strong>interface fees</strong>: interfaces (whose distribution depends on this
 seat existing and whose users demand a habitable network) pay their
-designated authorities by subscription or per-decided-case rates; and</li>
+designated authorities by flat subscription or per <strong>report
+adjudicated</strong> — a declined intake counts the same as a decided case,
+so triage earns exactly what escalation earns; and</li>
 <li><strong>foundation grants</strong>: moderation of the gravest classes is a public
 good; the sponsor seat (<a href="../sponsor/Sponsor.html">../sponsor/Sponsor.md</a>)
 may fund conforming authorities so that no interface skips designating
 one on cost grounds.</li>
 </ul>
-<p>The invariants: fees are <strong>outcome-independent</strong> — per case decided,
-never per ban issued; no bounty, forfeiture, or volume bonus may make
-banning more profitable than dismissing; and no party to a live case may
-pay the authority anything beyond the pre-published rate. An authority
-whose income rises with its ban rate has a business model this contract
-rejects.</p>
+<p>The invariants: fees are <strong>outcome- and stage-independent</strong> — per
+report adjudicated or by subscription, never per case opened and never
+per ban issued. Per-opened-case pricing is forbidden outright: opening
+a case sets a device mark before any response, so an authority paid at
+opening would profit from opening weak cases and dismissing them at no
+cost to itself. No bounty, forfeiture, or volume bonus may make banning
+more profitable than dismissing, and no party to a live case may pay
+the authority anything beyond the pre-published rate. An authority
+whose income rises with its ban rate — or its case-opening rate — has a
+business model this contract rejects.</p>
 <h3 id="72-why-the-reporter-reports">7.2 Why the reporter reports</h3>
 <p>Reporting is free, low-friction, and consequential: upheld reports build
 the reporter's authority-local track record, which raises the priority
@@ -821,8 +866,8 @@ public good under its existing recognition bounds.</li>
 </tr>
 <tr>
 <td><code>authority_defunct</code></td>
-<td>Manifest lapsed, authority unreachable, or designation revoked</td>
-<td>New mandates and cases refused; open cases fall to deadline default; revocation clears the designation's marks; permanent bans remain appealable at the external appellate</td>
+<td>Manifest lapsed, or §5.7's bounded unreachability procedure completed</td>
+<td>New mandates and cases refused; open cases fall to deadline default; marks follow the forum rule — bans with a living external appellate persist under it as successor-of-record, all others clear on revocation</td>
 </tr>
 </tbody>
 </table></div><p>Case lifecycle:</p>
@@ -849,9 +894,10 @@ its docket afterward.</li>
 <li><strong>Marks move only on verdicts.</strong> No interface discretion, no
 authority write access, no platform-initiated state; every mark
 transition traces to one signed, validated object or a declared
-default — expiry, decision deadline, or the mark-clearing revocation
-of a dead or compromised designation (§5.7). Defaults only ever
-clear marks; nothing but a verdict sets one.</li>
+default — expiry, decision deadline, or the bounded revocation of a
+dead or compromised designation, whose effect on marks follows
+§5.7's forum rule. Defaults only ever clear marks; nothing but a
+verdict sets one.</li>
 <li><strong>Evidence is recipient-disclosed or it is nothing.</strong> No scanning,
 no client-side detection, no key or plaintext demands, no metadata
 dragnets; the E2EE floor of every other seat is the floor of every
@@ -861,15 +907,18 @@ response window a consented class declared; the case-open mark is
 procedural and must not degrade service.</li>
 <li><strong>Every ban has a shape.</strong> Named keys, one device, a consented
 class, signed reasoning, a duration or a justified permanent term,
-and an appeal path — a sanction missing any element is invalid at
-every conforming interface.</li>
+an execution timestamp honoring the class's appeal effect, and an
+appeal path — a sanction missing any element is invalid at every
+conforming interface.</li>
 <li><strong>Undecided is dismissal.</strong> Deadline passage clears marks by
 default; authority absence is a scheduled non-event, never a freeze.</li>
 <li><strong>Verdicts bind the consenting surface only.</strong> No protocol-wide
 blacklist exists; other seats may consult published verdicts but are
 bound only by their own users' mandates; couriers, notaries, and
 registries are unreachable by this seat.</li>
-<li><strong>Fees are ban-independent.</strong> Per-case, never per-ban; no bounties
+<li><strong>Fees are ban-independent and stage-independent.</strong> Per report
+adjudicated or by subscription — never per ban, never per case
+opened; no bounties
 for reporters; no revenue path that pays for severity.</li>
 <li><strong>Reputation is local and unownable.</strong> Reporter track records are
 per-authority, pseudonymous, non-transferable, and not a market.</li>
@@ -899,9 +948,12 @@ mismatch, missing class terms); report authenticity verification
 (valid proof, forged proof, proofless complaint); notice and window
 arithmetic including timezone-hostile boundaries; verdict shape
 validation at interfaces (no mandate, class outside mandate, missing
-expiry, marks inconsistent with disposition, open-case verdicts
-carrying sanction effects); suspensive versus non-suspensive appeal
-execution; decision-deadline
+expiry, marks inconsistent with disposition, missing or inconsistent
+<code>executeAfter</code>, open-case verdicts carrying sanction effects or
+lacking intake reasoning); suspensive versus non-suspensive appeal
+execution including early-write refusal; revocation-trigger
+validation (unreachability window arithmetic, logged attempt records,
+forum-rule mark disposition); decision-deadline
 default execution; expiry clearing; reversal clearing; and
 new-holder appeal progression.</li>
 <li>An authority, an interface, and reporter/accused clients from three
@@ -931,16 +983,18 @@ saw;</li>
 <li>a report with verified authenticity proof can proceed through
 notice, response, verdict, and mark execution using only published
 profiles and fixtures;</li>
-<li>no verdict lacking a mandate, reasoning, duration (or justified
-permanent term), or appeal path executes at any conforming
-interface;</li>
+<li>no ban verdict lacking a mandate, reasoning, duration (or justified
+permanent term), execution timestamp, or appeal path executes at any
+conforming interface, and no interim <code>open-case</code> verdict lacking a
+mandate or its intake reasoning sets the case-open mark;</li>
 <li>an authority that disappears costs the accused nothing that outlives
-it: open cases clear on schedule without its participation, expiring
-bans run to their declared expiry, permanent bans remain appealable
-at the declared external appellate, and revocation of a dead
-designation clears its marks;</li>
+it: open cases clear on schedule without its participation, and
+issued bans follow §5.7's forum rule — they persist exactly as long
+as a living appellate can hear claims against them, and clear the
+moment no forum remains;</li>
 <li>no conforming object can express scanning obligations, key or
-plaintext demands, per-ban compensation, or reporter bounties;</li>
+plaintext demands, per-ban or per-opened-case compensation, or
+reporter bounties;</li>
 <li>a banned device holder can see why, until when, and how to appeal —
 including as the device's new owner;</li>
 <li>a second authority and a second interface can adopt the profiles
