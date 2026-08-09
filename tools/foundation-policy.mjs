@@ -70,6 +70,9 @@ export function validateFoundationPolicy(policy) {
   if (e.ordinaryMaximumBasisPoints % 100 || e.exceptionalMaximumBasisPoints % 100) {
     throw new Error('website policy percentages must use whole percentage points');
   }
+  if (g.minimumGrantEur > g.annualGrantBudgetTargetEur) {
+    throw new Error('the minimum grant cannot exceed the annual grant budget target');
+  }
   return policy;
 }
 
@@ -102,6 +105,10 @@ function policyView(policy) {
       ...policy.grantmaking,
       annualGrantBudgetTarget: eur(policy.grantmaking.annualGrantBudgetTargetEur),
       fullyEndowedCorpus: eur(Math.round(policy.grantmaking.annualGrantBudgetTargetEur / ordinaryRate)),
+      minimumGrant: eur(policy.grantmaking.minimumGrantEur),
+      // A ceiling the arithmetic implies, not a number of grants the board owes.
+      maximumGrantsPerYear: Math.floor(
+        policy.grantmaking.annualGrantBudgetTargetEur / policy.grantmaking.minimumGrantEur),
     },
   };
 }

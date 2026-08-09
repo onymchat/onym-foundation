@@ -25,7 +25,8 @@
     "corpusTargetEur": 1000000
   },
   "grantmaking": {
-    "annualGrantBudgetTargetEur": 100000
+    "annualGrantBudgetTargetEur": 100000,
+    "minimumGrantEur": 5000
   },
   "transition": {
     "initialDirectorMaximumTermMonths": 12,
