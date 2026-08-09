@@ -56,7 +56,7 @@
           <div class="tile"><div class="tile-head"><h3>Moderation authority</h3><span class="tag">Apple surface finalized</span></div>
             <p>Decides abuse reports users consented to at onboarding — notice, response window, reasoned verdicts, declared durations, appeal. Interfaces execute; the authority never touches keys or content.</p>
             <p><b>Earns:</b> interface fees per report adjudicated — never per ban or per case opened — and foundation grants · <b>Fits:</b> trust-and-safety firms, hotlines, civil-society organizations</p>
-            <p class="micro">The finalized Apple case and DeviceCheck surface has a merged Rust reference implementation; neither is a production deployment. <a href="contracts/moderation/Moderation.html">Read the contract →</a> · <a href="https://github.com/onymchat/onym-moderation">Reference implementation →</a></p>
+            <p class="micro">The finalized Apple case and DeviceCheck surface has a merged Rust reference implementation; neither is a production deployment. This seat costs every user deniability — see <a href="#authorship">what this seat costs everyone</a>. <a href="contracts/moderation/Moderation.html">Read the contract →</a> · <a href="https://github.com/onymchat/onym-moderation">Reference implementation →</a></p>
             <a class="cta" href="mailto:lead@onym.app" data-seat="Moderation authority">Register interest →</a></div>
         </div>
 
@@ -143,6 +143,24 @@
       <p class="note center fncenter maxw680">Foundation support may include grant consideration, audit funding, conformance support, or introductions. Each has separate eligibility, conflicts, evidence, and legal terms; support is not protocol permission or a universal offer. Competitors are welcome where a reference operator already exists.</p>
       <p class="number center mt20">The Onym Foundation takes no commission, runs no user-facing seat for profit, and can be routed around by design.</p>
       <p class="fnote fncenter">Status tags are factual: "draft spec" means a public contract document exists and is marked draft; "in review" means the proposal is not yet merged; "Apple surface finalized" means the Apple case and DeviceCheck boundary is settled and has reference code, not a running service; "reference operator exists" means one replaceable default deployment runs today. Nothing here is audited yet.</p>
+    </div>
+  </section>
+
+  <section class="sect" id="authorship">
+    <div class="wrap step">
+      <div class="shead">
+        <div>
+          <p class="number">CONSEQUENCE</p>
+          <h2>What the moderation seat costs everyone</h2>
+        </div>
+        <p class="slede">A seat that only some users choose, paid for by all of them.</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><h3>The evidence rule</h3><p class="micro mt8">An authority decides a report by verifying the <em>accused's own signature</em> over the disclosed content. That forces the property in both directions: if a recipient could manufacture the signature, anyone could be framed for words they never wrote; if nobody could produce it, no report could be checked and abuse would be unanswerable.</p></div>
+        <div class="card"><h3>What it costs</h3><p class="micro mt8">Every message an interface sends must therefore carry a transferable proof of authorship — one the recipient can hand to somebody who was never in the conversation. Deniability goes, for every user, whether or not they ever consent to an authority and whether or not anyone is ever reported.</p></div>
+        <div class="card"><h3>Why it is written here</h3><p class="micro mt8">This is a governance fact, not an implementation detail. Adopting a moderation seat changes a property of the messenger itself, so the cost belongs in the public record beside the seat that imposes it rather than in a client's release notes.</p></div>
+      </div>
+      <p class="fnote fncenter">The bound is narrow and worth stating exactly: an identity is a public key, not a name, and the proof says only that the holder of that key wrote those words. It becomes a proof about a person when the key is linked to one by information that lives outside the protocol. The signature also sits inside the encryption — it changes who can prove authorship of a message they already hold, never who can read one. Interfaces disclose this to users directly; see <a href="https://onym.app/privacy/">onym.app/privacy</a>.</p>
     </div>
   </section>
 
