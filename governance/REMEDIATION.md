@@ -34,7 +34,7 @@ accepts money.
 | ID | Owner | Action | Acceptance evidence | Gate |
 |---|---|---|---|---|
 | FND-01 | Foundation | Generate every public numeric governance claim from `foundation-policy.json` | build/tests reject unknown tokens and conflicting percentages or vote rules | before merge |
-| FND-02 | Foundation + Estonian counsel | Put Sponsor, Ecosystem, Public-Interest, founding-transition, conflict, vacancy, and removal rules into the MTÜ articles/policies | adopted documents and legal opinion are published | before money |
+| FND-02 | Foundation + Estonian counsel | Put both organs, the three nõukogu classes, founding-transition, conflict, vacancy, and removal rules into the articles/policies | adopted documents and legal opinion are published | before money |
 | FND-03 | Foundation | Publish document precedence and fail-closed conflict handling | governance page and activation checklist | before money |
 | FND-04 | Foundation | Publish control-group, common-infrastructure, grant/procurement conflict, and incident-coordination rules | adopted grant/procurement and incident policies | before grants/procurement |
 | FND-05 | Foundation | Define the founding budget, custody matrix, investment policy, complaint route, and public reporting schemas | documents appear in the transparency register | before conversion of pledges |
@@ -50,7 +50,9 @@ accepts money.
 The public governance proposal now supplies a concrete direction for all nine
 board seats:
 
-- Sponsor Directors: Sponsor Council election by single transferable vote.
+- Sponsor-class Directors: selection route undecided and bracketed. The
+  Sponsor Council is not constituted: paid sponsorship confers recognition
+  only and no contribution reaches a seat.
 - Ecosystem Directors: Ecosystem Council election by single transferable vote,
   from a published eligibility snapshot based on material contribution or
   operation—not payment.
@@ -66,7 +68,7 @@ board seats:
   the Foundation stops new commitments and begins an orderly wind-down.
 
 These are design commitments for legal drafting, not self-executing
-appointments. The final MTÜ articles determine the lawful appointment path.
+appointments. The final articles of the sihtasutus determine the lawful appointment path.
 
 ## Operational stop conditions
 

@@ -1,7 +1,7 @@
 # onym.foundation
 
 Static website for the Onym Foundation — the institution being formed (as an
-Estonian MTÜ) to fund audits, grants, conformance infrastructure, and a
+Estonian sihtasutus) to fund audits, grants, conformance infrastructure, and a
 permanent endowment for the [Onym network](https://onym.app) of independently
 owned seats.
 
@@ -20,7 +20,7 @@ dependency: plain HTML, one stylesheet, one small script.
 | `site/assets/fonts/` | Self-hosted Instrument Sans (variable) + IBM Plex Mono, with OFL licenses |
 | `site/_headers` | Deployment headers (CSP without `unsafe-inline`, etc.) in Netlify/Cloudflare Pages format |
 | `tools/docs.mjs` | Manifest of contract documents with **pinned commit SHAs** and visible notices for known draft conflicts |
-| `governance/foundation-policy.json` | Single machine-readable source for proposed board and endowment constants |
+| `governance/foundation-policy.json` | Single machine-readable source for proposed board, endowment, and grantmaking constants |
 | `governance/REMEDIATION.md` | Foundation/system work ledger and operational stop conditions |
 | `tools/build-pages.mjs`, `tools/build-contracts.mjs` | `npm run build` renders `site/` from `pages/` and the pinned docs + `sitemap.xml` |
 | `tools/check-links.mjs` | Internal link and anchor checker |

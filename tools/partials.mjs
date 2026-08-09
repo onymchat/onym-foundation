@@ -70,7 +70,7 @@ export function footer({ up, simple = false }) {
 `;
   return `<footer>
   <div class="wrap">
-${groups}    <p class="legalline${simple ? ' bare' : ''}">The Onym Foundation is being formed as an MTÜ under Estonian law. No legal entity exists yet.</p>
+${groups}    <p class="legalline${simple ? ' bare' : ''}">The Onym Foundation is being formed as a sihtasutus under Estonian law. No legal entity exists yet.</p>
   </div>
 </footer>
 <script src="${up}main.js"></script>`;
