@@ -18,11 +18,15 @@ export function validateFoundationPolicy(policy) {
 
   const b = policy.board;
   const e = policy.endowment;
+  const g = policy.grantmaking;
   const t = policy.transition;
-  if (!b || !e || !t) throw new Error('foundation policy requires board, endowment, and transition sections');
+  if (!b || !e || !g || !t) {
+    throw new Error('foundation policy requires board, endowment, grantmaking, and transition sections');
+  }
 
   for (const [name, value] of Object.entries(b)) integer(value, `board.${name}`, 1);
   for (const [name, value] of Object.entries(e)) integer(value, `endowment.${name}`, 1);
+  for (const [name, value] of Object.entries(g)) integer(value, `grantmaking.${name}`, 1);
   for (const [name, value] of Object.entries(t)) integer(value, `transition.${name}`, 1);
 
   if (b.sponsorSeats + b.ecosystemSeats + b.publicInterestSeats !== b.totalSeats) {
@@ -75,7 +79,11 @@ export function loadFoundationPolicy(file = FOUNDATION_POLICY_PATH) {
 
 export const FOUNDATION_POLICY = loadFoundationPolicy();
 
+// Thousands separators without depending on the runtime's ICU data.
+const eur = amount => String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
 function policyView(policy) {
+  const ordinaryRate = policy.endowment.ordinaryMaximumBasisPoints / 10000;
   return {
     ...policy,
     board: {
@@ -86,6 +94,14 @@ function policyView(policy) {
       ...policy.endowment,
       ordinaryMaximumPercent: policy.endowment.ordinaryMaximumBasisPoints / 100,
       exceptionalMaximumPercent: policy.endowment.exceptionalMaximumBasisPoints / 100,
+      corpusTarget: eur(policy.endowment.corpusTargetEur),
+      // What the target corpus yields at the ordinary ceiling — never above it.
+      corpusTargetAppropriation: eur(Math.round(policy.endowment.corpusTargetEur * ordinaryRate)),
+    },
+    grantmaking: {
+      ...policy.grantmaking,
+      annualGrantBudgetTarget: eur(policy.grantmaking.annualGrantBudgetTargetEur),
+      fullyEndowedCorpus: eur(Math.round(policy.grantmaking.annualGrantBudgetTargetEur / ordinaryRate)),
     },
   };
 }

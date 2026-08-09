@@ -21,7 +21,11 @@
     "exceptionalMaximumBasisPoints": 700,
     "valuationQuarterEnds": 12,
     "minimumCompleteQuarters": 4,
-    "maximumConsecutiveExceptionalYears": 2
+    "maximumConsecutiveExceptionalYears": 2,
+    "corpusTargetEur": 1000000
+  },
+  "grantmaking": {
+    "annualGrantBudgetTargetEur": 100000
   },
   "transition": {
     "initialDirectorMaximumTermMonths": 12,
