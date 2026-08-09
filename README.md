@@ -1,7 +1,7 @@
 # onym.foundation
 
 Static website for the Onym Foundation — the institution being formed (as an
-Estonian MTÜ) to fund audits, grants, conformance infrastructure, and a
+Estonian sihtasutus) to fund audits, grants, conformance infrastructure, and a
 permanent endowment for the [Onym network](https://onym.app) of independently
 owned seats.
 
