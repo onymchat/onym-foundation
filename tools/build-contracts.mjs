@@ -69,12 +69,14 @@ export function pageHtml(docPath, meta, entry, bodyHtml, title) {
   const up = '../'.repeat(depth + 1); // out of contracts/ plus subdirs
   const sha = REFS[entry.ref];
   const github = `https://github.com/${REPO}/blob/${sha}/${docPath}`;
-  const latest = `https://github.com/${REPO}/blob/${entry.ref}/${docPath}`;
+  const latestRef = entry.latest || entry.ref;
+  const latest = `https://github.com/${REPO}/blob/${latestRef}/${docPath}`;
   const notice = DOCUMENT_NOTICES[docPath];
 
   const chips = [];
   if (meta.status) chips.push(`<span class="tag">${esc(meta.status)}</span>`);
   if (entry.review) chips.push('<span class="tag">proposal — in review</span>');
+  for (const tag of entry.tags || []) chips.push(`<span class="tag">${esc(tag)}</span>`);
   if (meta.date) chips.push(`<span class="tag">${esc(meta.date)}</span>`);
   if (meta.proposed) chips.push(`<span class="metaline">proposed by ${esc(meta.proposed)}</span>`);
   chips.push(`<a class="metaline" href="${github}">source on GitHub →</a>`);
@@ -105,7 +107,7 @@ ${bodyHtml}
     </div>
     <p class="fnote">This document is maintained in the public
       <a href="https://github.com/${REPO}">onym-system repository</a> and rendered here from a pinned commit.
-      The repository is the authoritative source — <a href="${latest}">latest version on ${esc(entry.ref)} →</a></p>
+      The repository is the authoritative source — <a href="${latest}">latest version on ${esc(latestRef)} →</a></p>
   </article>
 </main>
 ${footer({ up })}

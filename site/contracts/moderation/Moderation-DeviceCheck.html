@@ -43,11 +43,11 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">06.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/d78165fbfc364656b4bcb508264fa5d9a3d02234/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">Apple case surface finalized</span><span class="tag">reference implementation</span><span class="tag">08.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/53e281ce0c4209c5443589a293328abdc7f24064/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-device-mark-apple-devicecheck-implementation">Onym Moderation ↔ Device Mark: Apple DeviceCheck Implementation</h1>
-<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<p><strong>Implementation profile draft 0.2 — August 2026</strong></p>
 <blockquote>
 <p>This profile maps the abstract device-mark rail onto Apple DeviceCheck:
 two per-device bits scoped to the interface vendor's Apple developer
@@ -55,10 +55,12 @@ account, written and read server-side, surviving app reinstallation.</p>
 </blockquote>
 <p>This document is a concrete implementation of
 <a href="../moderation/Moderation.html">Moderation.md</a> §5.7 (device marks and enforcement
-binding). The abstract contract remains authoritative for mandates,
-reports, cases, verdicts, obligations, and invariants. This document
-defines only the Apple platform mapping and records where it falls short
-of the abstract rail.</p>
+binding). The abstract contract remains authoritative for mandates, reports,
+cases, verdicts, obligations, and invariants. The merged
+<a href="https://github.com/onymchat/onym-moderation/tree/d08e55cc2dac8a3db90f70d3445552366b4ec9ef"><code>onym-moderation</code> main</a>
+defines the concrete v1 Rust wire and implemented lifecycle. This document
+defines the Apple platform mapping and records where that implementation falls
+short of the abstract rail.</p>
 <p>The document distinguishes:</p>
 <ul>
 <li><strong>platform behavior</strong>, which Apple's DeviceCheck service provides;</li>
@@ -67,6 +69,15 @@ enforcement backend must implement; and</li>
 <li><strong>gaps</strong>, where the platform or current code cannot yet meet the
 abstract contract and a declared mitigation applies.</li>
 </ul>
+<p>The current Onym iOS implementation is a <strong>client-side conformance
+slice</strong>, not a deployed DeviceCheck enforcement system. It implements the
+domain objects, authenticated consent boundary, backend protocol, device
+token provider, verdict validator, gate state machine, persistence seams,
+and honest development stub described in §9. It does not yet include the
+vendor backend inside the app repository. The merged Rust service implements
+the <code>.p8</code>-holding backend, DeviceCheck reads and writes, countersigning, verdict
+receipt, reconciliation, and audit log, but is reference code with no
+production deployment or credentials.</p>
 <h2 id="1-conformance-declaration">1. Conformance declaration</h2>
 <div class="tscroll"><table><thead>
 <tr>
@@ -75,6 +86,14 @@ abstract contract and a declared mitigation applies.</li>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Enforcement profile</td>
+<td><code>onym:moderation-enforcement-profile:apple-devicecheck-v1</code>, version 1</td>
+</tr>
+<tr>
+<td>Gate notice schema</td>
+<td><code>onym-moderation-apple-devicecheck-case-notice-v1</code></td>
+</tr>
 <tr>
 <td>Device-mark platform</td>
 <td>Apple DeviceCheck service</td>
@@ -112,7 +131,33 @@ abstract contract and a declared mitigation applies.</li>
 <td>Bits persist across app reinstallation as documented platform behavior; persistence across device erase and restore paths is Apple's fraud-state design intent and must be verified and disclosed per deployment (§8)</td>
 </tr>
 </tbody>
-</table></div><h2 id="2-ownership-mapping">2. Ownership mapping</h2>
+</table></div><p>The table instantiates this signed enforcement-profile object:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:moderation-enforcement-profile:apple-devicecheck-v1&quot;,
+  &quot;platform&quot;: &quot;apple-devicecheck&quot;,
+  &quot;bindings&quot;: {
+    &quot;enroll-device&quot;: {&quot;requestSchema&quot;: &quot;onym-moderation-apple-devicecheck-enrollment-request-v1&quot;, &quot;resultSchema&quot;: &quot;onym-moderation-apple-devicecheck-device-enrollment-v1&quot;},
+    &quot;countersign-mandate&quot;: {&quot;requestSchema&quot;: &quot;onym-moderation-mandate-v1&quot;, &quot;resultSchema&quot;: &quot;onym-moderation-apple-devicecheck-interface-signature-v1&quot;},
+    &quot;register-mandate&quot;: {&quot;requestSchema&quot;: &quot;onym-moderation-mandate-v1&quot;, &quot;resultSchema&quot;: &quot;onym-moderation-mandate-receipt-v1&quot;},
+    &quot;gate-check&quot;: {&quot;requestSchema&quot;: &quot;onym-moderation-apple-devicecheck-gate-request-v1&quot;, &quot;resultSchema&quot;: &quot;onym-moderation-apple-devicecheck-gate-result-v1&quot;},
+    &quot;deliver-verdict&quot;: {&quot;requestSchema&quot;: &quot;onym-moderation-verdict-submission-v1&quot;, &quot;resultSchema&quot;: &quot;onym-moderation-verdict-receipt-v1&quot;}
+  },
+  &quot;caseNoticeSchema&quot;: &quot;onym-moderation-apple-devicecheck-case-notice-v1&quot;,
+  &quot;markBindings&quot;: {&quot;case-open&quot;: &quot;bit0&quot;, &quot;banned&quot;: &quot;bit1&quot;},
+  &quot;specification&quot;: &quot;&lt;content-address-of-this-profile-specification&gt;&quot;
+}
+</code></pre>
+<p>Sections 4–6 define the registered schema and mark meanings. The Interface
+directory authenticates this object as Moderation.md §6.4 requires, and the
+signed mandate pins its ID/version pair. Reissuing that pair with different
+bindings is nonconforming.</p>
+<p>The account scope is broader than one app. To preserve the abstract contract's
+exclusive interface-vendor write boundary, a conforming deployment must either
+dedicate its Apple developer account to interfaces that share this exact bit
+contract or prove that no sibling app or backend in the account can write the
+bits. An App ID does not supply a separate moderation-bit namespace.</p>
+<h2 id="2-ownership-mapping">2. Ownership mapping</h2>
 <div class="tscroll"><table><thead>
 <tr>
 <th scope="col">Component</th>
@@ -143,10 +188,11 @@ abstract contract and a declared mitigation applies.</li>
 </tr>
 </tbody>
 </table></div><p>The Apple developer account credentials are the physical reason the
-abstract contract routes all mark writes through the interface: nobody
-else <em>can</em> write. The profile turns that constraint into the
-separation-of-powers the contract requires — the authority signs, the
-vendor executes, Apple stores.</p>
+abstract contract routes all mark writes through the interface vendor:
+parties outside that account cannot write. The profile turns that constraint
+into the separation-of-powers the contract requires — the authority signs,
+the vendor executes, Apple stores — while the account-isolation rule above
+prevents a sibling app from becoming an undeclared write path.</p>
 <h2 id="3-physical-topology">3. Physical topology</h2>
 <pre><code class="language-text">┌──────────────────────┐   DCDevice.generateToken()   ┌──────────────────────┐
 │ iOS interface app    │─────────────────────────────&gt;│ Enforcement backend  │
@@ -180,23 +226,23 @@ vendor executes, Apple stores.</p>
 <td><code>bit0</code></td>
 <td><code>case-open</code></td>
 <td>Backend validates an interim verdict opening a case against this device's enrollment</td>
-<td>Dismissal verdict, superseding ban verdict, decision-deadline default, or reversal</td>
+<td>Dismissal, superseding ban, decision-deadline default, or designation revocation</td>
 </tr>
 <tr>
 <td><code>bit1</code></td>
 <td><code>banned</code></td>
-<td>Backend validates a final ban verdict</td>
-<td><code>banExpires</code> passes, reversal verdict, or new-holder appeal verdict</td>
+<td>Backend validates a ban verdict whose <code>executeAfter</code> has arrived; a non-suspensive ban may execute before <code>final</code> becomes true</td>
+<td><code>banExpires</code>, reversal/new-holder remedy, or designation revocation where no forum survives</td>
 </tr>
 </tbody>
 </table></div><p>Profile requirements:</p>
 <ol>
-<li>bits change <strong>only</strong> inside the verdict-execution and
-deadline/expiry code paths of the enforcement backend; no
-administrative tool, support desk, or store-pressure path may touch
-<code>update_two_bits</code> (Moderation.md §8, interface obligation 6);</li>
+<li>bits change <strong>only</strong> inside verdict execution and declared
+deadline/expiry/revocation reconciliation; no
+administrative tool, support desk, sibling-app backend, or store-pressure
+path may touch <code>update_two_bits</code> (Moderation.md §8, interface obligation 6);</li>
 <li>every <code>update_two_bits</code> call is logged against the verdict hash (or
-the expiry/deadline rule) that authorized it, and the log is
+the expiry/deadline/revocation rule) that authorized it, and the log is
 auditable by the audit seat — this is the profile's substitute for a
 platform-level proof that the vendor wrote faithfully; and</li>
 <li><code>last_update_time</code> (returned by Apple at <code>YYYY-MM</code> granularity) is
@@ -204,22 +250,94 @@ treated as a consistency check only, never as an authorization or
 expiry source — real timing lives in the verdict.</li>
 </ol>
 <h2 id="5-enrollment-and-the-gate-check">5. Enrollment and the gate check</h2>
-<p>At onboarding (mandate signing) and thereafter at app launch:</p>
+<h3 id="51-reviewed-terms-and-enrollment">5.1 Reviewed terms and enrollment</h3>
+<p>Consent is one transaction with a pause for human review, not two
+manifest fetches:</p>
 <ol>
-<li>the app calls <code>DCDevice.generateToken()</code> and sends the token with
-its session context to the enforcement backend;</li>
-<li>the backend calls <code>query_two_bits</code> (ES256 JWT from the <code>.p8</code> key;
-<code>device_token</code>, fresh <code>transaction_id</code>, <code>timestamp</code>);</li>
-<li><code>bit1</code> set → the backend returns the governing verdict reference;
-the app refuses to operate and displays the verdict, authority
-contact, expiry, and appeal path — including the new-holder path
-(a silent brick is nonconforming);</li>
-<li><code>bit1</code> clear, <code>bit0</code> set → the app operates normally and displays
-the open case to the device holder (procedural state, no service
-degradation); and</li>
-<li>Apple's &quot;bit state not found&quot; response (bits never set for this
-device/account pair) is the clean state, not an error.</li>
+<li>the client asks its moderation repository for
+<code>manifestForReview(listing)</code>;</li>
+<li>inside that repository boundary, the authority-directory key is
+pinned, the exact manifest bytes and detached signature are fetched,
+the signature and directory bindings are evaluated, the consent-time
+conditions are validated, and the hash is computed. A conforming build
+rejects failed authenticity checks; the current soft-enforcement caveat
+is recorded in §8.9;</li>
+<li>the repository returns an opaque <code>ReviewedManifest</code>. Its initializer
+is not public, so application code can display its decoded manifest and
+hash but cannot manufacture the value accepted by signing or pair one
+manifest's decoded fields with another manifest's raw bytes; and</li>
+<li>after agreement, <code>consent(to:reviewedManifest:)</code> consumes that same
+value, re-runs the time-sensitive validity conditions, and never
+refetches. The mandate's classes, <code>manifestHash</code>, and persisted manifest
+bytes therefore come from exactly what the user reviewed.</li>
 </ol>
+<p>The device enrollment then proceeds:</p>
+<ol>
+<li>the app calls <code>DCDevice.generateToken()</code> when DeviceCheck is supported;
+it sends <code>nil</code> when attestation is unavailable and never fabricates a
+token;</li>
+<li>it sends an <code>EnrollmentRequest</code> containing the optional token,
+<code>userKey</code>, UTC timestamp, and the user's signature over those same
+transmitted fields;</li>
+<li>the backend validates the session signature, freshness, and token,
+calls <code>query_two_bits</code> as required, and returns an opaque vendor-local
+<code>deviceBinding</code>;</li>
+<li>the client builds and signs the mandate from its retained reviewed
+artifact and that binding, including this enforcement-profile ID/version;</li>
+<li>the backend returns only its detached countersignature. The client
+appends that signature to its own mandate, so the countersigning
+round-trip cannot replace authority, classes, hash, user, or binding; and</li>
+<li>the interface registers the exact finalized two-signature mandate with the named
+authority as Moderation.md §6.2 requires. Registration is idempotent by
+<code>mandateRef</code>; failure leaves authority enrollment incomplete. The signed
+consent artifact remains immutable, but the gate must fail closed and the
+interface retries only transient failure. If the Authority's published
+manifest changed, the app must present the new authenticated artifact for
+review and obtain fresh consent/signatures rather than retrying forever or
+substituting terms.</li>
+</ol>
+<p>These steps bind the abstract operation names as follows: steps 1–3 are
+<code>enroll-device</code>, steps 4–5 are <code>countersign-mandate</code>, and step 6 is
+<code>register-mandate</code>. The gate flow below is <code>gate-check</code>. Signed interim and
+terminal verdicts enter this backend through <code>deliver-verdict</code>, after which
+the gate returns <code>CaseNotice</code> or ban state to the app. The first three
+operations belong to the interface-enforcement profile; registration and
+delivery are the two cross-owner facets of the authority profile.</p>
+<p>The current iOS session-signing form is provisional until the backend wire
+contract is fixed. Each field is prefixed with a big-endian 32-bit byte
+length. Enrollment uses the domain string
+<code>onym-moderation-enroll-v1</code>; gate checks use
+<code>onym-moderation-gate-v1</code> and additionally cover <code>mandateRef</code>. Both cover
+the user key and UTC ISO-8601 timestamp. The different domains prevent an
+enrollment signature from being replayed as a gate-check signature, and
+including every transmitted signed field lets the backend reconstruct the
+payload it verifies.</p>
+<h3 id="52-gate-checks">5.2 Gate checks</h3>
+<p>At launch, on foreground, on explicit retry, and at least once per the
+declared interval while the app runs:</p>
+<ol>
+<li>the client sends a <code>GateCheckRequest</code> containing a fresh optional
+device token, user key, active <code>mandateRef</code>, timestamp, and session
+signature;</li>
+<li>the backend calls <code>query_two_bits</code> (ES256 JWT from the <code>.p8</code> key;
+<code>device_token</code>, fresh <code>transaction_id</code>, <code>timestamp</code>) and reconciles the
+bit state with its verdict records;</li>
+<li><code>bit1</code> set → it returns <code>banned</code> with the governing verdict reference
+and full display state; the app refuses to operate and displays the
+authority contact, expiry, ordinary appeal, and new-holder path (a
+silent brick is nonconforming);</li>
+<li><code>bit1</code> clear, <code>bit0</code> set → it returns <code>caseOpen</code> with notices; the app
+operates normally and displays the open case (procedural state, no
+service degradation);</li>
+<li>both bits clear, including Apple's &quot;bit state not found&quot; response → it
+returns <code>clear</code>; and</li>
+<li>an invalid or unavailable attestation, unresolved holder, exhausted
+offline grace, or otherwise untrustworthy answer → it returns or the
+client derives <code>checkRequired</code>, which blocks operation.</li>
+</ol>
+<p>No active mandate is not an operational answer: it routes to the consent
+gate. Losing local mandate storage must therefore lead to re-consent and
+an immediate fresh bit check, never past the gate into an unmoderated app.</p>
 <p>The backend associates the enrollment with the mandate's
 <code>deviceBinding</code> identifier at first token validation. DeviceCheck
 tokens are ephemeral and cannot serve as identifiers; the binding is a
@@ -229,9 +347,9 @@ no global device identifier is created.</p>
 linkage and what does not:</p>
 <ul>
 <li><strong>Reading is stateless.</strong> The bits are the sole state the refusal
-decision consults: any fresh token can be queried, and a set <code>bit1</code>
-refuses service regardless of whether the backend can resolve the
-enrollment. This is what survives reinstall.</li>
+decision consults: any fresh token can be queried. A set <code>bit1</code> refuses
+service regardless of whether the backend can resolve the enrollment. This
+is what survives reinstall.</li>
 <li><strong>Writing and reconciliation are session-mediated.</strong> Every gate check
 runs inside a session authenticated by an identity key (mandate
 signing, launch, notice delivery). The (identity signature, device
@@ -244,10 +362,10 @@ any other way.</li>
 bits are set but whose session identity resolves to no active verdict
 (fresh identity after a wipe, or a new device holder) is shown the
 re-identification path: the ban UX displays the governing verdict
-when the session resolves one, and otherwise the authority's
-new-holder/re-identification procedure, whose outcome is a reversal
-verdict (clearing the bits) or a confirmation that names the holder's
-session identity and restores linkage.</li>
+when the session resolves one. Otherwise it displays the authority's
+new-holder/re-identification procedure, whose outcome is a reversal verdict
+(clearing the bits) or a confirmation that names the holder's session
+identity and restores linkage.</li>
 </ul>
 <p>Profile requirement — offline and gate-evasion window: the gate check
 runs at launch and at least once per declared interval (default <code>P1D</code>)
@@ -256,14 +374,27 @@ its last known state for a declared grace window (default <code>P3D</code>), the
 degrades to gate-check-required. The verdict's identity refusal applies
 at the backend regardless, so a banned identity gains nothing from
 keeping the app offline.</p>
+<p>The iOS gate repository persists the last successful result and its wall
+clock time. An unreachable backend within grace serves that last result;
+no history, expired grace, or a clock earlier than the last success blocks
+with <code>neverChecked</code>, <code>offlineGraceExpired</code>, or <code>clockRollback</code>
+respectively. Concurrent checks carry a monotonically increasing
+generation so a stale slow <code>clear</code> cannot overwrite a newer <code>banned</code>
+answer. Its internal interval loop re-anchors to wall-clock deadlines;
+the application composition must still call <code>checkNow()</code> on foreground,
+because iOS may suspend the loop.</p>
 <h2 id="6-verdict-execution">6. Verdict execution</h2>
 <p>On receiving a verdict from the designated authority, the backend:</p>
 <ol>
 <li>validates shape per Moderation.md §5.6 — authority signature against
-the designation, mandate reference to a mandate this vendor
-countersigned, class within mandate, marks consistent with
-disposition, <code>banExpires</code> present unless the consented class term is
-<code>permanent</code>;</li>
+the operator key in the mandate's exact consented manifest; consented
+manifest hash, authority, mandate reference, accused user,
+<code>deviceBinding</code>, and class bindings; mandatory reasoning; marks and
+fields consistent with the disposition; <code>appealDeadline</code> equal to
+<code>decidedAt + appealWindow</code>; <code>executeAfter</code> consistent with the
+consented appeal effect; and <code>banExpires</code> equal to
+<code>executeAfter + banTerm</code> for duration classes or absent for permanent
+classes;</li>
 <li>resolves <code>deviceBinding</code> to the enrollment; if the device has no
 live session, the write is queued and executes in the next session
 that presents a token together with an identity the enrollment's
@@ -273,23 +404,38 @@ write has a natural execution point: notice service (Moderation.md
 §5.5) requires a connected session of the accused, and the write
 executes in that session;</li>
 <li>calls <code>update_two_bits</code> with the target bit state; and</li>
-<li>schedules the clearing action the verdict itself authorizes:
-<code>banExpires</code> → clear <code>bit1</code>; decision deadline with no verdict →
-clear <code>bit0</code> and record the dismissal default.</li>
+<li>stores enough state to reconcile <code>banExpires</code>, dismissal/reversal,
+decision-deadline default, and designation revocation. The merged reference
+currently implements only expiry plus delivered verdicts; §8 records the
+missing independent defaults.</li>
 </ol>
-<p>Clearing on expiry or deadline default requires a live device token,
-which the banned app cannot always supply (the user may have deleted
-it). Profile requirement: the backend clears bits <strong>lazily</strong> — the next
-time any app install on that device presents a token, the backend
-reconciles verdict state before answering the gate check. Resolution is
-session-mediated (§5): when the session's identity resolves the
-enrollment, the backend applies expiry, reversal, and deadline defaults
-directly; when it resolves nothing, the holder is routed to the
-re-identification procedure, which terminates in a reversal (bits
-cleared) or a confirmation (linkage restored, after which expiry runs
-normally). A device that never returns keeps stale bits in Apple's
-storage, but no conforming gate ever acts on them without
-reconciliation, so the stale state is inert.</p>
+<p><strong>Merged-reference gap.</strong> Authority-signature failure is enforced only when
+the deployment enables the reference service's signature-enforcement switch;
+it defaults off. This deployment setting does not weaken requirement 1.</p>
+<p>The concrete Rust/Apple write log stores the abstract provenance field as
+<code>authorized_by</code>: normally the governing <code>verdictRef</code>, or <code>expiry</code> for expiry
+reconciliation. Its audit response exposes <code>authorizedBy</code> with the requested
+aggregate state, write outcome, and previous/current hashes in the
+tamper-evident chain. These names and the <code>expiry</code> sentinel are specific to
+this profile.</p>
+<p>Clearing on expiry, a delivered dismissal/reversal, or another declared default
+requires a live device token, which the banned app cannot always supply (the
+user may have deleted it). Profile requirement: the backend clears bits
+<strong>lazily</strong> — the next time any app install on that device presents a token, the
+backend reconciles verdict state before answering the gate check. Resolution is
+session-mediated (§5): when the session's identity resolves the enrollment, a
+conforming backend applies expiry, later dismissal/reversal, and
+deadline/revocation defaults directly; when it resolves nothing, the reference
+returns <code>checkRequired(reidentificationRequired)</code>. No implemented
+re-identification flow turns that state into a reversal or restored linkage. A
+device that never returns keeps stale bits in Apple's storage, but no conforming
+gate ever acts on them without reconciliation, so the stale state is inert.</p>
+<p>The iOS package provides this validation as a pure <code>VerdictValidator</code>
+returning either <code>execute</code> or <code>storeUntilExecuteAfter</code>. It compares
+derived timestamps with one second of serialization tolerance. Client
+integration must invoke it before rendering a returned verdict as
+legitimate; the validator is not the mark executor, and the Rust reference
+backend performs the same checks before every Apple write.</p>
 <h2 id="7-error-mapping">7. Error mapping</h2>
 <div class="tscroll"><table><thead>
 <tr>
@@ -326,19 +472,20 @@ reconciliation, so the stale state is inert.</p>
 </tr>
 <tr>
 <td><code>new_holder_claim</code></td>
-<td>Holder asserts device transfer at ban UX</td>
-<td>Route to authority's new-holder procedure; backend executes the resulting reversal verdict like any other</td>
+<td>Holder asserts device transfer</td>
+<td>Route to the manifest-declared new-holder procedure; validate and execute its resulting reversal or confirmation through the normal verdict path</td>
 </tr>
 </tbody>
 </table></div><h2 id="8-known-gaps">8. Known gaps</h2>
 <ol>
 <li><strong>The bits survive the person.</strong> DeviceCheck state persists across
 device resale and hand-me-downs by design. The abstract contract's
-new-holder appeal is the mitigation, but it depends on the new
-holder encountering the ban UX and acting; a friendlier detection
-heuristic (e.g., fresh mandate signature from an unrelated identity
-on a banned device fast-tracks the new-holder path) is a profile
-requirement not yet implemented anywhere.</li>
+new-holder claim is the mitigation, but the reference endpoint cannot
+authenticate ownership and its eight storage slots are exhaustible. It also
+depends on the new holder encountering the ban UX and acting. A friendlier
+detection heuristic (for example, a fresh mandate signature from an
+unrelated identity on a banned device fast-tracks the new-holder path) is a
+profile requirement not yet implemented anywhere.</li>
 <li><strong>Two bits, month-granular timestamp.</strong> The platform cannot store
 verdict references, expiries, or class information; all real state
 lives in the vendor backend, and the bits are a cache of its
@@ -373,25 +520,138 @@ replacement device, refurbishment) has not been verified by this
 project. Conformance testing must exercise these paths and the
 deployment must disclose the result — the same caveat the Android
 sibling carries for factory reset
-(<a href="../moderation/Moderation-Device-Recall.html">Moderation-Device-Recall.md</a> §8.1).
+(<a href="../moderation/Moderation-Device-Recall.html">Moderation-Device-Recall.md</a> §8.4).
 Until verified, no manifest may present reset survival as
 unconditional; the abstract contract's evasion-cost rationale
 (Moderation.md §3.3) is stated with the same qualification.</li>
-<li><strong>No Onym implementation exists yet.</strong> No current Onym repository
-implements any part of this profile; everything above is profile
-requirement, none of it is implemented behavior.</li>
+<li><strong>The backend is reference code, not a production deployment.</strong> The current
+iOS code stops at <code>EnforcementBackendClient</code> and ships an honest stub. Merged
+<code>onym-moderation</code> implements the Rust network service, DeviceCheck calls, countersigning,
+lazy reconciliation, and write log, but no deployed Onym service currently
+holds production DeviceCheck credentials. The
+stub's <code>clear</code> response to a nil token is a development-only exception;
+a real backend must return gate-check-required.</li>
+<li><strong>Cryptographic enforcement and client transport remain provisional.</strong> The
+iOS package implements detached authority-directory and manifest
+verification plus verdict verification, but the relevant enforcement
+switches remain off, and the Rust backend likewise defaults authority
+verdict-signature enforcement off. The merged reference fixes the current Rust HTTP shapes
+and UTF-8-byte-order canonical JSON form, but the Swift authority client has
+no network transport and its report signing must use the same ordering.
+Turning enforcement on requires real keys plus cross-language fixtures.</li>
+<li><strong>Ban recourse is not wired end to end.</strong> The abstract contract requires
+the gate to display working ordinary-appeal and new-holder paths. The Rust
+<code>BanState</code> has <code>appealUrl</code> and <code>newHolderUrl</code>, but the merged Apple backend
+leaves both absent, and the iOS client has no Authority transport. A ban
+screen without usable recourse remains nonconforming.</li>
+<li><strong>Authority-failure defaults are missing.</strong> The Rust Interface clears
+<code>case-open</code> only after the Authority sweep delivers a dismissal and has no
+designation-revocation or successor-forum state. Permanent Authority
+disappearance can therefore strand a procedural mark, contrary to the
+abstract deadline and revocation requirements.</li>
 </ol>
-<h2 id="9-conformance-tests">9. Conformance tests</h2>
+<h2 id="9-current-onym-ios-implementation">9. Current Onym iOS implementation</h2>
+<p>The <code>OnymModeration</code> package introduced by
+<a href="https://github.com/onymchat/onym-ios/pull/216">onym-ios PR #216</a> maps the
+abstract contract to the following client components. The authority-client
+claims below are directly checkable in
+<a href="https://github.com/onymchat/onym-ios/blob/87d5b62e8ebaeeb5aa623e4eaed41c038c8c695a/Packages/OnymModeration/Sources/OnymModeration/ModerationAuthorityClient.swift"><code>ModerationAuthorityClient.swift</code></a>,
+and the gate result in
+<a href="https://github.com/onymchat/onym-ios/blob/87d5b62e8ebaeeb5aa623e4eaed41c038c8c695a/Packages/OnymModeration/Sources/OnymModeration/EnforcementBackendClient.swift"><code>EnforcementBackendClient.swift</code></a>:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Contract/profile responsibility</th>
+<th scope="col">Current iOS status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authority designation</td>
+<td><code>KnownAuthoritiesFetcher</code> with signed-asset verification for the interface's authority directory</td>
+</tr>
+<tr>
+<td>Manifest authenticity</td>
+<td>Exact-byte fetch and SHA-256 pin; directory/manifest component and operator-key binding; detached Ed25519 verification path, currently in soft-enforcement mode</td>
+</tr>
+<tr>
+<td>Consent transaction</td>
+<td>Repository-minted <code>ReviewedManifest</code>; the signer accepts the retained artifact and cannot refetch or accept a caller-built <code>SignedManifest</code></td>
+</tr>
+<tr>
+<td>Consent-time constraints</td>
+<td>Expiry, supported profile ID, mandatory new-holder procedure, and parsed external appellate for permanent classes</td>
+</tr>
+<tr>
+<td>Mandate lifecycle</td>
+<td>One identity-device mandate, user signature, signature-only countersigning response, exact manifest snapshot persistence, immutable history on authority switch</td>
+</tr>
+<tr>
+<td>Device attestation</td>
+<td><code>DCDevice.generateToken()</code> provider seam; nil represents unsupported attestation and is never fabricated into a token</td>
+</tr>
+<tr>
+<td>Backend boundary</td>
+<td>Typed enrollment, countersignature, and gate-check protocol; the iOS package still uses a development stub, while merged <code>onym-moderation</code> supplies a separate Rust reference backend</td>
+</tr>
+<tr>
+<td>Gate behavior</td>
+<td>Launch/interval state machine, persisted last-known result, P3D grace, fail-closed clock rollback, stale-completion guard, and blocking <code>checkRequired</code> reasons</td>
+</tr>
+<tr>
+<td>Verdict handling</td>
+<td>Domain objects and mechanical validator for mandate/manifest bindings, marks, appeal timing, execution timing, and consented ban duration</td>
+</tr>
+<tr>
+<td>Authority client boundary</td>
+<td><code>ModerationAuthorityClient</code> exposes <code>fileReport</code>, <code>respond</code> (including additional evidence), <code>appeal</code> (ordinary or new-holder), and <code>queryStatus</code>; typed request/result objects and an honest throwing stub exist, but no endpoint resolution or network transport does</td>
+</tr>
+<tr>
+<td>Authority outbound delivery</td>
+<td><code>GateCheckResult.caseOpen</code> carries <code>CaseNotice</code> values and <code>.banned</code> carries ban/verdict display state from the interface backend; the authority has no client-side mark-write method</td>
+</tr>
+<tr>
+<td>Mandate registration</td>
+<td>Missing: the client appends and persists the interface countersignature but exposes no path that registers the finalized mandate with the named authority</td>
+</tr>
+<tr>
+<td>Authority reference service</td>
+<td><a href="https://github.com/onymchat/onym-moderation/tree/d08e55cc2dac8a3db90f70d3445552366b4ec9ef">Merged <code>onym-moderation</code> main</a> defines the concrete v1 request/response shapes and exposes mandate registration, the four client operations, local-model triage, moderator review, verdict delivery, and a DeviceCheck backend; it remains undeployed</td>
+</tr>
+<tr>
+<td>App composition</td>
+<td>Package is linked but PR #216 does not wire onboarding, foreground checks, root gating, or ban/case UI; those integrations belong to later stack layers</td>
+</tr>
+<tr>
+<td>Authority service and Apple writes</td>
+<td>Merged work through PR #10 implements the Authority, triage/review, reconciliation, write log, and <code>update_two_bits</code> path; no production deployment exists, verdict-signature enforcement defaults off, external appellate routing is absent, and the iOS app does not call mandate registration</td>
+</tr>
+</tbody>
+</table></div><p>The iOS reviewed-manifest path is stricter than the v1 Rust reference: it
+requires a new-holder procedure and parses an external appellate for permanent
+classes. The merged Rust reference treats both manifest fields as optional metadata. Authority
+startup validates the five per-class terms, while the Apple service validates
+mandate, manifest-hash, class, and verdict bindings; neither rejects a permanent
+class because <code>appellate</code> is absent, malformed, or names the issuing authority.
+The Authority records local appeals but does not route them to an external
+component. Those iOS checks implement the abstract contract; the merged Rust
+services' failure to repeat or route them is a documented conformance gap.</p>
+<p>This table is descriptive and deliberately narrower than the profile's
+acceptance criteria. A package or stub passing local tests is not evidence
+that Apple state is durable, that a backend writes faithfully, or that a
+real authority follows the abstract procedure.</p>
+<h2 id="10-conformance-tests">10. Conformance tests</h2>
 <p>Fixtures must cover: JWT construction and key rotation against Apple's
 development endpoint; query/update round-trip including the
 &quot;bit state not found&quot; clean state; verdict-to-bit execution for every
-disposition; lazy reconciliation (expiry passed while device absent,
-deadline default, reversal); queued writes on token absence and their
+disposition; lazy reconciliation (expiry passed while device absent, later
+dismissal/reversal, decision default, and revocation); queued writes on token absence and their
 execution at the next mandated-identity session; identity-mediated
 re-linking after reinstall; routing of a bit-set device with an
 unresolvable session identity to re-identification; grace-window and
-gate-check-required degradation; and new-holder fast-track progression.</p>
-<h2 id="10-acceptance-criteria">10. Acceptance criteria</h2>
+gate-check-required degradation; developer-account sibling-app write
+isolation; and the bounded, indistinguishable unauthenticated new-holder-claim
+responses implemented by the reference Authority.</p>
+<h2 id="11-acceptance-criteria">11. Acceptance criteria</h2>
 <p>This profile is successfully implemented when:</p>
 <ol>
 <li>a ban verdict against an enrolled device results in <code>bit1</code> set and
@@ -403,11 +663,12 @@ backend account state, though the vendor's verdict and enrollment
 records (sanction state under the interface contract's disclosed
 carve-out) exist and are consulted for reconciliation and appeal
 routing;</li>
-<li>expiry, reversal, and deadline defaults clear marks with no action
-by the authority or the user beyond the passage of time and one
-token presentation;</li>
-<li>no code path outside verdict execution and reconciliation can reach
-<code>update_two_bits</code>, and the write log accounts for every call; and</li>
+<li>expiry, dismissal/reversal, decision-deadline default, and applicable
+revocation clear marks without authority or user discretion beyond a token
+presentation;</li>
+<li>no code path outside verdict execution and reconciliation — including a
+sibling app or its backend — can reach <code>update_two_bits</code>, and the write log
+accounts for every call; and</li>
 <li>a second interface vendor can implement this profile against its own
 Apple account without any coordination with the first, and neither
 can read or write the other's bits.</li>
@@ -421,6 +682,8 @@ can read or write the other's bits.</li>
 <a href="https://developer.apple.com/documentation/devicecheck/accessing-and-modifying-per-device-data">https://developer.apple.com/documentation/devicecheck/accessing-and-modifying-per-device-data</a></li>
 <li>Onym audit seat (write-log attestation):
 <a href="../audit/Audit.html">../audit/Audit.md</a></li>
+<li>Current Onym iOS client implementation:
+<a href="https://github.com/onymchat/onym-ios/pull/216">onym-ios PR #216</a></li>
 </ol>
 
     </div>

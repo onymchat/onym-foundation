@@ -158,3 +158,11 @@ test('manifest: every doc ref has a pinned SHA', () => {
     assert.match(REFS[e.ref], /^[0-9a-f]{40}$/);
   }
 });
+
+test('moderation pages distinguish the finalized Apple surface from upstream draft status', () => {
+  const docPath = 'moderation/Moderation-DeviceCheck.md';
+  const html = pageHtml(docPath, { status: 'draft' }, DOCS[docPath], '<p>body</p>', 'Apple DeviceCheck');
+  assert.match(html, /<span class="tag">draft<\/span>/);
+  assert.match(html, /<span class="tag">Apple case surface finalized<\/span>/);
+  assert.match(html, /<span class="tag">reference implementation<\/span>/);
+});
