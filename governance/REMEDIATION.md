@@ -50,7 +50,9 @@ accepts money.
 The public governance proposal now supplies a concrete direction for all nine
 board seats:
 
-- Sponsor Directors: Sponsor Council election by single transferable vote.
+- Sponsor-class Directors: selection route undecided and bracketed. The
+  Sponsor Council is not constituted: paid sponsorship confers recognition
+  only and no contribution reaches a seat.
 - Ecosystem Directors: Ecosystem Council election by single transferable vote,
   from a published eligibility snapshot based on material contribution or
   operation—not payment.

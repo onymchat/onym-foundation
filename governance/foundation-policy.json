@@ -28,6 +28,11 @@
     "annualGrantBudgetTargetEur": 100000,
     "minimumGrantEur": 5000
   },
+  "appointment": {
+    "sponsorClassSeats": "[BRACKETED]",
+    "ecosystemClassSeats": "Ecosystem Council election by single transferable vote",
+    "publicInterestClassSeats": "Public Interest Council election by single transferable vote"
+  },
   "transition": {
     "initialDirectorMaximumTermMonths": 12,
     "firstClassElectionDeadlineDaysAfterFirstContribution": 180

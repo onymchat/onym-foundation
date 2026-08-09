@@ -13,10 +13,10 @@
           <p class="number">01</p>
           <h2>Board composition — {{policy.board.sponsorSeats}}·{{policy.board.ecosystemSeats}}·{{policy.board.publicInterestSeats}}</h2>
         </div>
-        <p class="slede">{{policy.board.totalSeats}} directors, three classes. Sponsors can hold at most {{policy.board.sponsorSeats}} of {{policy.board.totalSeats}} seats. Chair and treasurer always come from non-sponsor classes.</p>
+        <p class="slede">{{policy.board.totalSeats}} directors, three classes. Sponsor-affiliated directors can hold at most {{policy.board.sponsorSeats}} of {{policy.board.totalSeats}} seats. Chair and treasurer always come from non-sponsor classes. No seat is bought: paid sponsorship confers recognition only.</p>
       </div>
       <div class="grid3">
-        <div class="card"><p class="stat mono">{{policy.board.sponsorSeats}}</p><h3 class="mt10">Sponsor Directors</h3><p class="micro mt6">Elected by the Sponsor Council using single transferable vote. They serve the Foundation's purpose, not the donors who qualified them.</p></div>
+        <div class="card"><p class="stat mono">{{policy.board.sponsorSeats}}</p><h3 class="mt10">Sponsor-class Directors</h3><p class="micro mt6">Seats reserved for directors with declared sponsor affiliation, so that affiliation is visible and capped rather than hidden. How they are selected is <b>{{policy.appointment.sponsorClassSeats}}</b> — contribution is not a route to them. They serve the Foundation's purpose, not any donor.</p></div>
         <div class="card"><p class="stat mono">{{policy.board.ecosystemSeats}}</p><h3 class="mt10">Ecosystem Directors</h3><p class="micro mt6">Elected by a non-pay-to-enter Ecosystem Council of materially active contributors and operators.</p></div>
         <div class="card"><p class="stat mono">{{policy.board.publicInterestSeats}}</p><h3 class="mt10">Independent Public-Interest Directors</h3><p class="micro mt6">Openly nominated and elected by a separate, non-pay-to-enter Public Interest Council.</p></div>
       </div>
@@ -35,10 +35,10 @@
           <p class="number">02</p>
           <h2>How all {{policy.board.totalSeats}} seats are filled</h2>
         </div>
-        <p class="slede">{{policy.board.nonSponsorSeats}} of {{policy.board.totalSeats}} routes do not depend on contribution size. Selection never completes a legal appointment by itself; the adopted articles must give it effect.</p>
+        <p class="slede">No route depends on contribution size — not one of the {{policy.board.totalSeats}}. Selection never completes a legal appointment by itself; the adopted articles must give it effect.</p>
       </div>
       <div class="grid3">
-        <div class="card"><h3>Sponsor class</h3><p class="micro mt8">One disclosed control group, one ranked ballot. Eligibility is snapshotted before nominations. Single transferable vote fills {{policy.board.sponsorSeats}} seats. Sponsor affiliation remains a declared conflict throughout the term.</p></div>
+        <div class="card"><h3>Sponsor class</h3><p class="micro mt8">The selection route for these {{policy.board.sponsorSeats}} seats is <b>{{policy.appointment.sponsorClassSeats}}</b>. The Sponsor Council that previously elected them is not constituted, and no route replaces it here: paying the Foundation buys no ballot, no candidacy, and no nomination. Sponsor affiliation remains a declared conflict throughout the term.</p></div>
         <div class="card"><h3>Ecosystem class</h3><p class="micro mt8">A published twelve-month contribution or operation threshold creates the electorate; payment cannot qualify a voter. The roster and challenges close before nominations. One person or control group casts one ranked ballot, and single transferable vote fills {{policy.board.ecosystemSeats}} seats.</p></div>
         <div class="card"><h3>Public-interest class</h3><p class="micro mt8">Anyone may nominate. A separate Public Interest Council elects by single transferable vote. Its public electorate is one person or delegate per control group with documented work in civil society, rights, consumer protection, privacy, security, open standards, or non-profit governance. Sponsors, paid operators, Foundation directors, grantees, contractors, and their control groups are excluded during a published lookback.</p></div>
       </div>
@@ -53,9 +53,9 @@
       <div class="shead">
         <div>
           <p class="number">03</p>
-          <h2>Sponsor Council</h2>
+          <h2>No sponsor electorate</h2>
         </div>
-        <p class="slede">All governance-tier sponsors, Sustaining and above. One control group = one ballot — related entities aggregate. The Council elects the {{policy.board.sponsorSeats}} Sponsor Directors in ranked elections.</p>
+        <p class="slede">There is no Sponsor Council. Sponsorship is unbundled from governance: paid tiers confer recognition and reporting, and nothing that can be voted with. No contribution at any level confers a seat on either organ, a vote, a nomination right, or influence over a grant decision — see <a href="#no-influence">what a contribution does not buy</a>.</p>
       </div>
     </div>
   </section>
@@ -256,7 +256,7 @@
     <div class="wrap">
       <div class="shead">
         <div><p class="number">12</p><h2>Fiduciary note</h2></div>
-        <p class="slede">Sponsor Directors serve the Foundation's purpose, not the donors who qualified them. Removal and special-election rules apply. The public drafts are <a href="contracts/sponsor/Sponsor.html">the sponsor boundary</a> and <a href="contracts/sponsor/Sponsor-Onym.html">the Onym Foundation profile</a>; known inconsistencies are visibly flagged.</p>
+        <p class="slede">Sponsor-class directors serve the Foundation's purpose, and no donor qualified them into the seat. Removal and special-election rules apply. The public drafts are <a href="contracts/sponsor/Sponsor.html">the sponsor boundary</a> and <a href="contracts/sponsor/Sponsor-Onym.html">the Onym Foundation profile</a>; known inconsistencies are visibly flagged.</p>
       </div>
     </div>
   </section>

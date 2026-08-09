@@ -19,9 +19,22 @@ export function validateFoundationPolicy(policy) {
   const b = policy.board;
   const e = policy.endowment;
   const g = policy.grantmaking;
+  const a = policy.appointment;
   const t = policy.transition;
-  if (!b || !e || !g || !t) {
-    throw new Error('foundation policy requires board, endowment, grantmaking, and transition sections');
+  if (!b || !e || !g || !a || !t) {
+    throw new Error(
+      'foundation policy requires board, endowment, grantmaking, appointment, and transition sections');
+  }
+
+  // Selection routes are prose, not counts. Every seat class must name one —
+  // "[BRACKETED]" is a legitimate value and means the board has not decided.
+  for (const cls of ['sponsorClassSeats', 'ecosystemClassSeats', 'publicInterestClassSeats']) {
+    if (typeof a[cls] !== 'string' || !a[cls].trim()) {
+      throw new Error(`appointment.${cls} must name a selection route or stay bracketed`);
+    }
+    if (/sponsor council/i.test(a[cls])) {
+      throw new Error(`appointment.${cls}: paid tiers confer recognition only, never a selection route`);
+    }
   }
 
   for (const [name, value] of Object.entries(b)) integer(value, `board.${name}`, 1);
