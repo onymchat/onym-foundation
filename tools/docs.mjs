@@ -45,9 +45,9 @@ export const DOCS = {
   'bank/UI-Bank-Stellar.md':            { ref: 'worktree-bank-boundary', review: true },
   'association/Association-Naming.md':  { ref: 'worktree-association-naming', seat: 'Naming & credentials', review: true },
   'backup/UI-Backup.md':                { ref: 'main', seat: 'Device backup', tags: ['no implementation profile yet'] },
-  'moderation/Moderation.md':           { ref: 'main', seat: 'Moderation authority', tags: ['Apple case surface finalized', 'reference implementation'] },
-  'moderation/Moderation-DeviceCheck.md':   { ref: 'main', tags: ['Apple case surface finalized', 'reference implementation'] },
-  'moderation/Moderation-Device-Recall.md': { ref: 'main' },
+  'moderation/Moderation.md':           { ref: 'main', seat: 'Moderation authority', tags: ['Apple case surface finalized', 'reference implementation', 'Apple path in production'] },
+  'moderation/Moderation-DeviceCheck.md':   { ref: 'main', tags: ['Apple case surface finalized', 'reference implementation', 'Apple path in production'] },
+  'moderation/Moderation-Device-Recall.md': { ref: 'main', tags: ['Android path not deployed'] },
 };
 
 export const SITE_ORIGIN = 'https://onym.foundation';

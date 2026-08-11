@@ -31,8 +31,8 @@
           <div>
             <h3>Exists today</h3>
             <ul>
-              <li>Native iOS and Android clients, and one replaceable default deployment of message carriage, media storage, and group verification.</li>
-              <li>Public, technology-neutral contract documents for fifteen seats — two of them, moderation and device backup, without an implementation profile or conforming code.</li>
+              <li>Native iOS and Android clients, and one replaceable default deployment of message carriage, media storage, and group verification — plus, on iOS only, a live moderation authority and the DeviceCheck enforcement backend that executes its verdicts.</li>
+              <li>Public, technology-neutral contract documents for fifteen seats. The moderation seat's Apple profile is finalized and implemented; its Android sibling is still draft. The device backup seat has no implementation profile and no conforming code at all.</li>
             </ul>
           </div>
           <div>
@@ -213,7 +213,7 @@
           <p class="number">03</p>
           <h2>User safety without a master switch</h2>
         </div>
-        <p class="slede">Encrypted does not mean lawless. The moderation seat lets users report abuse — child sexual abuse material, credible violence, unsolicited pornography — to an independent authority they accepted when they joined, and lets apps keep banned devices out. The powers stay separate: the authority judges, the app enforces, and neither can reach a message nobody disclosed. What an authority may accept — including photographs — how long it keeps it, when it deletes it, and which classes it preserves and refers to the state are published terms, pinned when a user consents rather than restated later. <a href="contracts/moderation/Moderation.html">The moderation contract →</a><br><span class="micro">The Apple case and DeviceCheck contract surface is finalized, with a merged Rust <a href="https://github.com/onymchat/onym-moderation">reference implementation →</a> No production moderation authority or DeviceCheck enforcement deployment operates yet.</span></p>
+        <p class="slede">Encrypted does not mean lawless. The moderation seat lets users report abuse — child sexual abuse material, credible violence, unsolicited pornography — to an independent authority they accepted when they joined, and lets apps keep banned devices out. The powers stay separate: the authority judges, the app enforces, and neither can reach a message nobody disclosed. What an authority may accept — including photographs — how long it keeps it, when it deletes it, and which classes it preserves and refers to the state are published terms, pinned when a user consents rather than restated later. <a href="contracts/moderation/Moderation.html">The moderation contract →</a><br><span class="micro">On iOS this now runs in production: an authority adjudicating live reports, and the DeviceCheck backend executing its verdicts — both from the <a href="https://github.com/onymchat/onym-moderation">Rust reference implementation →</a> and both currently operated by Onym as the replaceable default, which is one operator holding two halves the contract means to keep apart. The Android device-recall path is draft and not deployed. Nothing is audited.</span></p>
       </div>
       <div class="grid4">
         <div class="card"><p class="number">01 · REPORT</p><h3>You disclose what you received</h3><p class="micro">Reporting shares the specific offending message — text, or a photograph where the authority accepts them — from your own device, with cryptographic proof of who sent it. Nothing else leaves your phone: no mailbox, no undisclosed message, and nobody scans anything.</p></div>
