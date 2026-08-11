@@ -11,6 +11,7 @@ export const REFS = {
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
+  'backup-seat': 'c183ec01087573eedeea33fb668a763460bd8200',
 };
 
 // path → { ref, latest? (upstream branch), seat?, review?, tags? }
@@ -45,6 +46,7 @@ export const DOCS = {
   'bank/UI-Bank.md':                    { ref: 'worktree-bank-boundary', seat: 'Banking & payments', review: true },
   'bank/UI-Bank-Stellar.md':            { ref: 'worktree-bank-boundary', review: true },
   'association/Association-Naming.md':  { ref: 'worktree-association-naming', seat: 'Naming & credentials', review: true },
+  'backup/UI-Backup.md':                { ref: 'backup-seat', seat: 'Device backup', review: true },
   'moderation/Moderation.md':           { ref: 'moderation-apple-surface', latest: 'main', seat: 'Moderation authority', tags: ['Apple case surface finalized', 'reference implementation'] },
   'moderation/Moderation-DeviceCheck.md':   { ref: 'moderation-apple-surface', latest: 'main', tags: ['Apple case surface finalized', 'reference implementation'] },
   'moderation/Moderation-Device-Recall.md': { ref: 'moderation-apple-surface', latest: 'main' },

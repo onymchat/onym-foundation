@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Device Backup Boundary — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Device Backup Boundary — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/backup/UI-Backup.html">
+<meta property="og:title" content="Onym UI ↔ Device Backup Boundary — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/backup/UI-Backup.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/InstrumentSans-Variable.woff2">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      <p class="eyebrow mb12">Device backup</p>
+      <div class="badges"><span class="tag">draft</span><span class="tag">proposal — in review</span><span class="tag">11.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/c183ec01087573eedeea33fb668a763460bd8200/backup/UI-Backup.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-device-backup-boundary">Onym UI ↔ Device Backup Boundary</h1>
+<p><strong>Architecture draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>The device seals its own history. A backup operator retains opaque snapshots
+under terms it published before the first byte arrived. It holds no key, no
+seed, and no path to open what it stores.</p>
+</blockquote>
+<p>This document defines the technology-neutral boundary between an Onym frontend
+and an operator that retains a copy of that frontend's local state so a lost,
+stolen, replaced, or wiped device does not mean a lost history. It does not
+require a particular hash, encryption algorithm, chunking strategy, request
+protocol, storage engine, or billing rail.</p>
+<p>A concrete implementation may use object storage, a content-addressed network,
+an institutional archive, a self-hosted server, removable media, or another
+mechanism that satisfies the profile's opacity, integrity, retention,
+erasure, export, and error semantics. No implementation profile exists yet;
+§17 records what a first profile must settle.</p>
+<p>Here <strong>UI</strong> means the frontend application layer, not a screen issuing a
+network request. Views send intent to flows, view-models, repositories, or
+interactors. Those components decide what is eligible, seal it, and address it
+before invoking the backup port.</p>
+<p>This seat is deliberately narrow, and two neighbours define it by contrast.
+<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a> and
+<a href="../recovery/Recovery-Trustee.html">../recovery/Recovery-Trustee.md</a> cover the
+root secret and the authority to act as a person; <strong>this boundary never carries
+seed material and never restores an identity</strong> (§16.1). Live encrypted
+attachments belong to <a href="../blob/UI-Blob.html">../blob/UI-Blob.md</a> and sealed
+messages in flight to <a href="../message/UI-Message.html">../message/UI-Message.md</a>;
+this boundary retains a device's own archive of what it already holds.</p>
+<h2 id="1-decision">1. Decision</h2>
+<p>Onym treats the UI, the local backup composer, the backup adapter, and the
+retention operator as independently owned components joined by versioned
+interfaces.</p>
+<ul>
+<li>The <strong>UI owner</strong> controls what is eligible for backup, the consent surface,
+scheduling, local preparation, billing integration, and supported profiles.</li>
+<li>The <strong>application-protocol author</strong> controls snapshot composition, sealing,
+key derivation, and the restore validation rules.</li>
+<li>The <strong>backup-adapter author</strong> maps the common Onym port to a concrete
+retention protocol.</li>
+<li>The <strong>backup operator</strong> owns endpoints, capacity, declared retention,
+erasure execution, jurisdictions, sub-processors, availability, breach
+disclosure, and its payment model.</li>
+<li>The <strong>user</strong> decides whether a backup exists at all, under which declared
+terms, for how long, and when it is destroyed.</li>
+</ul>
+<p>One organization may occupy several roles, but their authorities remain
+separate. A person can change UI and still restore an existing snapshot. A UI
+can use a compatible third-party operator without importing its SDK. An
+operator can serve several frontends without learning what it stores.</p>
+<p>The boundary has two interfaces:</p>
+<ol>
+<li>the local <strong>UI/application ↔ backup adapter</strong> port, which carries sealed
+snapshot bytes, snapshot references, declared-policy bindings, restore
+authorizations, erasure requests, and typed outcomes; and</li>
+<li>the network <strong>backup adapter ↔ operator</strong> implementation profile, which
+defines request framing, retrieval, authorization, payment refusal, limits,
+receipts, retention observations, erasure, and export.</li>
+</ol>
+<p>Neither interface may carry plaintext state, message plaintext, contact
+labels, filenames, group secrets, decryption keys, recovery artifacts, or seed
+material. A backup that requires any of those to be legible by the operator is
+not an implementation of this contract.</p>
+<h2 id="2-what-device-backup-does">2. What device backup does</h2>
+<p>The base backup port can:</p>
+<ol>
+<li>validate and connect to a selected operator under a verified manifest and a
+pinned declared policy;</li>
+<li>upload an already sealed snapshot, whole or as opaque increments, under a
+declared snapshot reference;</li>
+<li>list the snapshots the holder's own access key can enumerate;</li>
+<li>retrieve a snapshot's sealed bytes for restore on a device that proves
+possession of the holder's backup key;</li>
+<li>request erasure of a snapshot or of every snapshot under the access key;</li>
+<li>export every retained snapshot in the profile's portable form for migration
+to another operator or to the person's own storage; and</li>
+<li>report retention, availability, refusal, erasure, and uncertainty per
+operation.</li>
+</ol>
+<p>It does not compose snapshots, seal or open application state, hold keys,
+derive key material, interpret history, decide what is eligible, authenticate
+group membership, restore an identity, adjudicate a report, or authorize
+notary state.</p>
+<h2 id="3-why-this-boundary-is-necessary">3. Why this boundary is necessary</h2>
+<h3 id="31-durability-is-the-one-service-that-outlives-its-own-consent">3.1 Durability is the one service that outlives its own consent</h3>
+<p>Every other seat in this system handles data in motion or under a live
+selection: stop paying a courier and the courier stops carrying. A backup's
+product is a copy that persists precisely when the person is absent — after a
+device is lost, a subscription lapses, or attention moves on. Terms that can be
+restated after the data arrives are therefore not a pricing detail but the
+whole substance of the seat, which is why §5.4 pins them to the snapshot and
+§10 forbids retroactive extension.</p>
+<h3 id="32-it-prevents-an-archive-from-becoming-an-account">3.2 It prevents an archive from becoming an account</h3>
+<p>An operator that can reset access to a history has taken custody of it. This
+boundary requires restore to prove possession of holder-held key material and
+forbids an operator-controlled reset path (§11). An operator that offers one is
+not filling this seat; it has moved into the recovery and custody boundaries,
+where that capability is disclosed as custodial (§16.1).</p>
+<h3 id="33-it-keeps-a-longer-lived-copy-under-the-same-opacity-rule-as-a-shorter-one">3.3 It keeps a longer-lived copy under the same opacity rule as a shorter one</h3>
+<p>The courier cannot read the letter, and neither can the storage provider. A
+copy that lives for years earns a stronger obligation than one that lives for
+days, not a weaker one, so the snapshot crosses the boundary sealed with fresh
+key material and addressed by a digest over the sealed bytes.</p>
+<h3 id="34-it-makes-retention-and-erasure-claims-narrow-and-checkable">3.4 It makes retention and erasure claims narrow and checkable</h3>
+<p>A backup cannot promise erasure of what other parties hold, and it cannot
+prove continued availability of what it holds. It can declare a retention
+period, an erasure deadline, the scope erasure covers, and what its own
+historical copies mean — and be measured against those statements instead of a
+generic &quot;backup enabled&quot; state.</p>
+<h3 id="35-it-makes-the-cost-to-third-parties-visible-instead-of-silent">3.5 It makes the cost to third parties visible instead of silent</h3>
+<p>A snapshot of one device extends the life of both sides of every conversation
+in it. The other participants never chose this operator, this jurisdiction, or
+this retention period. This contract cannot give them a veto without breaking
+the person's own access to their own history, so it requires the choice to be
+opt-in, disclosed in those terms, and reported honestly (§10.4, §14.11).</p>
+<h3 id="36-it-supports-independent-ownership-and-payment">3.6 It supports independent ownership and payment</h3>
+<p>One operator may be free and self-hosted, another may charge for retained
+byte-time, another may be funded by an institution for its own members. The UI
+presents signed offers with their declared terms. Payment buys retention and
+availability; it never buys the ability to read a snapshot or authority over
+the identity that made it.</p>
+<h3 id="37-it-isolates-failure">3.7 It isolates failure</h3>
+<ul>
+<li>A failed upload leaves the previous snapshot intact and restorable.</li>
+<li>A partially received snapshot is rejected before restore rather than merged.</li>
+<li>A broken adapter can be replaced without re-sealing existing snapshots.</li>
+<li>A lapsed payment triggers declared notice and grace, never silent deletion.</li>
+<li>Loss of every snapshot costs history; it never costs the identity, the
+groups, or the ability to keep using the network.</li>
+</ul>
+<h2 id="4-logical-topology">4. Logical topology</h2>
+<pre><code class="language-text">UI process
+  |
+  | user consent + schedule
+  v
+application backup composer
+  |-- select eligible local state
+  |-- seal with fresh snapshot key material derived from holder-held input
+  |-- compute profile-pinned snapshot reference over sealed bytes
+  |-- bind the operator's declared-policy digest
+  `-- invoke backup port with opaque bytes
+            |
+            v
+      backup adapter
+      map · authorize · bound · verify · normalize
+            |
+            v
+      selected backup operator
+      retain · serve · refuse · erase within declared policy
+</code></pre>
+<p>The adapter is inside the client trust boundary but handles untrusted network
+input, locators, receipts, retention observations, and bytes. The operator is
+outside it. A successful operator response is evidence only of the operator's
+declared action — not future availability, complete erasure, snapshot
+integrity, restorability, or any statement about copies held elsewhere.</p>
+<h2 id="5-boundary-objects">5. Boundary objects</h2>
+<h3 id="51-backup-profile">5.1 Backup Profile</h3>
+<p>A <code>BackupProfile</code> defines portable semantics independently of a wire
+technology or operator:</p>
+<pre><code class="language-json">{
+  &quot;profileVersion&quot;: 1,
+  &quot;profileId&quot;: &quot;onym:backup-profile:sealed-device-archive-v1&quot;,
+  &quot;interface&quot;: &quot;onym-backup-v1&quot;,
+  &quot;operations&quot;: [
+    &quot;upload&quot;,
+    &quot;list&quot;,
+    &quot;download&quot;,
+    &quot;erase&quot;,
+    &quot;export&quot;
+  ],
+  &quot;snapshotReferenceSchema&quot;: &quot;&lt;content-addressed-schema&gt;&quot;,
+  &quot;sealing&quot;: &quot;holder-keyed-authenticated-encryption&quot;,
+  &quot;restoreAuthorization&quot;: &quot;holder-key-possession-only&quot;,
+  &quot;receiptSchema&quot;: &quot;per-operation-backup-outcome-v1&quot;,
+  &quot;errorSchema&quot;: &quot;onym-backup-errors-v1&quot;,
+  &quot;declaredTermsSchema&quot;: &quot;onym-backup-terms-v1&quot;,
+  &quot;specification&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>The profile fixes operation meaning, reference semantics, sealing
+requirements, restore authorization, declared-terms structure, receipts, and
+errors. It does not choose a digest algorithm, cipher suite, chunking scheme,
+endpoint, price, retention period, or UI.</p>
+<h3 id="52-backup-implementation-profile">5.2 Backup Implementation Profile</h3>
+<p>A <code>BackupImplementationProfile</code> maps the abstract interface to one retention
+technology:</p>
+<pre><code class="language-json">{
+  &quot;implementationVersion&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:backup-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;backupProfileId&quot;: &quot;onym:backup-profile:sealed-device-archive-v1&quot;,
+  &quot;wireProtocol&quot;: &quot;&lt;protocol-id&gt;&quot;,
+  &quot;digestSuite&quot;: &quot;&lt;digest-and-encoding&gt;&quot;,
+  &quot;sealingSuite&quot;: &quot;&lt;aead-and-key-derivation&gt;&quot;,
+  &quot;incrementModel&quot;: &quot;&lt;whole-snapshot-or-opaque-increment-scheme&gt;&quot;,
+  &quot;wireMapping&quot;: &quot;&lt;content-addressed-specification&gt;&quot;,
+  &quot;authentication&quot;: [&quot;holder-scoped-capability&quot;],
+  &quot;erasureEvidence&quot;: &quot;&lt;receipt-semantics&gt;&quot;,
+  &quot;paymentRefusal&quot;: &quot;onym-payment-required-v1&quot;,
+  &quot;signature&quot;: &quot;&lt;implementation-profile-publisher-signature&gt;&quot;
+}
+</code></pre>
+<p>Wire request objects, storage descriptors, authorization tokens, and protocol
+headers stay inside the adapter.</p>
+<h3 id="53-backup-operator-manifest">5.3 Backup Operator Manifest</h3>
+<p>A <code>ServiceManifest</code> binds an implementation profile and one set of declared
+terms to an operator:</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;componentId&quot;: &quot;onym:component:&lt;backup-operator-id&gt;&quot;,
+  &quot;seat&quot;: &quot;storage.backup&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;backupProfileId&quot;: &quot;onym:backup-profile:sealed-device-archive-v1&quot;,
+  &quot;implementationProfileId&quot;: &quot;onym:backup-implementation:&lt;technology&gt;-v1&quot;,
+  &quot;endpoints&quot;: [
+    {&quot;uri&quot;: &quot;&lt;technology-specific-endpoint&gt;&quot;, &quot;role&quot;: &quot;read-write&quot;}
+  ],
+  &quot;capabilities&quot;: [&quot;upload&quot;, &quot;list&quot;, &quot;download&quot;, &quot;erase&quot;, &quot;export&quot;],
+  &quot;limits&quot;: {
+    &quot;maximumSealedSnapshotBytes&quot;: &quot;&lt;operator-declared-limit&gt;&quot;,
+    &quot;maximumRetainedSnapshots&quot;: &quot;&lt;operator-declared-limit&gt;&quot;
+  },
+  &quot;declaredTerms&quot;: &quot;&lt;digest-of-BackupTerms&gt;&quot;,
+  &quot;privacyProfile&quot;: &quot;&lt;hash-or-url&gt;&quot;,
+  &quot;entitlementIssuers&quot;: [&quot;onym:key:&lt;issuer-id&gt;&quot;],
+  &quot;offers&quot;: [&quot;&lt;backup-offer-id&gt;&quot;],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>The UI verifies the signature, profiles, endpoint syntax, capabilities,
+limits, validity, declared terms, privacy declaration, entitlement issuers,
+and selected offer. Discovery catalog presence and a friendly name are
+insufficient.</p>
+<p>Mutable capacity and health observations remain separate from signed policy.
+They cannot silently replace an operator, endpoint, profile, offer, or term.</p>
+<h3 id="54-backup-terms">5.4 Backup Terms</h3>
+<p><code>BackupTerms</code> is the declared policy this seat exists to make legible. It is
+signed, content-addressed, and pinned into every snapshot the person entrusts
+to the operator:</p>
+<pre><code class="language-json">{
+  &quot;termsVersion&quot;: 1,
+  &quot;termsId&quot;: &quot;&lt;content-addressed-digest&gt;&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator-id&gt;&quot;,
+  &quot;retention&quot;: {
+    &quot;class&quot;: &quot;&lt;measurable-or-best-effort&gt;&quot;,
+    &quot;maximumRetentionPeriod&quot;: &quot;&lt;declared-duration-or-until-erased&gt;&quot;,
+    &quot;snapshotsRetained&quot;: &quot;&lt;declared-count-or-policy&gt;&quot;,
+    &quot;expiryBehavior&quot;: &quot;&lt;erase-or-notify-then-erase&gt;&quot;
+  },
+  &quot;erasure&quot;: {
+    &quot;acknowledgementDeadline&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;completionDeadline&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;scope&quot;: &quot;&lt;primary-plus-declared-replicas-and-operator-backups&gt;&quot;,
+    &quot;excluded&quot;: &quot;&lt;what-erasure-provably-does-not-cover&gt;&quot;
+  },
+  &quot;jurisdictions&quot;: [&quot;&lt;storage-and-processing-jurisdictions&gt;&quot;],
+  &quot;subProcessors&quot;: [
+    {&quot;role&quot;: &quot;&lt;storage-or-processing-role&gt;&quot;, &quot;jurisdiction&quot;: &quot;&lt;jurisdiction&gt;&quot;}
+  ],
+  &quot;lawfulAccess&quot;: {
+    &quot;disclosureWhatIsProduced&quot;: &quot;sealed-bytes-and-declared-metadata-only&quot;,
+    &quot;notifyHolderWhenPermitted&quot;: true,
+    &quot;transparencyReporting&quot;: &quot;&lt;declared-cadence-or-null&gt;&quot;
+  },
+  &quot;breachDisclosure&quot;: {&quot;holderNotice&quot;: &quot;&lt;declared-duration&gt;&quot;},
+  &quot;export&quot;: {
+    &quot;format&quot;: &quot;&lt;portable-sealed-form&gt;&quot;,
+    &quot;availableWhileUnpaid&quot;: true
+  },
+  &quot;endOfPayment&quot;: {
+    &quot;notice&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;grace&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;duringGrace&quot;: [&quot;download&quot;, &quot;export&quot;, &quot;erase&quot;],
+    &quot;afterGrace&quot;: &quot;&lt;erase-or-declared-cold-state&gt;&quot;
+  },
+  &quot;metadataRetention&quot;: {
+    &quot;accessLogs&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;sizeAndTiming&quot;: &quot;&lt;declared-duration&gt;&quot;
+  },
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>Terms bind forward, never backward. An operator may publish new terms at any
+time; the new digest applies to snapshots accepted after the holder consents to
+it. Snapshots already retained keep the terms they were accepted under, and no
+new term may extend their retention, narrow their erasure scope, add a
+jurisdiction or sub-processor, or remove an export path. An operator that
+cannot honour the terms a retained snapshot pins must offer export and erasure,
+not a unilateral restatement.</p>
+<h3 id="55-snapshot-reference">5.5 Snapshot Reference</h3>
+<p>A <code>SnapshotReference</code> identifies the exact sealed bytes:</p>
+<pre><code class="language-json">{
+  &quot;referenceVersion&quot;: 1,
+  &quot;algorithm&quot;: &quot;&lt;implementation-profile-digest-id&gt;&quot;,
+  &quot;digest&quot;: &quot;&lt;canonical-digest-value&gt;&quot;,
+  &quot;sealedByteSize&quot;: 41235904
+}
+</code></pre>
+<p>The implementation profile pins algorithm, digest encoding, canonical form,
+increment composition, and collision-response policy. The digest covers the
+exact operator-facing byte sequence. It does not cover local state before
+sealing, a decoded archive, a locator, or mutable metadata.</p>
+<h3 id="56-sealed-snapshot">5.6 Sealed Snapshot</h3>
+<p>The application produces a sealed snapshot before calling the adapter:</p>
+<pre><code class="language-json">{
+  &quot;snapshotVersion&quot;: 1,
+  &quot;operationId&quot;: &quot;&lt;random-id&gt;&quot;,
+  &quot;snapshotReference&quot;: {
+    &quot;algorithm&quot;: &quot;&lt;profile-pinned-algorithm&gt;&quot;,
+    &quot;digest&quot;: &quot;&lt;canonical-digest&gt;&quot;,
+    &quot;sealedByteSize&quot;: 41235904
+  },
+  &quot;bytes&quot;: &quot;&lt;opaque-sealed-bytes&gt;&quot;,
+  &quot;sealedAt&quot;: &quot;2026-08-11T00:00:00Z&quot;,
+  &quot;acceptedTermsId&quot;: &quot;&lt;content-addressed-digest-of-BackupTerms&gt;&quot;,
+  &quot;supersedes&quot;: &quot;&lt;previous-snapshot-reference-or-null&gt;&quot;
+}
+</code></pre>
+<p>Sealing uses fresh key material for each snapshot, derived from input the
+holder possesses. Convergent or content-derived keying is prohibited: it makes
+two people's identical files identically addressed and lets an operator or
+observer confirm that a holder possesses a known file. Deduplication is
+permitted only within one holder's own snapshots.</p>
+<p>What the sealed bytes contain is an application decision, but the eligible set
+is bounded by the interface contract: local state is excluded from backup
+unless the person explicitly includes it
+(<a href="../interface/Interface.html">../interface/Interface.md</a> §8). Seed material,
+recovery artifacts, and trustee shares are never eligible (§16.1).</p>
+<h3 id="57-operation-outcomes">5.7 Operation outcomes</h3>
+<p>The adapter returns the durable reference and the operator's outcome:</p>
+<pre><code class="language-json">{
+  &quot;operationId&quot;: &quot;&lt;same-random-id&gt;&quot;,
+  &quot;snapshotReference&quot;: {
+    &quot;algorithm&quot;: &quot;&lt;profile-pinned-algorithm&gt;&quot;,
+    &quot;digest&quot;: &quot;&lt;canonical-digest&gt;&quot;,
+    &quot;sealedByteSize&quot;: 41235904
+  },
+  &quot;outcome&quot;: {
+    &quot;componentId&quot;: &quot;onym:component:&lt;backup-operator-id&gt;&quot;,
+    &quot;status&quot;: &quot;retained&quot;,
+    &quot;locator&quot;: &quot;&lt;profile-specific-location-hint&gt;&quot;,
+    &quot;retainedUntil&quot;: &quot;&lt;operator-observation-or-null&gt;&quot;,
+    &quot;termsId&quot;: &quot;&lt;terms-the-operator-accepted-it-under&gt;&quot;,
+    &quot;evidence&quot;: &quot;&lt;profile-defined-receipt-or-null&gt;&quot;
+  }
+}
+</code></pre>
+<p>Valid outcome classes include:</p>
+<ul>
+<li><code>queued_locally</code>: accepted into a bounded local upload queue;</li>
+<li><code>submitted</code>: the request body was handed to the network implementation;</li>
+<li><code>accepted</code>: the operator explicitly accepted the operation;</li>
+<li><code>retained</code>: the operator confirmed a matching stored snapshot under pinned
+terms;</li>
+<li><code>already_retained</code>: the same reference was already held;</li>
+<li><code>rejected</code>: the operator explicitly refused;</li>
+<li><code>erased</code>: the operator confirmed erasure within its declared scope;</li>
+<li><code>unreachable</code>: no meaningful operator response was obtained; and</li>
+<li><code>unknown</code>: the request may have succeeded, but its result is inconclusive.</li>
+</ul>
+<p><code>retained</code> is not a restorability proof, a durability guarantee, or a
+statement about any copy the operator does not control. <code>erased</code> is bounded by
+the declared scope and never covers other parties' copies.</p>
+<h3 id="58-restore-authorization">5.8 Restore Authorization</h3>
+<p>A restore is authorized by possession, proven on the recovering device:</p>
+<pre><code class="language-json">{
+  &quot;restoreVersion&quot;: 1,
+  &quot;snapshotReference&quot;: {
+    &quot;algorithm&quot;: &quot;&lt;profile-pinned-algorithm&gt;&quot;,
+    &quot;digest&quot;: &quot;&lt;canonical-digest&gt;&quot;,
+    &quot;sealedByteSize&quot;: 41235904
+  },
+  &quot;accessProof&quot;: &quot;&lt;proof-of-possession-of-holder-backup-access-key&gt;&quot;,
+  &quot;destination&quot;: &quot;&lt;fresh-device-public-key&gt;&quot;,
+  &quot;requestedAt&quot;: &quot;2026-08-11T00:00:00Z&quot;
+}
+</code></pre>
+<p>The access key is held by the person, not by the operator, and is separate
+from the identity signing key so a backup credential can be rotated or
+abandoned without touching the identity. The operator verifies the proof and
+serves bytes. It cannot issue, reset, escrow, or recover the access key, and it
+cannot open the snapshot with anything it holds — a failed restore is a lost
+history, which is the honest price of the previous sentence and must be
+disclosed at enrolment (§11).</p>
+<h3 id="59-erasure-request-and-receipt">5.9 Erasure Request and Receipt</h3>
+<pre><code class="language-json">{
+  &quot;erasureVersion&quot;: 1,
+  &quot;scope&quot;: &quot;&lt;one-snapshot-reference-or-all-under-access-key&gt;&quot;,
+  &quot;accessProof&quot;: &quot;&lt;proof-of-possession-of-holder-backup-access-key&gt;&quot;,
+  &quot;requestedAt&quot;: &quot;2026-08-11T00:00:00Z&quot;
+}
+</code></pre>
+<pre><code class="language-json">{
+  &quot;receiptVersion&quot;: 1,
+  &quot;scope&quot;: &quot;&lt;echoed-scope&gt;&quot;,
+  &quot;acknowledgedAt&quot;: &quot;2026-08-11T00:00:05Z&quot;,
+  &quot;completionCommittedBy&quot;: &quot;&lt;deadline-from-pinned-terms&gt;&quot;,
+  &quot;coveredScope&quot;: &quot;&lt;primary-plus-declared-replicas-and-operator-backups&gt;&quot;,
+  &quot;excludedScope&quot;: &quot;&lt;what-this-receipt-does-not-cover&gt;&quot;,
+  &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
+}
+</code></pre>
+<p>A receipt is a signed commitment measured against the pinned terms. It is not
+proof of destruction, and its <code>excludedScope</code> is mandatory rather than
+decorative.</p>
+<h3 id="510-export">5.10 Export</h3>
+<p>Export returns every retained snapshot in the profile's portable sealed form,
+with its references, <code>acceptedTermsId</code> values, and receipts, so migration to
+another operator or to the person's own storage needs no re-sealing and no
+cooperation from the operator being left. Export remains available during the
+declared end-of-payment grace period; withholding export for non-payment turns
+retention into leverage over a person's own history and does not conform.</p>
+<h2 id="6-common-backup-surface">6. Common backup surface</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Operation</th>
+<th scope="col">Input</th>
+<th scope="col">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect</code></td>
+<td>Verified manifest, pinned terms, holder-scoped access context</td>
+<td>Readiness and accepted terms digest</td>
+</tr>
+<tr>
+<td><code>uploadSnapshot</code></td>
+<td>Sealed snapshot and pinned terms</td>
+<td>Verified outcome and receipt</td>
+</tr>
+<tr>
+<td><code>listSnapshots</code></td>
+<td>Access proof</td>
+<td>References, sizes, dates, pinned terms per snapshot</td>
+</tr>
+<tr>
+<td><code>downloadSnapshot</code></td>
+<td>Reference, access proof, destination</td>
+<td>Verified sealed bytes or explicit failure</td>
+</tr>
+<tr>
+<td><code>eraseSnapshot</code></td>
+<td>Scope and access proof</td>
+<td>Signed erasure receipt with declared scope</td>
+</tr>
+<tr>
+<td><code>exportSnapshots</code></td>
+<td>Access proof</td>
+<td>Portable sealed forms with references and receipts</td>
+</tr>
+<tr>
+<td><code>queryOutcome</code></td>
+<td>Operation or reference</td>
+<td>Outcome when supported</td>
+</tr>
+</tbody>
+</table></div><p>The port never presents downloaded bytes as restorable until the snapshot
+reference is verified in full. Incremental composition is verified against the
+whole-snapshot reference before any local state is replaced.</p>
+<h2 id="7-uiapplication-obligations">7. UI/application obligations</h2>
+<p>A conforming frontend and application layer must:</p>
+<ol>
+<li>treat backup as off until the person turns it on, and never enable it as a
+side effect of an update, migration, or default change;</li>
+<li>verify the backup and implementation profiles, the operator manifest, and
+the declared terms before the first upload;</li>
+<li>display retention period, erasure deadlines and scope, jurisdictions,
+sub-processors, lawful-access practice, breach-notice period, export
+availability, price, and end-of-payment behaviour on the consent surface —
+before enrolment, not on first failure;</li>
+<li>state plainly that a snapshot extends how long this history exists for
+every participant in it, including people who did not choose the operator;</li>
+<li>bound the eligible set to what the person included, and exclude seed
+material, recovery artifacts, and trustee shares unconditionally;</li>
+<li>seal each snapshot with fresh key material derived from holder-held input,
+and never with content-derived keys;</li>
+<li>compute the snapshot reference over the exact sealed bytes;</li>
+<li>pin the accepted terms digest into every snapshot and re-obtain consent
+before uploading under new terms;</li>
+<li>keep plaintext state, keys, contact labels, filenames, group secrets, and
+identity credentials out of backup requests, metadata, and logs;</li>
+<li>hold the backup access key locally, offer its rotation and export, and
+explain that no operator can recover it;</li>
+<li>verify a complete snapshot reference before replacing any local state, and
+never merge a partial or unverified snapshot;</li>
+<li>treat locators, receipts, retention dates, and operator descriptors as
+untrusted observations;</li>
+<li>label <code>submitted</code>, <code>retained</code>, <code>erased</code>, <code>restored</code>, and <code>exported</code>
+accurately, and never render <code>unknown</code> as success;</li>
+<li>retry idempotently by reference and operation ID rather than sealing a new
+snapshot;</li>
+<li>surface a lapsed, expiring, failing, or long-stale backup as a state the
+person can see rather than a silent no-op;</li>
+<li>support export and operator migration without re-sealing; and</li>
+<li>never redirect backup to increase frontend commission, and never present a
+paid operator as more private than a self-hosted one on that basis.</li>
+</ol>
+<p>Operator diagnostics, locator fields, redirects, and filenames are untrusted
+input. They cannot drive unsafe navigation, execution, or payment.</p>
+<h2 id="8-backup-adapter-obligations">8. Backup adapter obligations</h2>
+<p>A conforming adapter must:</p>
+<ol>
+<li>implement its mapping without leaking wire-specific objects through the
+common port;</li>
+<li>accept only sealed bytes and avoid parsing application state;</li>
+<li>validate reference syntax, byte count, endpoint identity, terms digest, and
+limits;</li>
+<li>recompute the snapshot reference before upload;</li>
+<li>verify every operator response against the expected reference, size, and
+pinned terms digest;</li>
+<li>verify a complete snapshot, including composed increments, before exposing
+restorable bytes;</li>
+<li>enforce redirect or indirection limits and credential-origin policy;</li>
+<li>keep the holder's access proof, entitlement, and authorization material
+scoped to one operator;</li>
+<li>normalize implementation failures into stable domain errors while
+preserving bounded safe diagnostics;</li>
+<li>bound response bodies, receipts, metadata, indirection, increment
+assembly, queues, timeouts, and retry;</li>
+<li>preserve unknown outcomes instead of converting silence into <code>retained</code> or
+<code>erased</code>;</li>
+<li>preserve every erasure receipt with its excluded scope intact;</li>
+<li>avoid logging snapshots, references bound to a holder, credentials, or
+signed authorizations; and</li>
+<li>remain replaceable without re-sealing existing snapshots.</li>
+</ol>
+<p>The adapter verifies retention-wire properties. It does not decide what may be
+backed up, nor who may restore it; the eligible set and the holder's access key
+do.</p>
+<h2 id="9-backup-operator-obligations">9. Backup operator obligations</h2>
+<p>A conforming operator publishes:</p>
+<ul>
+<li>a signed manifest, supported implementation profile, and content-addressed
+terms;</li>
+<li>endpoint identities and indirection policy;</li>
+<li>supported operations and optional capabilities;</li>
+<li>maximum sealed snapshot size, snapshot count, concurrency, and rate limits;</li>
+<li>holder-scoped access-control and entitlement-issuer policy;</li>
+<li>retention class, maximum retention period, and expiry behaviour;</li>
+<li>erasure acknowledgement and completion deadlines, covered scope, and the
+scope erasure provably excludes;</li>
+<li>storage and processing jurisdictions, and every sub-processor with its role
+and jurisdiction;</li>
+<li>what a lawful-access demand can produce, whether holders are notified when
+permitted, and any transparency-reporting cadence;</li>
+<li>breach-notice period and channel;</li>
+<li>access-log, size, and timing metadata retention;</li>
+<li>export format and its availability while unpaid;</li>
+<li>end-of-payment notice, grace, and post-grace behaviour;</li>
+<li>measurable availability and durability claims; and</li>
+<li>migration, export, and shutdown notice policy.</li>
+</ul>
+<p>The operator must not claim that a retained snapshot proves restorability,
+that an erasure receipt proves destruction beyond its declared scope, that it
+can recover a holder's access key, or that its retention limits copies held by
+anyone else. An operator that acquires the ability to open snapshots — by
+holding an unwrap key, escrowing an access key, or offering an
+operator-controlled reset — has left this seat and must say so before, not
+after, that capability exists.</p>
+<h2 id="10-retention-erasure-and-the-copies-this-seat-creates">10. Retention, erasure, and the copies this seat creates</h2>
+<h3 id="101-retention-is-a-declaration-not-a-proof">10.1 Retention is a declaration, not a proof</h3>
+<p>A snapshot can be lost under best-effort service, and a retention date is an
+operator statement. <code>retained</code> reflects the operator's declared action at one
+moment.</p>
+<h3 id="102-terms-bind-forward-only">10.2 Terms bind forward only</h3>
+<p>A retained snapshot keeps the terms it was accepted under. New terms govern new
+snapshots after fresh consent. Retroactive extension of retention, narrowing of
+erasure scope, addition of a jurisdiction or sub-processor, or removal of an
+export path does not conform (§5.4).</p>
+<h3 id="103-erasure-is-narrow-and-honest">10.3 Erasure is narrow and honest</h3>
+<p>An erasure receipt covers the primary copy plus the declared replicas and the
+operator's own historical copies, within the deadline the pinned terms state.
+It cannot cover recipients, observers, caches outside the operator's control,
+or copies the person made themselves. A timeout after erasure creates an
+<code>unknown</code> outcome, reconciled by reference rather than relabelled.</p>
+<h3 id="104-a-backup-creates-a-copy-other-people-did-not-choose">10.4 A backup creates a copy other people did not choose</h3>
+<p>A snapshot of one device extends the lifetime of both sides of every
+conversation it contains, under an operator and a jurisdiction the other
+participants never selected. Message and blob retention limits describe the
+route; they do not describe copies at its ends. This contract does not give
+other participants a veto, because that would take a person's own history
+hostage to everyone they ever spoke with. It requires the opposite discipline:
+the choice is explicit, the terms are visible, and the UI says in plain words
+what the snapshot does for everyone in it (§7.4).</p>
+<h2 id="11-restore-authorization-and-the-absent-reset-path">11. Restore authorization and the absent reset path</h2>
+<p>Restore proves possession of the holder's backup access key. The operator
+verifies a proof and serves bytes; it holds nothing that opens a snapshot.</p>
+<p>This has a cost, and pretending otherwise is how backup products become
+custody: a lost access key means a permanently unreadable archive. There is no
+operator recourse, because every mechanism that would provide one — an escrowed
+key, a wrapped key the operator can unwrap, a support-driven reset, a
+knowledge-based challenge the operator can satisfy alone — makes the operator
+able to read the history it stores.</p>
+<p>A person who wants a recoverable fallback is choosing a different, disclosed
+arrangement: an enrolled recovery policy under
+<a href="../recovery/Recovery-Trustee.html">../recovery/Recovery-Trustee.md</a>, where a
+custodial single-provider profile states its custody class openly. A conforming
+backup UI may offer to protect the <em>access key</em> through such a policy, provided
+it says which trustees would then be able to reach the archive. What it may not
+do is present an operator-recoverable backup as sealed.</p>
+<h2 id="12-access-control-and-payment">12. Access control and payment</h2>
+<p>Operator access is separate from what a snapshot contains and from global
+identity. The operator may require a holder-scoped capability to upload, list,
+download, erase, or export. That credential proves only the declared service
+access.</p>
+<p>The operator publishes a <code>SeatOffer</code>. A frontend sells it only through a
+compatible signed <code>ChannelOffer</code>; product mapping, validation, platform fees,
+taxes, refunds, and operator settlement remain outside backup framing.</p>
+<pre><code class="language-text">UI/application -&gt; backup adapter: preflight or sealed-snapshot operation
+UI/application &lt;- backup adapter: PaymentRequired(component + offer)
+UI -&gt; billing channel: purchase approved product
+UI -&gt; billing broker: purchase evidence + holder-scoped access key
+UI &lt;- billing broker: SeatEntitlement
+UI/broker -&gt; operator control path: register entitlement or obtain capability
+UI/application -&gt; backup adapter: retry exact operation by snapshot reference
+UI/application &lt;- backup adapter: verified outcome and receipt
+</code></pre>
+<p>Payment refusal occurs in a lightweight preflight before a large upload or
+restore where the implementation permits it. A retry preserves the exact sealed
+bytes, reference, and logical snapshot. Store evidence and global identity
+never enter ordinary backup requests, object paths, or operator logs.</p>
+<p>End of payment follows the pinned terms: declared notice, then a grace period
+during which download, export, and erasure all remain available, then the
+declared post-grace behaviour. Silent deletion on a failed charge, and
+withholding export until arrears are paid, are both non-conforming. Payment
+cannot make a reference mismatch valid, strengthen restore authorization, or
+prove retention.</p>
+<h2 id="13-errors-and-state-machines">13. Errors and state machines</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Error</th>
+<th scope="col">Origin</th>
+<th scope="col">UI/application response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>Manifest/client</td>
+<td>Refuse and explain the required adapter</td>
+</tr>
+<tr>
+<td><code>invalid_endpoint</code></td>
+<td>Manifest/configuration</td>
+<td>Refuse; never silently rewrite</td>
+</tr>
+<tr>
+<td><code>terms_unavailable</code></td>
+<td>Manifest/operator</td>
+<td>Refuse enrolment; terms are a precondition</td>
+</tr>
+<tr>
+<td><code>terms_changed</code></td>
+<td>Operator</td>
+<td>Stop uploading, re-present terms, obtain consent</td>
+</tr>
+<tr>
+<td><code>terms_regression</code></td>
+<td>Client verification</td>
+<td>Refuse: new terms weaken a retained snapshot</td>
+</tr>
+<tr>
+<td><code>ineligible_content</code></td>
+<td>Application validation</td>
+<td>Reject before sealing; never upload seed material</td>
+</tr>
+<tr>
+<td><code>invalid_reference</code></td>
+<td>Application/adapter</td>
+<td>Reject noncanonical or mismatched reference</td>
+</tr>
+<tr>
+<td><code>snapshot_too_large</code></td>
+<td>Client/operator</td>
+<td>Reduce eligible set or choose a compatible operator</td>
+</tr>
+<tr>
+<td><code>unreachable</code></td>
+<td>Network/operator</td>
+<td>Retry with backoff; preserve the local queue</td>
+</tr>
+<tr>
+<td><code>auth_required</code></td>
+<td>Operator</td>
+<td>Complete holder-scoped authentication</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>Operator</td>
+<td>Present the referenced signed offer</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td>Operator/broker</td>
+<td>Refresh without leaking another credential</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>Operator</td>
+<td>Honour retry guidance and preserve sealed bytes</td>
+</tr>
+<tr>
+<td><code>quota_exceeded</code></td>
+<td>Operator</td>
+<td>Report; never silently drop older snapshots</td>
+</tr>
+<tr>
+<td><code>upload_rejected</code></td>
+<td>Operator</td>
+<td>Preserve the reason and try an allowed alternative</td>
+</tr>
+<tr>
+<td><code>access_proof_invalid</code></td>
+<td>Operator</td>
+<td>Fail closed; never offer an operator-side reset</td>
+</tr>
+<tr>
+<td><code>access_key_lost</code></td>
+<td>Client</td>
+<td>State that the archive is unreadable; do not imply recourse</td>
+</tr>
+<tr>
+<td><code>digest_mismatch</code></td>
+<td>Adapter</td>
+<td>Discard bytes, flag the operator, do not restore</td>
+</tr>
+<tr>
+<td><code>incomplete_snapshot</code></td>
+<td>Adapter</td>
+<td>Refuse restore; never merge partial state</td>
+</tr>
+<tr>
+<td><code>retention_expired</code></td>
+<td>Operator</td>
+<td>Report the gap; re-upload a fresh snapshot</td>
+</tr>
+<tr>
+<td><code>erasure_unconfirmed</code></td>
+<td>Operator</td>
+<td>Preserve uncertainty; do not claim destruction</td>
+</tr>
+<tr>
+<td><code>outcome_unknown</code></td>
+<td>Network/operator</td>
+<td>Reconcile by reference before resubmitting</td>
+</tr>
+<tr>
+<td><code>export_withheld</code></td>
+<td>Operator</td>
+<td>Report non-conformance; retain local evidence</td>
+</tr>
+</tbody>
+</table></div><p>Backup state:</p>
+<pre><code class="language-text">disabled
+  -&gt; consented (terms pinned)
+  -&gt; eligible_set_selected
+  -&gt; sealed
+  -&gt; addressed
+  -&gt; preflight
+  -&gt; auth_required? -&gt; authenticated
+  -&gt; payment_required? -&gt; entitled -&gt; authenticated
+  -&gt; submitted
+  -&gt; response_verified
+  -&gt; retained | rejected | unknown
+  -&gt; receipt_stored
+</code></pre>
+<p>Restore state:</p>
+<pre><code class="language-text">snapshot_listed
+  -&gt; access_proof_presented
+  -&gt; downloading
+  -&gt; size_bounded
+  -&gt; increments_composed
+  -&gt; snapshot_reference_verified
+  -&gt; authenticated_opening
+  -&gt; state_validated
+  -&gt; restored
+</code></pre>
+<p>Erasure state:</p>
+<pre><code class="language-text">erasure_requested
+  -&gt; acknowledged (deadline committed)
+  -&gt; receipt_stored
+  -&gt; completion_deadline_passed
+  -&gt; erased | erasure_unconfirmed
+</code></pre>
+<p>Unverified or partially composed snapshots never replace local state.</p>
+<h2 id="14-security-and-privacy-invariants">14. Security and privacy invariants</h2>
+<ol>
+<li><strong>Only sealed snapshots cross the boundary.</strong> Plaintext state, keys,
+contact labels, filenames, and group secrets never enter operator requests.</li>
+<li><strong>No seed material, ever.</strong> Recovery artifacts, trustee shares, and root
+secrets are ineligible for backup under this contract (§16.1).</li>
+<li><strong>The operator holds no opening capability.</strong> No escrowed key, no wrapped
+key it can unwrap, no operator-controlled reset.</li>
+<li><strong>Restore is possession, not identity.</strong> The access key is holder-held,
+separate from the identity signing key, and rotatable without touching it.</li>
+<li><strong>The reference covers sealed bytes.</strong> It is recomputed before upload and
+verified in full before any restore.</li>
+<li><strong>Sealing keys are fresh and holder-derived.</strong> Convergent or
+content-derived keying is prohibited; deduplication stays within one
+holder's snapshots.</li>
+<li><strong>Terms are pinned and bind forward.</strong> A retained snapshot keeps the terms
+it was accepted under.</li>
+<li><strong>Erasure claims are narrow.</strong> No receipt proves removal from recipients,
+observers, or copies outside the declared scope.</li>
+<li><strong>Unknown is not success.</strong> Lost responses are reconciled by reference
+rather than relabelled as retained or erased.</li>
+<li><strong>Backup is opt-in and visible.</strong> It never begins, resumes, widens its
+eligible set, or changes operator without an explicit choice.</li>
+<li><strong>The third-party cost is disclosed.</strong> The consent surface states that a
+snapshot extends this history's life for everyone in it, under a
+jurisdiction they did not choose.</li>
+<li><strong>Credentials are operator-scoped.</strong> One operator never receives
+another's entitlement, token, access proof, or authorization.</li>
+<li><strong>Billing is separate from content.</strong> Store evidence and global billing
+identifiers never enter snapshots, locators, or ordinary access logs.</li>
+<li><strong>Lapse is disclosed, never silent.</strong> Notice, grace, download, export, and
+erasure precede any post-grace deletion.</li>
+<li><strong>Export is unconditional.</strong> Retention is never leverage; export survives
+non-payment and operator shutdown.</li>
+<li><strong>A snapshot is not evidence and not group state.</strong> The operator
+adjudicates nothing, discloses nothing legible, and no backup operation
+authorizes or rolls back a notary transition.</li>
+</ol>
+<h2 id="15-versioning-and-conformance">15. Versioning and conformance</h2>
+<ul>
+<li><code>BackupProfile</code> changes when operation, reference, sealing, restore
+authorization, receipt, erasure, or error meaning changes.</li>
+<li><code>BackupImplementationProfile</code> changes when digest suite, sealing suite,
+increment model, wire mapping, authentication, or refusal mapping changes.</li>
+<li><code>ServiceManifest</code> changes when endpoints, capabilities, limits, terms
+digest, offers, entitlement issuers, or operator keys change.</li>
+<li><code>BackupTerms</code> changes are new terms, never edits: a new digest, applying to
+new snapshots after consent.</li>
+<li>New defaults apply to new enrolment, not silently to existing backups.</li>
+<li>Cross-platform fixtures cover sealing, reference construction, increment
+composition, terms pinning and regression refusal, restore proof, restore of
+a partial snapshot, erasure receipts and excluded scope, payment refusal and
+retry, lapse and grace, export, operator migration, and corrupt data.</li>
+<li>Paid and self-hosted operators of one implementation remain technically
+compatible; entitlement enforcement is a declared capability.</li>
+</ul>
+<h2 id="16-boundary-against-neighbouring-seats">16. Boundary against neighbouring seats</h2>
+<h3 id="161-identity-recovery-and-custody">16.1 Identity, recovery, and custody</h3>
+<p>This seat restores <strong>history</strong>, never <strong>identity</strong>. Seed material, recovery
+artifacts, and trustee shares are ineligible for a snapshot, and no backup
+operation can authorize a key, migrate authority, or satisfy a recovery policy.
+The root secret and the authority to act as a person belong to
+<a href="../identity/UI-Identity.html">../identity/UI-Identity.md</a> and
+<a href="../recovery/Recovery-Trustee.html">../recovery/Recovery-Trustee.md</a>, where the
+custodial cloud profile states its 1-of-1 custody class openly. Restoring a
+snapshot onto a device that has no identity yields readable-to-nobody bytes
+until that identity is recovered through those contracts.</p>
+<h3 id="162-message-carriage-and-blob-storage">16.2 Message carriage and blob storage</h3>
+<p>Carriage moves sealed messages; blob storage retains sealed attachments for
+live use; both declare their own retention. A backup is a device's archive of
+what it already holds. It may contain attachment ciphertext, references, or
+both, but it never becomes an attachment source for other participants and
+never substitutes for a blob route.</p>
+<h3 id="163-interface">16.3 Interface</h3>
+<p>The eligible set is bounded by <a href="../interface/Interface.html">../interface/Interface.md</a>
+§8: local state is encrypted at rest and excluded from cloud backup unless the
+person explicitly includes it. This contract does not relax that rule; it
+defines what an operator owes once the person has included something.</p>
+<h3 id="164-moderation">16.4 Moderation</h3>
+<p>A snapshot is not a report and not evidence. A backup operator receives no
+disclosure surface, adjudicates nothing, and cannot be asked to produce
+legible content because it holds none. Where a person chooses to disclose a
+message to an authority, that act happens under
+<a href="../moderation/Moderation.html">../moderation/Moderation.md</a> from the person's
+own device, whether or not the message came back from a snapshot.</p>
+<h2 id="17-concrete-implementation-profiles">17. Concrete implementation profiles</h2>
+<p>None exists yet. This abstract boundary is not executable until a profile
+pins:</p>
+<ul>
+<li>the digest suite, canonical sealed form, and increment composition rules;</li>
+<li>the sealing suite and the key derivation from holder-held input, including
+access-key rotation;</li>
+<li>the proof-of-possession construction for restore, erasure, and export;</li>
+<li>the wire framing for upload, list, download, erase, and export, with limits
+and indirection policy;</li>
+<li>erasure receipt semantics and what evidence an operator can honestly sign;</li>
+<li>the portable export container; and</li>
+<li>the payment-refusal mapping.</li>
+</ul>
+<p><em>Known gaps.</em> No implementation exists in any Onym client today, so nothing in
+this document is a claim about running code. Two gaps are design work, not
+profile detail: an incremental scheme that is verifiable against a
+whole-snapshot reference without leaking a change map to the operator, and a
+disclosure pattern for §10.4 that is honest without being unusable. Until a
+profile and fixtures exist, the interface rule stands unchanged — local state
+stays out of any cloud backup unless the person explicitly includes it.</p>
+<h2 id="18-acceptance-criteria">18. Acceptance criteria</h2>
+<p>The UI ↔ backup boundary is successfully separated when:</p>
+<ol>
+<li>a third-party UI can seal, upload, list, restore, erase, and export
+snapshots against a compatible operator using public profiles and tests;</li>
+<li>the official UI can use a compatible third-party operator after manifest
+and terms verification, without changes to application state handling;</li>
+<li>operators can be replaced, or a snapshot moved to the person's own storage,
+without re-sealing and without the outgoing operator's cooperation;</li>
+<li>sealed bytes, references, and receipts do not leak wire objects into view
+or domain APIs;</li>
+<li>plaintext state, sealing keys, access keys, and seed material never reach
+an operator;</li>
+<li>restore succeeds only with holder key possession, and every reset path an
+implementation could offer is provably absent;</li>
+<li>a snapshot's pinned terms are checkable after the fact, and an attempt to
+apply weaker terms to it is refused by fixtures rather than by trust;</li>
+<li>erasure produces a signed receipt whose excluded scope is explicit, and an
+unconfirmed erasure is never displayed as destruction;</li>
+<li>lapse, grace, export, and post-grace behaviour follow the pinned terms
+under test, including while unpaid;</li>
+<li>the consent surface states the retention, jurisdiction, and third-party
+consequences before enrolment, verified by fixture rather than by review;
+and</li>
+<li>a second retention technology can implement the abstract suite without
+pretending to be the first.</li>
+</ol>
+<h2 id="19-justification-in-one-sentence">19. Justification in one sentence</h2>
+<blockquote>
+<p>Separating the UI from device backup lets people keep a history that
+survives a lost phone without handing anyone the ability to read it, and
+makes the terms of that durability — how long, where, under whose law, erased
+how, exported how — a published part of the contract rather than a setting an
+operator can restate once the data has already arrived.</p>
+</blockquote>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/backup-seat/backup/UI-Backup.md">latest version on backup-seat →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="../../remediation.html">Remediation plan</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as a sihtasutus under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

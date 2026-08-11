@@ -44,21 +44,28 @@ accepts money.
 | SYS-04 | `onym-system` | Reconcile individual defaults, replaceable read/submit providers, and group-governed notary migration | corrected interface text and migration fixtures | before conformance claims |
 | SYS-05 | `onym-system` | Define route-level incident coordination and the billing broker's marketplace duties | accountable assembler/incident profile and broker insolvency, audit, complaint, and exit rules | before commercial channel launch |
 | SYS-06 | `onym-system` | Merge or remove the arbitration dependency on the unmerged bank boundary; harmonize the Foundation rule across whitepaper/profile/examples | no broken main-branch link; one Foundation formula; link and constitutional-constant CI | before next whitepaper draft |
-| SYS-07 | `onym-system` | Draft the device backup seat contract: sealed-only storage, declared retention and erase deadlines, an export format, sub-processor and jurisdiction disclosure, breach notice, and what happens to the data when payment stops | contract document merged, with conformance fixtures for restore and for honouring an erase request | before paid backup listings or an operator grant |
-| SYS-08 | `onym-system` | Draft the seed custody seat contract: material that cannot reconstitute the identity by itself, a notice-and-delay return path, compulsion and jurisdiction disclosure, and its boundary against the recovery trustee | contract document merged, plus adversarial review showing a custodian alone cannot sign as the user | before paid custody listings or an operator grant |
+| SYS-07 | `onym-system` | Merge the device backup seat contract — proposed in [onym-system#24](https://github.com/onymchat/onym-system/pull/24) — and add the first implementation profile it lacks | contract merged; a profile pinning the digest, sealing, and proof-of-possession suites, with fixtures for restore, terms regression, erasure receipts, lapse, and export | before paid backup listings or an operator grant |
+| SYS-08 | `onym-system` | Add a **sealed single-holder custody profile** under the Recovery Trustee seat: one holder, material it cannot unwrap alone, notice-and-delay release, published beside the existing custodial cloud profile rather than replacing it | profile merged with an adversarial review showing the holder alone cannot recover the artifact, and the cloud profile's custody class restated in the same commit | before the Foundation funds or lists a single-holder custody operator |
 
-SYS-07 and SYS-08 record two seats the Foundation has published on the seats
-page — device backup and seed custody — before any contract document for them
-exists upstream. Publishing a boundary is not funding a seat: neither is
-listed as specified, neither can carry a conformance claim, both gates hold
-paid listings and operator grants until the contracts merge, and step 8 of the
-sequence below — broadened in this change to cover every layer, since a
-service-market seat is no more exempt than an application one — still puts
-protocol-kernel and exit work ahead of new seats in the spending order. The
-boundary is published first because both seats create
-durable copies of what the network otherwise keeps short-lived or on one
-device, and that cost belongs in the public record before an operator prices
-it.
+SYS-07 and SYS-08 record where the two durable-copy arrangements actually
+stand, which is not where an earlier version of this ledger put them. Device
+backup is a seat, and its contract is now proposed upstream rather than merely
+described here. Seed custody is **not** a seat: it is how the Recovery Trustee
+seat's profiles differ, and one of them —
+`recovery/Recovery-Trustee-Cloud.md` — already publishes a 1-of-1 custodial
+holder whose operator can technically recover the artifact it stores. The
+missing piece upstream is therefore narrower than a seat: a sealed
+single-holder profile, published next to the custodial one so a person
+choosing one holder can see which they are choosing.
+
+Publishing a boundary is still not funding a seat: neither gate opens until
+the upstream documents merge, and step 8 of the sequence below — broadened in
+the previous change to cover every layer, since a service-market seat is no
+more exempt than an application one — still puts protocol-kernel and exit work
+ahead of new seats in the spending order. The boundary is published first
+because both arrangements create durable copies of what the network otherwise
+keeps short-lived or on one device, and that cost belongs in the public record
+before an operator prices it.
 
 ## Founding governance work
 
