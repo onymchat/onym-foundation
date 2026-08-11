@@ -44,6 +44,21 @@ accepts money.
 | SYS-04 | `onym-system` | Reconcile individual defaults, replaceable read/submit providers, and group-governed notary migration | corrected interface text and migration fixtures | before conformance claims |
 | SYS-05 | `onym-system` | Define route-level incident coordination and the billing broker's marketplace duties | accountable assembler/incident profile and broker insolvency, audit, complaint, and exit rules | before commercial channel launch |
 | SYS-06 | `onym-system` | Merge or remove the arbitration dependency on the unmerged bank boundary; harmonize the Foundation rule across whitepaper/profile/examples | no broken main-branch link; one Foundation formula; link and constitutional-constant CI | before next whitepaper draft |
+| SYS-07 | `onym-system` | Draft the device backup seat contract: sealed-only storage, declared retention and erase deadlines, an export format, sub-processor and jurisdiction disclosure, breach notice, and what happens to the data when payment stops | contract document merged, with conformance fixtures for restore and for honouring an erase request | before paid backup listings or an operator grant |
+| SYS-08 | `onym-system` | Draft the seed custody seat contract: material that cannot reconstitute the identity by itself, a notice-and-delay return path, compulsion and jurisdiction disclosure, and its boundary against the recovery trustee | contract document merged, plus adversarial review showing a custodian alone cannot sign as the user | before paid custody listings or an operator grant |
+
+SYS-07 and SYS-08 record two seats the Foundation has published on the seats
+page — device backup and seed custody — before any contract document for them
+exists upstream. Publishing a boundary is not funding a seat: neither is
+listed as specified, neither can carry a conformance claim, both gates hold
+paid listings and operator grants until the contracts merge, and step 8 of the
+sequence below — broadened in this change to cover every layer, since a
+service-market seat is no more exempt than an application one — still puts
+protocol-kernel and exit work ahead of new seats in the spending order. The
+boundary is published first because both seats create
+durable copies of what the network otherwise keeps short-lived or on one
+device, and that cost belongs in the public record before an operator prices
+it.
 
 ## Founding governance work
 
@@ -94,5 +109,8 @@ The Foundation must remain non-operational if any of the following is true:
 5. Publish budget, custody, conflicts, and control-group registers.
 6. Accept contribution conversions only after every stop condition clears.
 7. Run the first class elections within the machine-readable deadline.
-8. Fund the protocol-kernel and exit work before expanding new application or
-   organizational seats.
+8. Fund the protocol-kernel and exit work before expanding new seats at any
+   layer — service-market seats included. The earlier wording covered only
+   application and organizational seats, which left the service market as an
+   unintended exception to a priority that has nothing to do with which layer
+   a seat sits in.
