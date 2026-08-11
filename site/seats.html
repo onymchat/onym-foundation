@@ -61,7 +61,7 @@
 
       <div class="grid4 mb24">
         <div class="card"><h3>Protocol kernel</h3><p class="micro mt8">Identity, interface, message, blob, and notary boundaries. Replacement requires wire compatibility and, for shared state, governed migration.</p></div>
-        <div class="card"><h3>Service market</h3><p class="micro mt8">Recovery, custody, backup, Discovery, audit, and arbitration. Signatures attribute claims; they do not manufacture competence or truth, and holding a copy of something is never the same as holding the person.</p></div>
+        <div class="card"><h3>Service market</h3><p class="micro mt8">Recovery, seed custody, device backup, Discovery, audit, and arbitration. Signatures attribute claims; they do not manufacture competence or truth, and holding a copy of something is never the same as holding the person.</p></div>
         <div class="card"><h3>Application profiles</h3><p class="micro mt8">Charity, banking, distribution, and acquisition. Portability does not override regulation, custody, or domain liability.</p></div>
         <div class="card"><h3>Organizational governance</h3><p class="micro mt8">Sponsorship and recruitment. Signed records support accountability but do not replace legal appointment, labor law, or fiduciary duty.</p></div>
       </div>
@@ -132,20 +132,20 @@
               <p><b>Earns:</b> finite milestone fees per accepted order · <b>Fits:</b> recruiters, talent networks, guilds</p>
               <p class="micro"><a href="contracts/recruitment/Recruitment.html">Read the contract →</a></p>
               <a class="cta" href="mailto:lead@onym.app" data-seat="Recruitment">Register interest →</a></div>
-            <div class="tile"><div class="tile-head"><h3>Recovery trustee</h3><span class="tag">draft spec</span></div>
+            <div class="tile" id="recovery-trustee"><div class="tile-head"><h3>Recovery trustee</h3><span class="tag">draft spec</span></div>
               <p>Holds only the authority the identity holder enrolled — helps satisfy a recovery policy without becoming the identity.</p>
               <p><b>Earns:</b> the fees its published recovery offers declare · <b>Fits:</b> custody services, hardware vendors, organizations, trusted people</p>
-              <p class="micro"><a href="contracts/recovery/Recovery-Trustee.html">Read the contract →</a></p>
+              <p class="micro">Holds no seed material: a threshold of enrolled trustees is the safer arrangement wherever it will do, and the one to compare against <a href="#seed-custody">seed custody</a> before choosing a single holder. <a href="contracts/recovery/Recovery-Trustee.html">Read the contract →</a></p>
               <a class="cta" href="mailto:lead@onym.app" data-seat="Recovery trustee">Register interest →</a></div>
             <div class="tile"><div class="tile-head"><h3>Device backup</h3><span class="tag">no contract yet</span></div>
               <p>Keeps a sealed copy of one person's messages and attachments so a lost device is not a lost history — and declares before the first byte how long it keeps them, when it erases them, and how it hands them back.</p>
               <p><b>Earns:</b> storage plans and prepaid quotas priced by bytes and retention — never by reading, indexing, or analyzing what it holds · <b>Fits:</b> hosting providers, co-ops, backup specialists, self-hosters</p>
               <p class="micro">No contract document exists yet: the boundary below is the Foundation's opening position, not a specification. A backup also outlives the retention limits other people rely on — see <a href="#durability">what backup and custody cost everyone</a>.</p>
               <a class="cta" href="mailto:lead@onym.app" data-seat="Device backup">Register interest →</a></div>
-            <div class="tile"><div class="tile-head"><h3>Seed custody</h3><span class="tag">no contract yet</span></div>
+            <div class="tile" id="seed-custody"><div class="tile-head"><h3>Seed custody</h3><span class="tag">no contract yet</span></div>
               <p>Holds a sealed backup of the identity seed for someone who wants one fallback rather than a quorum — material it cannot open without a factor the person keeps, returned only on a published notice-and-delay path.</p>
               <p><b>Earns:</b> published custody fees per identity held, with the return path priced before enrolment · <b>Fits:</b> custody services, hardware vendors, law firms, banks, organizations holding for their own members</p>
-              <p class="micro">Not the recovery trustee seat, which helps satisfy a recovery policy without holding seed material at all — where a threshold policy will do, it is the safer choice. No contract document exists yet, and this seat has a price for the person who chooses it — see <a href="#durability">what backup and custody cost everyone</a>.</p>
+              <p class="micro">Not the <a href="#recovery-trustee">recovery trustee</a> seat, which helps satisfy a recovery policy without holding seed material at all — where a threshold policy will do, it is the safer choice. No contract document exists yet, and this seat has a price for the person who chooses it — see <a href="#durability">what backup and custody cost everyone</a>.</p>
               <a class="cta" href="mailto:lead@onym.app" data-seat="Seed custody">Register interest →</a></div>
           </div>
 
@@ -232,7 +232,7 @@
       <div class="grid3">
         <div class="card"><h3>Backups outlive the sender's expectation</h3><p class="micro mt8">Message carriage and media storage can promise short retention; a recipient's backup quietly extends it for both sides of every conversation. Deletion stops at the edge of other people's archives, and the sender is never asked. Anyone reading a retention promise should read it as covering the route, not the copies people keep at the ends of it.</p></div>
         <div class="card"><h3>Custody concentrates compulsion</h3><p class="micro mt8">Constrained seed material is still material someone can be ordered, breached, or pressured to produce, in a jurisdiction the person chose once and may not revisit. The exposure exists from enrolment, not from use, and the identity's safety now depends on a stranger's operational security as well as the holder's.</p></div>
-        <div class="card"><h3>Why it is written here</h3><p class="micro mt8">Durability and secrecy pull against each other, and no operator can be trusted to disclose that tension in its own pricing page. The Foundation would fund grants and audits for these seats, so the cost belongs in its public record beside the capability — the same rule applied to the moderation seat above.</p></div>
+        <div class="card"><h3>Why it is written here</h3><p class="micro mt8">Durability and secrecy pull against each other, and no operator can be trusted to disclose that tension in its own pricing page. The Foundation would fund grants and audits for these seats once their contracts exist, so the cost belongs in its public record beside the capability — the same rule applied to the moderation seat above.</p></div>
       </div>
       <p class="fnote fncenter">The bounds, stated exactly: neither seat changes what a courier can read or what encryption protects in transit — they change how long a copy exists and who else can be compelled to produce it. Custody gives an operator no ability to act as the person unless the user-held factor is handed over too; a design where it would is outside this seat. And a backup is not a recovery method: it restores history, never the identity, which is what the <a href="contracts/recovery/Recovery-Trustee.html">recovery trustee</a> seat exists for.</p>
     </div>
