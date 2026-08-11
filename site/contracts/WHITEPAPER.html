@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../index.html">← Foundation</a> · <a href="../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">The system model</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/d78165fbfc364656b4bcb508264fa5d9a3d02234/WHITEPAPER.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/WHITEPAPER.md">source on GitHub →</a></div>
     </header>
     <aside class="note mt20"><b>Consistency notice:</b> Known draft conflict: this whitepaper states a 4% ordinary endowment rule, while the Foundation proposal selects 5% ordinary and 7% exceptional limits. No rule is in force; the upstream drafts must be harmonized before the Foundation accepts money. <a href="../remediation.html">Remediation plan →</a></aside>
     <div class="doc">
@@ -316,6 +316,11 @@ different.</p>
 <td>Media/blob server</td>
 <td>Sender, group, or client policy</td>
 <td>Per object or configuration epoch</td>
+</tr>
+<tr>
+<td>Device backup operator</td>
+<td>Individual, opt-in</td>
+<td>Per enrolment under pinned terms; export, re-enrol, or erase at any time</td>
 </tr>
 <tr>
 <td>Transaction relayer</td>
@@ -1541,6 +1546,12 @@ recipient-disclosed evidence, notice and response windows, reasoned
 expiring verdicts, and interface-executed device marks
 (<a href="moderation/Moderation.html">moderation/Moderation.md</a>), with Apple
 DeviceCheck and Google Play Integrity device recall profiles.</li>
+<li>A device-backup seat contract for sealed snapshots of a device's own history,
+with retention, erasure, jurisdiction, sub-processor, export, and
+end-of-payment terms pinned at acceptance and binding forward only, no
+operator key or reset path, and the third-party retention cost disclosed
+before enrolment (<a href="backup/UI-Backup.html">backup/UI-Backup.md</a>). No
+implementation profile exists yet.</li>
 <li>A non-custodial payment capability profile and additional financial-services
 application profiles.</li>
 <li>Group-state migration between notary deployments.</li>

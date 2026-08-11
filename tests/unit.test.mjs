@@ -165,4 +165,21 @@ test('moderation pages distinguish the finalized Apple surface from upstream dra
   assert.match(html, /<span class="tag">draft<\/span>/);
   assert.match(html, /<span class="tag">Apple case surface finalized<\/span>/);
   assert.match(html, /<span class="tag">reference implementation<\/span>/);
+  assert.match(html, /<span class="tag">Apple path in production<\/span>/);
+});
+
+// Deployment status differs per platform profile, and the difference is the
+// whole point: a reader must not carry the Apple profile's production status
+// across to the Android one, which nobody has deployed.
+test('moderation profiles state deployment per platform, never collectively', () => {
+  const recall = 'moderation/Moderation-Device-Recall.md';
+  const html = pageHtml(recall, { status: 'draft' }, DOCS[recall], '<p>body</p>', 'Device recall');
+  assert.match(html, /<span class="tag">Android path not deployed<\/span>/);
+  assert.ok(!/in production/.test(html), 'the undeployed profile must not inherit a production claim');
+
+  const seats = fs.readFileSync('site/seats.html', 'utf8');
+  assert.ok(!/No production moderation authority/.test(seats),
+    'seats page must not deny a deployment that exists');
+  assert.ok(/live on iOS/.test(seats) && /Android device-recall path is draft/.test(seats),
+    'seats page must state the live platform and the undeployed one separately');
 });

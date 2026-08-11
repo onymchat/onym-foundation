@@ -43,7 +43,7 @@
     <p class="mono docback"><a href="../index.html">← Foundation</a> · <a href="../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Repository guide</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/d78165fbfc364656b4bcb508264fa5d9a3d02234/README.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/README.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-system">Onym System</h1>
@@ -63,7 +63,8 @@ zero-knowledge proofs without storing conversations or a readable member
 list. <strong>Association registries</strong> attach human-readable names as revocable,
 consent-bound claims — the name is never the identity. Around this core, an
 open set of service and institutional seats (banking, charity, audit,
-arbitration, discovery, growth, sponsorship, recruitment) can be operated by
+arbitration, discovery, growth, sponsorship, recruitment, device backup) can be
+operated by
 anyone, and each earns only when a user or group actually selects it. The
 governing rule for every seat:</p>
 <blockquote>
@@ -141,6 +142,10 @@ it may earn only when a user or group chooses it for that role.</p>
 <tr>
 <td><a href="moderation/Moderation.html">moderation/</a></td>
 <td>Consent-bound moderation authorities whose signed verdicts interfaces execute as device marks (<a href="moderation/Moderation-DeviceCheck.html">DeviceCheck</a>, <a href="moderation/Moderation-Device-Recall.html">device recall</a> profiles)</td>
+</tr>
+<tr>
+<td><a href="backup/UI-Backup.html">backup/</a></td>
+<td>Device backup boundary — sealed snapshots retained under terms pinned at acceptance, with no operator key and no reset path (no implementation profile yet)</td>
 </tr>
 </tbody>
 </table></div><p>In review, not yet merged: a <strong>bank seat</strong> (accounts, custody classes, and
