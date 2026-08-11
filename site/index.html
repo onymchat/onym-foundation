@@ -85,7 +85,7 @@
             <h3>Open and unaudited</h3>
             <ul>
               <li>The system is alpha-grade and has had no independent audit. Identity rotation, forward-secret messaging, and conformance fixtures are explicitly open work.</li>
-              <li>Banking and naming seats are proposals in review. Metadata-exposure assumptions are documented in the whitepaper's threat model.</li>
+              <li>Banking and naming seats are proposals in review. The device backup and seed custody seats have no contract document at all yet — only a published boundary. Metadata-exposure assumptions are documented in the whitepaper's threat model.</li>
             </ul>
           </div>
         </div>
@@ -108,7 +108,7 @@
       <figure class="has-alt">
         <svg class="diagram seat-wheel" viewBox="0 0 900 900" role="group" aria-labelledby="seat-wheel-title seat-wheel-desc">
           <title id="seat-wheel-title">The complete seat economy</title>
-          <desc id="seat-wheel-desc">Fifteen open roles and one open-ended proposal slot form a circle around the user; the newest seat, the moderation authority, is listed with the seat contracts below. Each role is selected by the person, group, buyer, or legal authority entitled to choose it.</desc>
+          <desc id="seat-wheel-desc">Fifteen open roles and one open-ended proposal slot form a circle around the user; three newer seats — the moderation authority, device backup, and seed custody — are listed below the wheel rather than on it. Each role is selected by the person, group, buyer, or legal authority entitled to choose it.</desc>
           <circle class="seat-orbit" cx="450" cy="450" r="370"/>
           <g class="seat-spokes">
             <line x1="450" y1="450" x2="450" y2="80"/><line x1="450" y1="450" x2="591.6" y2="108.2"/>
@@ -219,7 +219,7 @@
           <li class="tile"><div class="tile-head"><h3>Audit</h3></div><p>Earns engagement fees. <a href="contracts/audit/Audit.html">Contract →</a></p></li>
           <li class="tile"><div class="tile-head"><h3>Discovery</h3></div><p>Finds compatible instances across every seat. <a href="contracts/discovery/Discovery.html">Contract →</a></p></li>
           <li class="tile"><div class="tile-head"><h3>Moderation</h3></div><p>Earns per report adjudicated, never per ban. <a href="contracts/moderation/Moderation.html">Contract →</a></p></li>
-          <li class="tile"><div class="tile-head"><h3>+ 7 more seats</h3></div><p>Each earning when chosen. <a href="seats.html">All seats →</a></p></li>
+          <li class="tile"><div class="tile-head"><h3>+ 9 more seats</h3></div><p>Each earning when chosen. <a href="seats.html">All seats →</a></p></li>
         </ul>
         <figcaption class="mono">Every role is open to implementation. Authority and payment follow the actual chooser.</figcaption>
       </figure>
@@ -240,7 +240,8 @@
         <a href="contracts/moderation/Moderation.html">Moderation authority</a> ·
         <a href="contracts/bank/UI-Bank.html">Banking</a><span class="tag">in review</span> ·
         <a href="contracts/association/Association-Naming.html">Naming</a><span class="tag">in review</span>.
-        <a href="contracts/identity/UI-Identity.html">Identity</a> is not a seat — it stays with the person.</p>
+        <a href="contracts/identity/UI-Identity.html">Identity</a> is not a seat — it stays with the person.
+        <a href="seats.html#durability">Device backup and seed custody</a> have no contract document yet; their boundary and their cost are published on the seats page.</p>
     </div>
   </section>
 
