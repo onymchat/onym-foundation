@@ -7,7 +7,6 @@ export const REPO = 'onymchat/onym-system';
 
 export const REFS = {
   main: '0fcdd2d66a8bcb02c418349787d768e3fda20fa0',
-  'moderation-apple-surface': '53e281ce0c4209c5443589a293328abdc7f24064',
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
@@ -46,9 +45,9 @@ export const DOCS = {
   'bank/UI-Bank-Stellar.md':            { ref: 'worktree-bank-boundary', review: true },
   'association/Association-Naming.md':  { ref: 'worktree-association-naming', seat: 'Naming & credentials', review: true },
   'backup/UI-Backup.md':                { ref: 'main', seat: 'Device backup', tags: ['no implementation profile yet'] },
-  'moderation/Moderation.md':           { ref: 'moderation-apple-surface', latest: 'main', seat: 'Moderation authority', tags: ['Apple case surface finalized', 'reference implementation'] },
-  'moderation/Moderation-DeviceCheck.md':   { ref: 'moderation-apple-surface', latest: 'main', tags: ['Apple case surface finalized', 'reference implementation'] },
-  'moderation/Moderation-Device-Recall.md': { ref: 'moderation-apple-surface', latest: 'main' },
+  'moderation/Moderation.md':           { ref: 'main', seat: 'Moderation authority', tags: ['Apple case surface finalized', 'reference implementation'] },
+  'moderation/Moderation-DeviceCheck.md':   { ref: 'main', tags: ['Apple case surface finalized', 'reference implementation'] },
+  'moderation/Moderation-Device-Recall.md': { ref: 'main' },
 };
 
 export const SITE_ORIGIN = 'https://onym.foundation';

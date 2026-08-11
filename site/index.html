@@ -252,10 +252,10 @@
           <p class="number">03</p>
           <h2>User safety without a master switch</h2>
         </div>
-        <p class="slede">Encrypted does not mean lawless. The moderation seat lets users report abuse — child sexual abuse material, credible violence, unsolicited pornography — to an independent authority they accepted when they joined, and lets apps keep banned devices out. The powers stay separate: the authority judges, the app enforces, and neither can read anyone's messages. <a href="contracts/moderation/Moderation.html">The moderation contract →</a><br><span class="micro">The Apple case and DeviceCheck contract surface is finalized, with a merged Rust <a href="https://github.com/onymchat/onym-moderation">reference implementation →</a> No production moderation authority or DeviceCheck enforcement deployment operates yet.</span></p>
+        <p class="slede">Encrypted does not mean lawless. The moderation seat lets users report abuse — child sexual abuse material, credible violence, unsolicited pornography — to an independent authority they accepted when they joined, and lets apps keep banned devices out. The powers stay separate: the authority judges, the app enforces, and neither can reach a message nobody disclosed. What an authority may accept — including photographs — how long it keeps it, when it deletes it, and which classes it preserves and refers to the state are published terms, pinned when a user consents rather than restated later. <a href="contracts/moderation/Moderation.html">The moderation contract →</a><br><span class="micro">The Apple case and DeviceCheck contract surface is finalized, with a merged Rust <a href="https://github.com/onymchat/onym-moderation">reference implementation →</a> No production moderation authority or DeviceCheck enforcement deployment operates yet.</span></p>
       </div>
       <div class="grid4">
-        <div class="card"><p class="number">01 · REPORT</p><h3>You disclose what you received</h3><p class="micro">Reporting shares the specific offending message from your own device, with cryptographic proof of who sent it. Nothing else leaves your phone — nobody scans anything.</p></div>
+        <div class="card"><p class="number">01 · REPORT</p><h3>You disclose what you received</h3><p class="micro">Reporting shares the specific offending message — text, or a photograph where the authority accepts them — from your own device, with cryptographic proof of who sent it. Nothing else leaves your phone: no mailbox, no undisclosed message, and nobody scans anything.</p></div>
         <div class="card"><p class="number">02 · CASE</p><h3>A case, not a black box</h3><p class="micro">The accused is notified, sees the evidence and the exact rule they agreed to at onboarding, and gets a response window before any decision.</p></div>
         <div class="card"><p class="number">03 · VERDICT</p><h3>Signed, reasoned, expiring</h3><p class="micro">Bans carry written reasons, published durations, and an appeal path — including for a device's next owner. An authority that goes silent means dismissal, never a freeze.</p></div>
         <div class="card"><p class="number">04 · ENFORCEMENT</p><h3>The app executes, mechanically</h3><p class="micro">A banned device stops working in apps that adopted the authority — marked via Apple DeviceCheck or Google Play device recall, so reinstalling doesn't reset it. The open protocol itself is untouched.</p></div>
@@ -263,7 +263,7 @@
       <div class="grid3">
         <div class="card"><p class="t16m">No scanning, no backdoors — evidence exists only when a recipient chooses to disclose it.</p></div>
         <div class="card"><p class="t16m">Judges never profit from convictions — authorities earn per report adjudicated, never per ban or per case opened.</p></div>
-        <div class="card"><p class="t16m">Consent precedes the case — the rules you can be judged by are the rules you signed.</p></div>
+        <div class="card"><p class="t16m">Consent precedes the case — the rules you can be judged by are the rules you signed, resolved from the manifest you pinned rather than today's.</p></div>
       </div>
     </div>
   </section>
