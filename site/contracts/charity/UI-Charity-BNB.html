@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Charity ↔ BNB Chain (EVM) Implementation Profile — Onym Foundation</title>
+<meta name="description" content="Onym Charity ↔ BNB Chain (EVM) Implementation Profile — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/charity/UI-Charity-BNB.html">
+<meta property="og:title" content="Onym Charity ↔ BNB Chain (EVM) Implementation Profile — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/charity/UI-Charity-BNB.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e0e10">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">profile merged — no code</span><span class="tag">15.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/charity/UI-Charity-BNB.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-charity-bnb-chain-evm-implementation-profile">Onym Charity ↔ BNB Chain (EVM) Implementation Profile</h1>
+<p><strong>Implementation profile draft 0.1 — 15 August 2026</strong></p>
+<blockquote>
+<p>This profile maps the notary and eligibility bindings of the
+technology-neutral Onym charity boundary onto BNB Smart Chain: one
+non-upgradeable Solidity anchor contract per charity deployment, PLONK
+eligibility evidence over BN254, and the Onym relayer operating as the
+declared submitting operator. It deliberately maps <strong>no</strong> financial binding:
+custody, settlement, and disbursement stay with the financial provider under
+its own legal authority.</p>
+</blockquote>
+<p>This document is a concrete implementation profile for
+<a href="../charity/Charity.html">Charity.md</a>. The abstract boundary remains authoritative for
+object meaning and trust semantics; <a href="../charity/UI-Charity.html">UI-Charity.md</a> remains
+authoritative for what the user application shows and refuses. The
+Stellar/Soroban charity binding is a separate, unwritten sibling profile.
+UI-Charity.md §8.3 states, for Soroban, that &quot;uses X&quot; is an implementation
+choice and not evidence of conformance until the implementation profile
+exists and passes conformance tests; this document adopts the same
+principle for BNB — the attribution is to the principle, since §8.3
+itself addresses only the Soroban case.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>accepted decisions</strong>, settled for this profile;</li>
+<li><strong>profile requirements</strong> (MUST / MUST NOT / SHOULD / MAY, per RFC 2119
+usage), required for a complete conforming implementation;</li>
+<li><strong>open questions</strong>, explicitly undecided, each with its decision criteria;
+and</li>
+<li><strong>gaps</strong>, where no code exists. As of this draft the entire charity path is
+unimplemented on every chain: <code>onym-contracts</code> contains no charity
+contracts, no charity circuits exist, and <code>onym-relayer</code> has no charity
+operations.</li>
+</ul>
+<h2 id="1-scope-where-the-notary-boundary-ends">1. Scope: where the notary boundary ends</h2>
+<p>This profile implements, on an EVM rail, exactly the notary uses that
+UI-Charity.md §8.1 scopes the notary port to:</p>
+<ol>
+<li>campaign status and revision commitments;</li>
+<li>donation and disbursement receipt commitments;</li>
+<li>aggregate fund-flow state commitments;</li>
+<li>nullifier uniqueness within a campaign and epoch;</li>
+<li>inspectable, authorized policy and status changes; and</li>
+<li>public audit/report commitments.</li>
+</ol>
+<p>One mapping in item 5 is indirect and worth naming: UI-Charity.md §8.1
+speaks of policy <em>or destination</em> changes, and this contract has no
+dedicated destination record. A destination change is a material campaign
+update under Charity.md §6.3, so it MUST surface as a new campaign
+revision, whose commitment <code>advanceCampaignRevision</code> anchors — that anchor
+is what makes the destination change inspectable here.</p>
+<p>It additionally implements one <code>eligibilityBindings</code> entry: verification of
+eligibility presentations under PLONK/BN254, atomically coupled to nullifier
+consumption (§7).</p>
+<p><strong>Out of scope, deliberately.</strong> The contract holds no funds, mints no assets,
+and executes no transfers. It MUST NOT be extended with payable entrypoints,
+token balances, escrow, or disbursement logic under this profile ID. The
+financial provider quotes, settles, refunds, and disburses under its own
+legal and operational authority (Charity.md §1); what this contract records
+about a settlement is a <strong>commitment to a signed off-chain receipt</strong>, which
+proves the operator anchored those exact bytes at that time — never that
+money moved, and never that aid arrived. A future on-chain settlement rail
+(e.g. a stablecoin disbursement binding) is a separate <code>financialBindings</code>
+profile with its own finality, refund, and reversal mapping and a different
+profile ID; nothing in this document defines it.</p>
+<p>Two write authorities exist, and the contract keeps them distinct:</p>
+<ul>
+<li><strong>Operator-attested writes</strong> (campaign lifecycle, receipt and report
+anchors) are gated on the operator admin address. They are tamper-evident
+operator statements: the chain proves <em>who said it and when</em>, not that it
+is true.</li>
+<li><strong>Proof-authorized writes</strong> (aid-claim anchoring) are sender-agnostic. Any
+account may submit them; validity comes from the eligibility proof and the
+contract's own state, never from <code>msg.sender</code>.</li>
+</ul>
+<h2 id="2-conformance-declaration">2. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept (Charity.md / UI-Charity.md)</th>
+<th scope="col">BNB/EVM mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Notary binding (<code>CharityDeployment.notaryBindings[]</code>)</td>
+<td>One deployed non-upgradeable <code>cha-anchor</code> contract instance</td>
+</tr>
+<tr>
+<td>Eligibility binding (<code>CharityDeployment.eligibilityBindings[]</code>)</td>
+<td>PLONK/BN254 verification inside the same instance</td>
+</tr>
+<tr>
+<td>Canonical system</td>
+<td>BNB Smart Chain network selected by EIP-155 chain ID</td>
+</tr>
+<tr>
+<td>Campaign revision commitment</td>
+<td><code>bytes32</code> keccak-256 digest of the canonical signed campaign record</td>
+</tr>
+<tr>
+<td>Receipt / report commitment</td>
+<td><code>bytes32</code> keccak-256 digest of the canonical signed off-chain object</td>
+</tr>
+<tr>
+<td>Claim reference</td>
+<td><code>bytes32</code> keccak-256 digest of the canonical authorized <code>AidClaim</code></td>
+</tr>
+<tr>
+<td>Scoped nullifier</td>
+<td>BN254 field element, campaign- and epoch-scoped (§6)</td>
+</tr>
+<tr>
+<td>Recipient commitment</td>
+<td><code>bytes32</code> randomized, claim-scoped commitment (§8)</td>
+</tr>
+<tr>
+<td>Implementation identity</td>
+<td>Chain ID + contract address + deployed runtime code hash + profile/release</td>
+</tr>
+<tr>
+<td>Submission provider</td>
+<td>Gas-paying <code>onym-relayer</code> HTTP service (EVM backend)</td>
+</tr>
+<tr>
+<td>Read provider</td>
+<td>BNB JSON-RPC / indexer; relayer proxy permitted but never canonical</td>
+</tr>
+<tr>
+<td>Submission reference</td>
+<td>EVM transaction hash (provisional) + stable operation ID</td>
+</tr>
+<tr>
+<td>Finality</td>
+<td>BSC fast-finality checkpoint (<code>finalized</code> block tag)</td>
+</tr>
+<tr>
+<td>Maintenance</td>
+<td>None; EVM state persists without rent</td>
+</tr>
+<tr>
+<td>Campaign machine (Charity.md §8.1)</td>
+<td><code>registerCampaign</code> = draft→active; <code>setCampaignStatus</code> = the remaining edges (§4)</td>
+</tr>
+<tr>
+<td>Aid-claim machine (Charity.md §8.3)</td>
+<td><code>prepared</code>/<code>submitted</code>/<code>eligibility-verified</code> collapse into the atomic <code>anchorAidClaim</code> write, whose anchor is the on-chain evidence of <code>eligibility-verified</code>; <code>approved</code> is an <strong>off-chain operator state</strong> with no contract record — its evidence is the operator's signed decision leading to the disbursement receipt; <code>disbursed</code> = <code>DisbursementAnchored</code>. The two anchors are what lets a UI show approval and disbursement as separate states (UI-Charity.md §5.6)</td>
+</tr>
+</tbody>
+</table></div><p>Profile identifiers:</p>
+<pre><code class="language-text">onym:charity-implementation:bnb-evm-cha-plonk-bn254-v1
+onym:charity-eligibility:membership-set-plonk-bn254-v1
+</code></pre>
+<p>The first identifies this notary/eligibility binding; the second identifies
+the initial eligibility predicate family (§9).</p>
+<h3 id="21-canonical-bytes-and-digests">2.1 Canonical bytes and digests</h3>
+<p>Charity.md §6 requires deterministic canonicalization with a stable digest
+and assigns the concrete scheme to the profile (Charity.md §5.1), and its
+§15 requires canonicalization and signature test vectors. This profile
+pins both:</p>
+<ul>
+<li><strong>Canonical bytes</strong> of a boundary object are its RFC 8785 (JCS)
+serialization: UTF-8, lexicographically key-sorted members, no
+insignificant whitespace, JCS number and string canonicalization. This
+is the same canonicalization family the deployed operator manifest
+already signs under (signature-field-dropped, key-sorted compact JSON —
+verifiable today against the served bytes at
+<code>relayer.onym.app/manifest.json</code>).</li>
+<li><strong>Signing input</strong> for a signed object is
+<code>dsTag ‖ 0x00 ‖ JCS(object with its signature member structurally removed)</code>, where <code>dsTag</code> is the object's Charity.md §6 domain-separation
+tag.</li>
+<li><strong>Anchor digests</strong> (<code>revisionCommitment</code>, <code>receiptDigest</code>,
+<code>claimDigest</code>, <code>disbursementReceiptDigest</code>, <code>periodDigest</code>) are
+<code>keccak256(&quot;onym:charity:bnb:anchor:v1&quot; ‖ 0x00 ‖ JCS(object))</code>, where
+the object <strong>includes</strong> its signature member(s): the anchor attests the
+signed artifact, so two objects differing only in signature MUST digest
+differently. Digest-over-signed and sign-over-unsigned are deliberately
+different serializations of the same object, and the fixtures pin both.</li>
+<li>Unknown critical fields fail closed at schema validation, <strong>before</strong>
+digesting — a digest of an object the implementation would refuse is
+never computed, so &quot;anchored&quot; implies &quot;schema-valid at anchoring time&quot;.</li>
+</ul>
+<p>Without this section, two conforming implementations could compute
+different <code>claimDigest</code>s for the same <code>AidClaim</code> and §16's third-party
+interoperability criterion would be unachievable; the §13 canonicalization
+fixtures are the proof that they cannot. The <code>-bn254-</code> segment is the
+circuit-type discriminator and is load-bearing: a BLS12-381 eligibility proof
+is not valid evidence under this profile, and a BN254 proof is not valid
+evidence under any Stellar charity profile. Fixtures MUST prove both
+rejections (§13, <code>neg-cross-curve-*</code>).</p>
+<h2 id="3-deployment-identity-and-hardening">3. Deployment identity and hardening</h2>
+<p>Restated here in full, not referenced, because every rule is normative for
+this contract too:</p>
+<ol>
+<li><strong>Identity is three-part.</strong> A deployment is identified by EIP-155 chain
+ID, contract address, and the keccak-256 hash of the deployed runtime
+bytecode. All three MUST appear in the <code>CharityDeployment.notaryBindings</code>
+entry and all three MUST be verified by the client before first use.
+Network identity is the chain ID, never a display name. This profile is
+scoped to BSC mainnet (56) and BSC testnet (97); opBNB is a distinct
+namespace with L2 finality semantics and is <strong>not covered</strong> — a
+deployment there requires its own profile.</li>
+<li><strong>The verifier and admin are in the bytecode.</strong> The eligibility verifier
+address and the operator admin address are Solidity <code>immutable</code> values,
+embedded in the deployed runtime bytecode — never constructor-set
+storage. This is what makes the runtime-code-hash pin actually cover
+which verifier runs and who holds operator powers. The contract exposes
+<code>getVerifier()</code> and <code>getOperatorAdmin()</code> views, and client deployment
+verification MUST compare both against the operator manifest before
+first use.</li>
+<li><strong>Proxies are prohibited.</strong> Upgradeable proxies, <code>delegatecall</code>-based
+dispatch, and metamorphic deployment patterns are prohibited under this
+profile ID. A profile that permits upgrade must declare the upgrade
+power in the operator manifest and take a different implementation ID.</li>
+<li><strong>Verifier contracts are generated, not hand-written.</strong> Eligibility
+verifiers are toolchain-generated per predicate family, deployed
+immutably, and referenced by address plus code hash. Verifying keys are
+content-addressed in the deployment's <code>verifierAnchors</code>.</li>
+</ol>
+<h2 id="4-contract-interface">4. Contract interface</h2>
+<p>One contract instance (<code>cha-anchor</code>) per charity deployment.</p>
+<p>Typing convention, applied uniformly: values that are <strong>BN254 field
+elements</strong> (<code>campaignId</code>, <code>nullifier</code>, <code>policyRoot</code>) are <code>uint256</code>, with
+the same in-range check (§5) at their entry point; <strong>opaque 32-byte
+digests and commitments</strong> (<code>revisionCommitment</code>, <code>policyDigest</code>,
+<code>receiptDigest</code>, <code>claimDigest</code>, <code>recipientCommitment</code>,
+<code>disbursementReceiptDigest</code>, <code>periodDigest</code>, <code>sourceCommitment</code>) are
+<code>bytes32</code> and carry no range constraint. Interface, normative for a
+conforming implementation:</p>
+<pre><code class="language-solidity">interface ICharityAnchor {
+    // ---- operator-attested writes: msg.sender must equal getOperatorAdmin() ----
+
+    /// Register a campaign at revision 1. `campaignId` MUST be a BN254
+    /// field element (§5). `epochStart`/`epochSeconds` fix the claim-window
+    /// schedule for §6; `epochSeconds` MUST be nonzero
+    /// (`InvalidEpochSchedule` otherwise), and `epochStart` MAY lie in the
+    /// future — claims before it revert `CampaignNotStarted`. Registration
+    /// IS the abstract machine's draft→active edge: `draft` exists only
+    /// off-chain as the operator's unsigned working state, and a registered
+    /// campaign is `active` at revision 1 from this call onward.
+    function registerCampaign(
+        uint256 campaignId,
+        bytes32 revisionCommitment,
+        uint64  epochStart,
+        uint32  epochSeconds
+    ) external;
+
+    /// Advance the campaign to `newRevision`. Revisions MUST increase by
+    /// exactly one; the commitment is the digest of the new signed record.
+    /// Status-gated: permitted while active or paused (pausing to amend
+    /// terms is the normal workflow); reverts `CampaignNotActive` on a
+    /// closed or revoked campaign, whose record is frozen.
+    function advanceCampaignRevision(
+        uint256 campaignId,
+        uint32  newRevision,
+        bytes32 revisionCommitment
+    ) external;
+
+    /// Status codes cover the on-chain states of Charity.md §8.1:
+    /// 0 = active, 1 = paused, 2 = closed, 3 = revoked. The machine's
+    /// `draft` state has no code — see registerCampaign. An illegal
+    /// transition (any exit from closed or revoked, or a `status` byte
+    /// above 3) reverts `InvalidStatusTransition`.
+    function setCampaignStatus(uint256 campaignId, uint8 status) external;
+
+    /// Bind an eligibility policy (by digest of its canonical bytes) and its
+    /// family-specific public parameter (§9; for membership-set-v1, the
+    /// issuer set root). `policyRoot` feeds the public-input vector directly
+    /// from storage, so it MUST be a BN254 field element and the contract
+    /// MUST reject out-of-range roots with `ValueNotInField` here — an
+    /// unchecked root would make every proof against the policy fail
+    /// opaquely as `InvalidProof`.
+    function registerEligibilityPolicy(
+        uint256 campaignId,
+        bytes32 policyDigest,
+        uint256 policyRoot
+    ) external;
+
+    /// Anchor the digest of a finalized, signed DonationReceipt. Keyed by
+    /// `receiptDigest`: re-anchoring the same digest with the same
+    /// `campaignId` and `campaignRevision` is an idempotent no-op;
+    /// re-anchoring it with either differing is `AnchorConflict` (a
+    /// donation-anchor conflict is a metadata conflict under the digest
+    /// key — the digest itself cannot collide with a different value,
+    /// because it IS the key).
+    function anchorDonationReceipt(
+        uint256 campaignId,
+        uint32  campaignRevision,
+        bytes32 receiptDigest
+    ) external;
+
+    /// Anchor the digest of a signed AidDisbursementReceipt against a
+    /// previously anchored claim. Deliberately EXEMPT from the campaign
+    /// status gate: aid is routinely delivered after a campaign pauses or
+    /// closes, the claim it records was authorized while the campaign was
+    /// active, and refusing the anchor would truncate the audit trail
+    /// exactly when scrutiny matters most (including on revoked campaigns,
+    /// where the anchored evidence of what was disbursed is the point).
+    /// The only preconditions are an anchored claim and the AnchorConflict
+    /// rules.
+    function anchorDisbursement(
+        bytes32 claimDigest,
+        bytes32 disbursementReceiptDigest
+    ) external;
+
+    /// Anchor a fund-flow report's source commitment for a period. Keyed by
+    /// (campaignId, periodDigest); a differing sourceCommitment under an
+    /// anchored key is `AnchorConflict`.
+    function anchorFundFlowReport(
+        uint256 campaignId,
+        bytes32 periodDigest,
+        bytes32 sourceCommitment
+    ) external;
+
+    /// Deployment administration; never campaign governance. Restricted
+    /// mode gates EXACTLY ONE entrypoint: anchorAidClaim, which reverts
+    /// `RestrictedMode` while enabled. Operator-attested writes and all
+    /// views are unaffected — the audit trail keeps recording during an
+    /// emergency stop. The power is equivalent in authority to pausing
+    /// every campaign at once (a power the admin already holds via
+    /// setCampaignStatus), packaged as one auditable switch; it is not a
+    /// new or selective censorship power, and it MUST be declared in the
+    /// operator manifest (§12). Ordering: the stop gates the ENTRYPOINT,
+    /// not the pipeline — it precedes even the §7 idempotence precheck, so
+    /// a byte-identical resubmission during a stop also reverts
+    /// `RestrictedMode`. Reconciliation of prior submissions during a stop
+    /// uses reads (getClaimAnchor), which are unaffected.
+    function setRestrictedMode(bool enabled) external;
+
+    // ---- proof-authorized write: sender-agnostic ----
+
+    /// Verify an eligibility presentation and atomically consume its
+    /// nullifier while anchoring the claim. The contract derives the full
+    /// public-input vector itself (§10); the caller supplies only the values
+    /// below plus the proof. Idempotence precheck, first among state
+    /// checks (only the restricted-mode entrypoint gate precedes it — see
+    /// setRestrictedMode): if `claimDigest` is already anchored and every supplied field
+    /// matches the stored anchor byte-for-byte, return as a success no-op
+    /// (the stored anchor was proof-authorized when written; re-verification
+    /// buys nothing); if anchored with any differing field, revert
+    /// `AnchorConflict`. Only an unanchored `claimDigest` proceeds to the
+    /// status/revision/epoch/nullifier/proof pipeline.
+    function anchorAidClaim(
+        uint256 campaignId,
+        uint32  campaignRevision,
+        bytes32 policyDigest,
+        uint64  epochIndex,
+        uint256 nullifier,
+        bytes32 claimDigest,
+        bytes32 recipientCommitment,
+        bytes   calldata proof
+    ) external;
+
+    // ---- views ----
+
+    function getCampaign(uint256 campaignId) external view returns (
+        uint32  revision,
+        bytes32 revisionCommitment,
+        uint8   status,
+        uint64  epochStart,
+        uint32  epochSeconds
+    );
+    function currentEpoch(uint256 campaignId) external view returns (uint64);
+    function isNullifierUsed(
+        uint256 campaignId, uint64 epochIndex, uint256 nullifier
+    ) external view returns (bool);
+    /// `registeredAt == 0` means unregistered. This is the pre-build read
+    /// clients use to obtain the registered root, and the pre-use
+    /// verification hook §16 item 1 presumes.
+    function getEligibilityPolicy(uint256 campaignId, bytes32 policyDigest)
+        external view returns (uint256 policyRoot, uint64 registeredAt);
+    /// The claim anchor stores EVERY field of the anchoring call (except
+    /// the proof bytes), so the §7 idempotence precheck's byte-for-byte
+    /// comparison over all supplied fields is implementable from storage.
+    function getClaimAnchor(bytes32 claimDigest) external view returns (
+        uint256 campaignId,
+        uint32  campaignRevision,
+        bytes32 policyDigest,
+        uint64  epochIndex,
+        uint256 nullifier,
+        bytes32 recipientCommitment,
+        bytes32 disbursementReceiptDigest   // zero until anchored
+    );
+    function getDonationAnchor(bytes32 receiptDigest)
+        external view returns (uint256 campaignId, uint32 campaignRevision, uint64 anchoredAt);
+    function getFundFlowAnchor(uint256 campaignId, bytes32 periodDigest)
+        external view returns (bytes32 sourceCommitment, uint64 anchoredAt);
+    function getVerifier() external view returns (address);
+    function getOperatorAdmin() external view returns (address);
+    function isRestricted() external view returns (bool);
+}
+</code></pre>
+<p>Events, all with the campaign or claim key as an indexed topic:</p>
+<pre><code class="language-solidity">event CampaignRegistered(uint256 indexed campaignId, bytes32 revisionCommitment, uint64 epochStart, uint32 epochSeconds);
+event CampaignRevisionAdvanced(uint256 indexed campaignId, uint32 revision, bytes32 revisionCommitment);
+event CampaignStatusChanged(uint256 indexed campaignId, uint8 status);
+event EligibilityPolicyRegistered(uint256 indexed campaignId, bytes32 policyDigest, uint256 policyRoot);
+event DonationReceiptAnchored(uint256 indexed campaignId, uint32 campaignRevision, bytes32 receiptDigest);
+event AidClaimAnchored(uint256 indexed campaignId, uint32 campaignRevision, bytes32 indexed claimDigest, uint64 epochIndex, uint256 nullifier, bytes32 recipientCommitment);
+event DisbursementAnchored(bytes32 indexed claimDigest, bytes32 disbursementReceiptDigest);
+event RestrictedModeChanged(bool enabled);
+</code></pre>
+<p>Block timestamps in events and <code>anchoredAt</code> fields are consensus metadata,
+never user-authored time.</p>
+<p>Every state field and event parameter is a fixed-width word. The interface
+has <strong>no <code>string</code> parameter, no variable-length payload except <code>proof</code></strong>,
+and the proof bytes are consumed by the verifier, never stored. This is the
+contract-shape half of the zero-PII invariant; the fixture half is §13.</p>
+<h3 id="41-custom-errors-and-retry-semantics">4.1 Custom errors and retry semantics</h3>
+<p>The full error set, each with its selector's normative retry class:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Solidity error</th>
+<th scope="col">Retry class</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CampaignExists(uint256 campaignId)</code></td>
+<td>refuse-as-defect</td>
+<td>Operator tooling attempted a duplicate registration. Not retryable; fix the caller.</td>
+</tr>
+<tr>
+<td><code>CampaignNotFound(uint256 campaignId)</code></td>
+<td>refuse-as-defect</td>
+<td>The pinned deployment has no such campaign. A client holding a signed campaign that anchors nowhere treats this as <code>DEPLOYMENT_INVALID</code>, not a retry.</td>
+</tr>
+<tr>
+<td><code>CampaignNotActive(uint256 campaignId, uint8 status)</code></td>
+<td>terminal for this campaign state</td>
+<td>A <em>new claim</em> (<code>anchorAidClaim</code>) or policy registration against a paused, closed, or revoked campaign; also <code>advanceCampaignRevision</code> against a closed or revoked one (a frozen record — advancing stays legal while paused, since pausing to amend terms is the normal workflow). Maps to <code>CAMPAIGN_NOT_ACTIVE</code>; the UI blocks new action and preserves history. Paused MAY become active again; closed/revoked never do. The gate scopes to new authorizations only: receipt, disbursement, and report anchors record already-authorized operations and are exempt, so closing a campaign can never truncate its audit trail.</td>
+</tr>
+<tr>
+<td><code>InvalidStatusTransition(uint8 from, uint8 to)</code></td>
+<td>refuse-as-defect</td>
+<td><code>setCampaignStatus</code> attempting an exit from closed or revoked, or a <code>to</code> byte above 3. Operator tooling bug; never retryable.</td>
+</tr>
+<tr>
+<td><code>InvalidEpochSchedule(uint64 epochStart, uint32 epochSeconds)</code></td>
+<td>refuse-as-defect</td>
+<td><code>registerCampaign</code> with <code>epochSeconds == 0</code>. Rejected at registration so <code>currentEpoch</code> is total for every registered campaign — division by zero is unreachable by construction.</td>
+</tr>
+<tr>
+<td><code>CampaignNotStarted(uint256 campaignId, uint64 epochStart)</code></td>
+<td>retry-after-start</td>
+<td>A claim (or <code>currentEpoch</code> call) before the registered <code>epochStart</code>. Pre-registration of future campaigns is legal; claiming against one is not yet. The client surfaces the start time and retries no earlier.</td>
+</tr>
+<tr>
+<td><code>RevisionNotSequential(uint32 expected, uint32 supplied)</code></td>
+<td>refuse-as-defect</td>
+<td>Operator attempted a revision skip or rewind.</td>
+</tr>
+<tr>
+<td><code>StaleCampaignRevision(uint32 current, uint32 supplied)</code></td>
+<td>refresh-and-rebuild / refuse-as-defect</td>
+<td>One selector, two decidable cases, split client-side from the carried values. <code>supplied &lt; current</code>: the presentation was built against a superseded revision — the client re-resolves the campaign, re-obtains user consent for the new revision (UI-Charity.md §5.6 requires the fresh decision; Charity.md §6.7 binds the presentation to the exact revision), rebuilds, and resubmits. <code>supplied &gt; current</code>: a revision from the future is a generator defect — rebuilding cannot help and MUST NOT be attempted in a retry loop.</td>
+</tr>
+<tr>
+<td><code>EpochNotCurrent(uint64 current, uint64 supplied)</code></td>
+<td>refresh-and-rebuild</td>
+<td>The claim window rolled over between preparation and inclusion. Rebuild against the current epoch — which also derives a new nullifier, so the retry cannot collide with the stale attempt.</td>
+</tr>
+<tr>
+<td><code>UnknownPolicy(uint256 campaignId, bytes32 policyDigest)</code></td>
+<td>refuse-as-defect</td>
+<td>The presentation references a policy this campaign never registered.</td>
+</tr>
+<tr>
+<td><code>ValueNotInField(uint8 argIndex)</code></td>
+<td>refuse-as-defect</td>
+<td>A value that must be a BN254 field element (§5) is out of range. <code>argIndex</code> is the <strong>zero-based position of the offending argument in the failing external function's own parameter list</strong> (e.g. <code>campaignId</code> in <code>anchorAidClaim</code> is 0; <code>policyRoot</code> in <code>registerEligibilityPolicy</code> is 2) — per-function, not a global registry, so fixtures and clients decode it from the ABI they already hold. A generator bug in the caller, never a transient condition.</td>
+</tr>
+<tr>
+<td><code>NullifierUsed(uint256 nullifier)</code></td>
+<td>terminal scoped refusal</td>
+<td>The entitlement was already claimed in this campaign and epoch <strong>by a different claim</strong>. Maps to <code>NULLIFIER_USED</code>: the UI shows a scoped duplicate refusal and MUST NOT expose a person identifier or retry. Replay protection on the claim path is two-layered: a byte-identical resubmission of an already-anchored claim short-circuits as an idempotent no-op at the <code>claimDigest</code> precheck (§4, §7) and never reaches this check; a <em>distinct</em> claim reusing the nullifier lands here. There is deliberately no separate proof-replay record — between the precheck and the nullifier, both replay shapes are covered.</td>
+</tr>
+<tr>
+<td><code>InvalidProof()</code></td>
+<td>refuse-as-defect</td>
+<td>The verifier rejected the proof against the contract-derived public inputs. Maps to <code>PROOF_INVALID</code>; diagnostics stay private (UI-Charity.md §13).</td>
+</tr>
+<tr>
+<td><code>AnchorConflict(bytes32 key, bytes32 stored, bytes32 supplied)</code></td>
+<td>security event</td>
+<td>A value differing from the stored one was submitted under an already-anchored key. Three shapes, one selector: a different disbursement digest under an anchored <code>claimDigest</code>; a claim resubmission differing in any stored field under its <code>claimDigest</code> (<code>stored</code>/<code>supplied</code> then carry the digest of the stored versus supplied field tuple); and a donation or fund-flow <em>metadata</em> conflict — same digest key, different <code>campaignId</code>/<code>campaignRevision</code> or <code>sourceCommitment</code> (the donation digest itself cannot conflict, because it is the key). Never retried, never overwritten; the client records evidence and raises the incident path. Re-anchoring identical values is an idempotent success, not an error.</td>
+</tr>
+<tr>
+<td><code>ClaimNotAnchored(bytes32 claimDigest)</code></td>
+<td>refuse-as-defect</td>
+<td>Disbursement anchor for a claim this contract never saw.</td>
+</tr>
+<tr>
+<td><code>OperatorOnly(address sender)</code></td>
+<td>refuse-as-defect</td>
+<td>Operator-attested write from a non-admin sender.</td>
+</tr>
+<tr>
+<td><code>RestrictedMode()</code></td>
+<td>retry-after-reopen</td>
+<td><code>anchorAidClaim</code> — and only <code>anchorAidClaim</code> — while the deployment's emergency stop is enabled (§4); the gate precedes even the idempotence precheck, and operator-attested writes and views are unaffected. This is Charity.md §14's explicit, authenticated, auditable <strong>emergency pause</strong>, surfaced as a deployment-wide pause — no client action clears it; the client waits for <code>RestrictedModeChanged(false)</code> and reconciles prior submissions via reads meanwhile. It is NOT a payment or compliance gate: <code>PAYMENT_REQUIRED</code>/<code>COMPLIANCE_REQUIRED</code> are relayer-layer refusals issued before submission under the manifest's declared offers, and never map to this selector.</td>
+</tr>
+</tbody>
+</table></div><p><code>StaleCampaignRevision</code> and <code>EpochNotCurrent</code> versus <code>InvalidProof</code> is the
+charity rendering of the notary profile's <code>StaleRevision</code> versus
+<code>PublicInputsMismatch</code> requirement: the conditions with <em>different retry
+guidance</em> MUST be distinct selectors, decidable without re-proving. Because
+this contract derives its own public-input vector (§10), the notary's
+&quot;misordered statement&quot; failure mode cannot arise here by construction, and
+there is intentionally no <code>PublicInputsMismatch</code> selector; each bindable
+field has its own named check instead.</p>
+<h3 id="42-abstract-error-mapping">4.2 Abstract error mapping</h3>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Charity.md §12 code</th>
+<th scope="col">Contract / transport source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEPLOYMENT_INVALID</code></td>
+<td>Identity-triple mismatch, <code>getVerifier()</code>/<code>getOperatorAdmin()</code> vs manifest mismatch, <code>CampaignNotFound</code> for a signed campaign</td>
+</tr>
+<tr>
+<td><code>CAMPAIGN_NOT_ACTIVE</code></td>
+<td><code>CampaignNotActive</code></td>
+</tr>
+<tr>
+<td><code>TERMS_CHANGED</code></td>
+<td><code>StaleCampaignRevision</code> (after re-resolve shows changed terms)</td>
+</tr>
+<tr>
+<td><code>PROOF_INVALID</code></td>
+<td><code>InvalidProof</code></td>
+</tr>
+<tr>
+<td><code>NULLIFIER_USED</code></td>
+<td><code>NullifierUsed</code></td>
+</tr>
+<tr>
+<td><code>PAYMENT_REQUIRED</code> / <code>COMPLIANCE_REQUIRED</code></td>
+<td>Relayer-layer refusal before submission, under the manifest's declared offers — never the contract's <code>RestrictedMode</code>, which is the Charity.md §14 emergency pause</td>
+</tr>
+<tr>
+<td><code>SUBMISSION_UNKNOWN</code></td>
+<td>Transaction hash unresolvable; reconcile by operation ID (§11)</td>
+</tr>
+<tr>
+<td><code>FINALITY_PENDING</code></td>
+<td>Receipt included but block not yet at the <code>finalized</code> checkpoint</td>
+</tr>
+<tr>
+<td><code>AUTHORIZATION_INVALID</code></td>
+<td><code>OperatorOnly</code>; also local vault refusal before submission</td>
+</tr>
+<tr>
+<td><code>PROFILE_UNSUPPORTED</code></td>
+<td>Unknown profile ID, proof system, or verifier anchors</td>
+</tr>
+</tbody>
+</table></div><p>Transport-layer failures (RPC outage, gas estimation, nonce, mempool) map to
+<code>SUBMISSION_UNKNOWN</code>/<code>FINALITY_PENDING</code> and are never presented as campaign
+or proof failures.</p>
+<h3 id="43-canonical-wire-operation-mapping">4.3 Canonical wire-operation mapping</h3>
+<p>Charity.md §7 defines ten canonical wire operations. This binding's
+surface for each — including the ones it deliberately has no entrypoint
+for:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Charity.md §7 operation</th>
+<th scope="col">This profile's surface</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resolve-campaign</code></td>
+<td>Off-chain resolution of the signed campaign record, verified against <code>getCampaign</code> (status, revision) and the anchored <code>revisionCommitment</code></td>
+</tr>
+<tr>
+<td><code>quote-donation</code></td>
+<td>Financial provider; <strong>no contract surface</strong> (§1 scope)</td>
+</tr>
+<tr>
+<td><code>prepare-donation</code></td>
+<td>Financial provider / client; no contract surface</td>
+</tr>
+<tr>
+<td><code>submit-donation</code></td>
+<td>Financial provider; no contract surface — only the finalized receipt's digest reaches <code>anchorDonationReceipt</code></td>
+</tr>
+<tr>
+<td><code>read-donation</code></td>
+<td>Financial provider evidence, cross-checkable against <code>getDonationAnchor</code> / <code>DonationReceiptAnchored</code> once anchored</td>
+</tr>
+<tr>
+<td><code>request-refund</code></td>
+<td>Financial provider; no contract surface. A refund/reversal changes report arithmetic (Charity.md §10), never an anchored digest</td>
+</tr>
+<tr>
+<td><code>present-eligibility</code></td>
+<td>Local proof construction; its successful outcome is the <code>anchorAidClaim</code> write (§7)</td>
+</tr>
+<tr>
+<td><code>claim-aid</code></td>
+<td><code>anchorAidClaim</code> — atomic with <code>present-eligibility</code>'s on-chain half</td>
+</tr>
+<tr>
+<td><code>read-aid-claim</code></td>
+<td><code>getClaimAnchor</code> + <code>AidClaimAnchored</code>/<code>DisbursementAnchored</code> events, alongside the operator's signed receipts</td>
+</tr>
+<tr>
+<td><code>read-fund-flow</code></td>
+<td><code>getFundFlowAnchor</code> + the signed off-chain report whose <code>sourceCommitment</code> it anchors</td>
+</tr>
+</tbody>
+</table></div><p>The absent rows are the scope boundary of §1 restated operation by
+operation: value movement has no entrypoint here by design.</p>
+<h2 id="5-client-chosen-32-byte-values-encoding-and-domain-separation">5. Client-chosen 32-byte values: encoding and domain separation</h2>
+<p>The BN254 scalar field modulus is</p>
+<pre><code class="language-text">r = 21888242871839275222246405745257275088548364400416034343698204186575808495617
+</code></pre>
+<p>and a 32-byte word is not automatically a field element. Modular reduction of
+client-supplied words is <strong>forbidden everywhere</strong> in this profile: reduction
+is non-injective over 32 bytes, so two distinct 32-byte values could share a
+proof-bound field element, letting evidence bound to one authorize a record
+under the other. Two encoding rules replace it:</p>
+<ol>
+<li><strong>Freely chosen identifiers are drawn in-field.</strong>
+<code>campaignId</code> (operator-drawn) and any other freely random identifier MUST
+be generated by rejection sampling: draw 32 uniform bytes, interpret as a
+big-endian integer, redraw while <code>&gt;= r</code>. The contract MUST reject
+out-of-range values with <code>ValueNotInField</code> at the entrypoint —
+registration for <code>campaignId</code>, claim anchoring for <code>nullifier</code>, policy
+registration for <code>policyRoot</code> (accumulator roots are field elements by
+construction, but the contract checks anyway: an unchecked root would
+surface later as opaque <code>InvalidProof</code> failures for every honest prover)
+— so a non-conforming generator fails closed rather than colliding.</li>
+<li><strong>Digests are limb-split, never reduced or ground.</strong>
+keccak-256 digests of canonical objects (<code>policyDigest</code>, <code>claimDigest</code>,
+<code>recipientCommitment</code> when it enters the circuit) are not freely
+re-drawable — their preimages are meaningful signed bytes — so they enter
+the public-input vector as <strong>two 128-bit big-endian limbs</strong>
+(<code>hi = digest[0..16]</code>, <code>lo = digest[16..32]</code>), each trivially below <code>r</code>.
+The split is injective, needs no grinding, and the contract performs it
+itself in Solidity when deriving public inputs (§10), so no caller ever
+supplies a &quot;pre-encoded&quot; digest.</li>
+</ol>
+<p>Domain separation: every derived value carries an ASCII tag hashed into its
+derivation. The tags of this profile, fixed and fixture-pinned:</p>
+<pre><code class="language-text">onym:charity:bnb:nullifier:v1
+onym:charity:bnb:recipient-commitment:v1
+onym:charity:bnb:eligibility-statement:v1
+</code></pre>
+<p>A tag change is a profile change. Circuits bind the statement tag as a
+constant, so a proof generated for any other statement family — including a
+notary group-transition proof — cannot verify here even if lengths match.</p>
+<h2 id="6-nullifier-derivation-and-scoping">6. Nullifier derivation and scoping</h2>
+<p>The nullifier is computed <strong>in-circuit</strong>:</p>
+<pre><code class="language-text">nullifier = H(T_n, credentialSecret, campaignId, epochIndex)
+</code></pre>
+<p>where <code>H</code> is the circuit-native hash over BN254 (Poseidon; the exact
+instance parameters are pinned by the conformance fixtures, §13), <code>T_n</code> is
+the field constant derived from <code>onym:charity:bnb:nullifier:v1</code>,
+<code>credentialSecret</code> is the private witness bound to the beneficiary's
+eligibility credential, <code>campaignId</code> is the in-field campaign identifier,
+and <code>epochIndex</code> is the claim window computed from the campaign's registered
+schedule:</p>
+<pre><code class="language-text">epochIndex = floor((blockTimestamp - epochStart) / epochSeconds)
+</code></pre>
+<p>defined only for <code>blockTimestamp &gt;= epochStart</code> and <code>epochSeconds &gt; 0</code>.
+Both preconditions are contract-enforced rather than assumed:
+<code>registerCampaign</code> rejects a zero <code>epochSeconds</code> with
+<code>InvalidEpochSchedule</code>, so the division is total for every registered
+campaign, and a claim (or <code>currentEpoch</code> call) before <code>epochStart</code> reverts
+<code>CampaignNotStarted</code> — a campaign MAY be registered ahead of its start,
+but nothing can be claimed against it until the schedule begins.</p>
+<p>The contract computes <code>currentEpoch(campaignId)</code> from consensus time and
+requires <code>epochIndex == currentEpoch</code> at claim anchoring, else
+<code>EpochNotCurrent</code> (grace behavior is an open question, §14.1).</p>
+<p><strong>Why the scoping holds — and what it rests on.</strong> The derivation gives the
+nullifier exactly the properties Charity.md §6.7 and §13.8 require:</p>
+<ul>
+<li><em>One claim per campaign per epoch</em>: for fixed <code>(credentialSecret, campaignId, epochIndex)</code> the nullifier is deterministic, so a second
+presentation from the same credential in the same scope reproduces it and
+reverts with <code>NullifierUsed</code>.</li>
+<li><em>Stable across campaign revisions</em>: <code>campaignRevision</code> is deliberately
+<strong>not</strong> an input, so a policy or campaign update cannot mint a fresh
+nullifier and enable a second claim in the same window.</li>
+<li><em>Not a cross-campaign identifier</em>: nullifiers for different campaigns (or
+epochs) differ in a hashed input, so linking them requires either the
+credential secret or a break of the hash's pseudorandomness. This is a
+stated cryptographic assumption, not something a fixture can prove; the
+fixtures prove the <em>derivation</em> is scoped (§13), and the adversary page in
+the documentation states the residual assumption plainly.</li>
+<li><em>Not a permanent identifier</em>: no derivation input is a person identifier,
+and <code>credentialSecret</code> never leaves the device; the nullifier reveals
+membership of the scope, not identity within it.</li>
+</ul>
+<p>The circuit MUST constrain the nullifier's derivation from the same
+<code>credentialSecret</code> that satisfies the eligibility predicate; a nullifier
+merely <em>asserted</em> alongside a valid predicate proof would let one credential
+mint arbitrary nullifiers and claim without bound.</p>
+<h2 id="7-atomic-claim-anchoring">7. Atomic claim anchoring</h2>
+<p>Charity.md §7 places the duplicate rule at <code>claim-aid</code>. This profile
+implements that atomically: <code>anchorAidClaim</code> verifies the eligibility proof,
+checks campaign status/revision/epoch, consumes the nullifier, and records
+the claim anchor in one transaction. There is no separate
+&quot;verify-presentation&quot; write that could open a time-of-check/time-of-use
+window between eligibility verification and nullifier consumption, and a
+revert at any step writes nothing. <code>present-eligibility</code> remains a
+client/operator-side operation whose successful outcome is this single
+on-chain write; a read-only pre-check MAY use <code>isNullifierUsed</code> and a local
+proof verification, but the on-chain call is the only consumption point.</p>
+<p>Atomicity and idempotency compose in a fixed order: the restricted-mode
+entrypoint gate, then the <code>claimDigest</code> precheck, then the state
+pipeline (§4). A byte-identical resubmission of an anchored
+claim — a retry after an unknown outcome, a replayed transaction, a
+front-run with copied calldata — returns as a success no-op without
+touching the nullifier or the verifier; a resubmission differing in any
+field is <code>AnchorConflict</code>; and only an unanchored digest enters the
+verify-and-consume pipeline. Without this precheck, §11's &quot;retry
+terminates in an idempotent anchor&quot; guarantee would be unsatisfiable,
+since the retried claim would always meet its own consumed nullifier.</p>
+<p>One staleness gate is deliberately <strong>not</strong> on-chain: the <code>expiresAt</code>
+fields of the eligibility presentation and the aid claim (Charity.md
+§6.7/§6.8) are enforced by the verifying operator and the client before
+submission, not by the contract. Enforcing them on-chain would require
+carrying the expiry timestamps as calldata or public inputs — expanding
+permanent public metadata to police a bound the epoch gate already
+enforces more coarsely (a presentation cannot outlive its claim window,
+because the window is part of its statement). The operator MUST check
+both expiries off-chain per the abstract boundary; the chain bounds
+staleness at epoch granularity only.</p>
+<h2 id="8-recipient-commitments">8. Recipient commitments</h2>
+<pre><code class="language-text">recipientCommitment = keccak256(T_rc ‖ deliveryBindingDigest ‖ rho)
+</code></pre>
+<p>where <code>T_rc</code> is the ASCII tag above, <code>deliveryBindingDigest</code> is the digest
+of the claim's private delivery binding (Charity.md §6.8), and <code>rho</code> is 32
+bytes of fresh randomness drawn per claim and shared only with the delivery
+provider. The commitment is <em>binding-only</em>: the circuit includes it as a
+public input to bind it under the claimant's proof but proves nothing about
+its opening; the claimant opens it privately to the delivery provider by
+revealing <code>(deliveryBindingDigest, rho)</code>.</p>
+<p>What it hides: the delivery coordinate, and — because <code>rho</code> is fresh per
+claim — whether two claims share a coordinate. Repeated delivery to the same
+address across epochs or campaigns produces unlinkable commitments.</p>
+<p>What it does <strong>not</strong> hide, and the UI MUST disclose before the claimant
+authorizes: that a claim exists; its campaign, epoch, and timing; and the
+join between claim and disbursement (the <code>claimDigest</code> key linking
+<code>AidClaimAnchored</code> to <code>DisbursementAnchored</code> is public by design — that join
+is the audit trail).</p>
+<h2 id="9-eligibility-predicate-families-and-public-inputs">9. Eligibility predicate families and public inputs</h2>
+<p>The initial family is <code>membership-set-v1</code>
+(<code>onym:charity-eligibility:membership-set-plonk-bn254-v1</code>): the claimant
+proves knowledge of <code>credentialSecret</code> such that a commitment derived from
+it is a member of an issuer-published accumulator (Merkle set over the
+circuit-native hash) whose root the operator registered for the policy
+(<code>policyRoot</code>), and that the nullifier is correctly derived (§6). This is
+the minimal family that supports &quot;eligible under policy P&quot; with duplicate
+prevention and no identity disclosure.</p>
+<p>The full public-input vector, in order, all values BN254 field elements:</p>
+<pre><code class="language-text"> 1. campaignId                      (in-field identifier, §5 rule 1)
+ 2. campaignRevision               (uint32, trivially in-field)
+ 3. policyDigest.hi                (limb, §5 rule 2)
+ 4. policyDigest.lo                (limb)
+ 5. epochIndex                     (uint64, trivially in-field)
+ 6. nullifier                      (in-field by construction, §6)
+ 7. claimDigest.hi                 (limb)
+ 8. claimDigest.lo                 (limb)
+ 9. recipientCommitment.hi         (limb)
+10. recipientCommitment.lo         (limb)
+11. policyRoot                     (from contract storage, §4)
+</code></pre>
+<p>Positions 1–10 bind the claim; position 11 binds the predicate instance.
+Family-specific extensions append after position 11 and require a new
+family ID. Which additional families ship, and in what order, is an open
+question (§14.3); candidates are listed there rather than half-specified
+here.</p>
+<p>Proof size and byte encoding (point order, field serialization) are fixed by
+the chosen toolchain release and pinned by the conformance fixtures — this
+draft deliberately does not hardcode them, for the same reason the notary
+BNB profile does not: toolchains disagree, and the fixture chain owns the
+exact bytes.</p>
+<h2 id="10-contract-derived-public-inputs">10. Contract-derived public inputs</h2>
+<p>The contract constructs the public-input vector itself from call arguments
+and storage — limb-splitting the digests in Solidity, reading <code>policyRoot</code>
+from the policy registration — and passes the constructed vector to the
+verifier. The caller never supplies a raw public-input array.</p>
+<p>Consequences, all deliberate:</p>
+<ul>
+<li>a <em>misordered</em> or <em>padded</em> public-input attack is impossible by
+construction rather than detected by comparison;</li>
+<li>every bindable field mismatch has a named selector (§4.1) decidable
+<em>before</em> the verifier runs, so the expensive pairing check happens only on
+well-formed, current statements; and</li>
+<li><code>InvalidProof</code> therefore means exactly one thing: the proof does not prove
+this statement.</li>
+</ul>
+<h2 id="11-submission-receipts-finality-and-reorgs">11. Submission, receipts, finality, and reorgs</h2>
+<p>The relayer gains charity operations on its existing EVM backend (which is
+itself unbuilt; §15). The rules are restated from the notary EVM profile
+because they are normative here too:</p>
+<ol>
+<li><strong>The transaction hash is mandatory and provisional.</strong> Every write
+response carries the EVM transaction hash from the first release. It is
+provisional: a stuck-transaction replacement (same nonce, byte-identical
+calldata, bumped fee) produces a different hash for the same logical
+operation. The stable reconciliation key is the client-generated
+<code>operationId</code>; <code>GET /operations/:operationId</code> returns the current hash,
+every superseded hash, and the current receipt status. A client that
+polls a hash and finds nothing MUST fall back to the operation query
+before concluding anything.</li>
+<li><strong>Idempotency.</strong> Duplicate client retries with the same <code>operationId</code>
+map to the same logical operation, never a second execution. For the
+claim path the contract adds its own backstop: a byte-identical
+duplicated claim write lands as a success no-op at the <code>claimDigest</code>
+precheck (§7), and a <em>distinct</em> claim reusing the entitlement reverts
+<code>NullifierUsed</code>.</li>
+<li><strong>Receipt is not finality.</strong> A receipt with <code>status == 1</code> in an included
+block means <em>executed</em>; <code>finalized</code> means the block is at or below BSC's
+fast-finality checkpoint. The two are distinct client-visible states,
+and no UI shows a donation receipt anchor, claim, or disbursement as
+final before reconciliation against the <code>finalized</code> tag.</li>
+<li><strong>A reorg is a security event.</strong> A previously seen receipt whose block is
+later orphaned, or any finalized-state read contradicting the pinned
+binding, is the <code>conflicting_state</code> event: the client preserves
+evidence, surfaces the incident path, and MUST NOT silently resubmit.
+For claim writes this matters concretely — a claimant whose anchor was
+orphaned rebuilds through the normal path and either lands the identical
+anchor (idempotent) or receives <code>NullifierUsed</code> from a competing
+inclusion, both of which are correct outcomes; the <em>event</em> is still
+reported.</li>
+<li><strong>A revert is a named refusal.</strong> <code>status == 0</code> receipts are decoded by
+selector into §4.1's taxonomy; raw revert data and HTTP status are
+diagnostics, never control flow.</li>
+<li><strong>Reads need independence.</strong> The relayer may proxy reads, but a TLS
+response from the party that submitted the write is not evidence; the
+client MUST be able to verify against a second RPC provider, using the
+<code>finalized</code> block tag for canonical snapshots.</li>
+</ol>
+<h2 id="12-operator-manifest-bindings">12. Operator manifest bindings</h2>
+<p>The relayer's signed operator manifest (<code>GET /manifest.json</code>, byte-served,
+hash-pinned; the machinery is merged on the Stellar side via
+onym-relayer#13, and as of this draft's date the deployed relayer serves a
+signed manifest declaring Stellar notary support only — the served bytes,
+not this document, are always the authoritative statement of what is
+declared) gains:</p>
+<ul>
+<li><code>onym:charity-implementation:bnb-evm-cha-plonk-bn254-v1</code> in
+<code>implementationProfiles</code>;</li>
+<li>the <code>cha-anchor</code> deployment(s) it administers, each with chain ID,
+address, runtime code hash, verifier address and code hash, and profile
+ID;</li>
+<li><code>eip155</code> network entries binding the ed25519 operator identity to the
+secp256k1 <code>submitterAccount</code> (pays gas) and <code>adminAccount</code> (the
+<code>msg.sender</code> the operator-attested entrypoints accept). Client
+verification MUST compare <code>adminAccount</code> against <code>getOperatorAdmin()</code>;
+without that comparison, declared powers are not checkable against
+contract-enforced reality; and</li>
+<li>a privacy profile declaring what the operator observes (IP, timing, proof
+size, submitted values) and the public exposure of the chain itself.</li>
+</ul>
+<p>Manifest expiry ends new reliance only; superseded versions stay
+retrievable by hash; a key change without a rotation statement signed by
+the old key is a different operator. A deployment absent from the manifest
+does not exist for clients, whatever is on the chain.</p>
+<p>The governing invariant, adapted from the notary seat:</p>
+<blockquote>
+<p>The operator's key can pay for, submit, gate, and <em>attest</em> — campaign
+records, receipt anchors, report anchors, all visibly under its admin
+address — and it can <strong>pause claim intake deployment-wide</strong> through the
+restricted-mode emergency stop, a declared, auditable power equivalent
+to pausing every campaign at once, never a selective one. It can never
+make an ineligible claimant eligible, consume or unconsume a nullifier,
+alter an anchored digest, or convert an anchor into proof that money
+moved or aid arrived.</p>
+</blockquote>
+<h2 id="13-conformance-fixtures">13. Conformance fixtures</h2>
+<p>A conforming implementation ships the fixtures below, named as listed, each
+executable from this section alone. The negative set is deliberately larger
+than the positive set: the profile's value is what it refuses.</p>
+<h3 id="131-positive-fixtures">13.1 Positive fixtures</h3>
+<ul>
+<li><code>fix-campaign-lifecycle</code> — register a campaign (assert it exists at
+revision 1, active); advance revision 1→2; pause; advance 2→3 while
+paused (legal); reactivate; close. Assert each event, each storage
+read, and the refusals by selector: <code>setCampaignStatus(closed→active)</code>
+and a status byte above 3 revert <code>InvalidStatusTransition</code>; a revision
+skip reverts <code>RevisionNotSequential</code>; <code>advanceCampaignRevision</code> on the
+closed campaign reverts <code>CampaignNotActive</code>.</li>
+<li><code>fix-claim-happy-path</code> — full chain from credential to anchor: issuer
+publishes a set root; operator registers policy; claimant derives
+nullifier and recipient commitment, builds the <code>membership-set-v1</code> proof;
+<code>anchorAidClaim</code> from a <em>non-operator</em> sender succeeds; assert the
+<code>AidClaimAnchored</code> event fields, <code>isNullifierUsed == true</code>, and
+<code>getClaimAnchor</code> contents.</li>
+<li><code>fix-disbursement-join</code> — anchor a disbursement receipt digest against
+the claim; assert the public join (<code>claimDigest</code> key) and that
+<code>getClaimAnchor</code> returns the receipt digest.</li>
+<li><code>fix-idempotent-anchor</code> — re-anchor the identical donation receipt
+digest, and resubmit the byte-identical <code>anchorAidClaim</code> call for an
+already-anchored claim. Assert both land as success no-ops via the
+<code>claimDigest</code>/anchor prechecks (§7) — the claim resubmission MUST NOT
+reach the nullifier check or the verifier — and that storage is
+unchanged.</li>
+<li><code>fix-disbursement-after-close</code> — anchor a claim while active, close the
+campaign, then anchor its disbursement receipt; assert success (the
+status-gate exemption of §4) and the intact public join. Repeat with a
+revoked campaign.</li>
+<li><code>fix-cross-campaign-derivation</code> — one credential, two campaigns, same
+epoch schedule: assert both claims succeed and the two nullifiers
+differ. The fixture proves the <em>derivation is scoped</em>; it does not and
+cannot prove unlinkability, which rests on the hash assumption stated in
+§6 — the fixture description MUST carry this caveat verbatim.</li>
+<li><code>fix-cross-epoch-derivation</code> — one credential, one campaign, two epochs:
+both succeed, nullifiers differ, same caveat.</li>
+<li><code>fix-operation-reconciliation</code> — submit; force a same-nonce fee-bump
+replacement with byte-identical calldata; assert the original hash
+resolves to nothing, <code>GET /operations/:operationId</code> returns both hashes,
+and the final receipt reconciles under the operation ID.</li>
+<li><code>fix-epoch-rollover-rebuild</code> — build a presentation in epoch <em>k</em>, mine
+past the boundary, submit, receive <code>EpochNotCurrent(k+1, k)</code>; rebuild for
+<em>k+1</em>; assert the new nullifier differs and the retry succeeds.</li>
+<li><code>fix-canonicalization-vectors</code> — the §2.1 byte-level vectors, shared
+across every implementation: for each boundary object (campaign,
+donation receipt, aid claim, disbursement receipt, fund-flow report),
+the exact JCS bytes, the signing input with its <code>dsTag</code>, the anchor
+digest over the signed object, and a cross-language assertion that
+independent serializers produce identical bytes. This is the fixture
+§16's third-party-interop criterion rests on.</li>
+</ul>
+<h3 id="132-negative-fixtures">13.2 Negative fixtures</h3>
+<p><strong>Scope and duplicate refusal</strong></p>
+<ul>
+<li><code>neg-nullifier-replay</code> — same credential, same campaign, same epoch, two
+distinct claims (different <code>claimId</code>, so different <code>claimDigest</code>): the
+second reverts <code>NullifierUsed</code>. Assert the selector, that no storage
+changed, and that the error surface contains no value derived from the
+credential beyond the already-public nullifier.</li>
+<li><code>neg-revision-stability</code> — claim at revision <em>n</em>; advance the campaign
+to <em>n+1</em>; <strong>rebuild the second attempt against revision <em>n+1</em></strong> (fresh
+consent, fresh proof — the §4 pipeline checks revision before the
+nullifier, so an un-rebuilt attempt would revert
+<code>StaleCampaignRevision</code> and assert nothing about nullifiers). Assert
+the rebuilt attempt's nullifier is byte-identical to the first
+(derivation excludes revision) and that it reverts <code>NullifierUsed</code>.
+This is the fixture that proves a policy update cannot mint a second
+claim.
+(The cross-campaign and cross-epoch derivation checks assert <em>successes</em>
+and live in §13.1 as <code>fix-cross-campaign-derivation</code> and
+<code>fix-cross-epoch-derivation</code>.)</li>
+</ul>
+<p><strong>Curve and statement separation</strong></p>
+<ul>
+<li><code>neg-cross-curve-bls-under-bn254</code> — a well-formed BLS12-381 eligibility
+proof (valid under the future Stellar charity profile's encoding)
+submitted to <code>anchorAidClaim</code>: rejected — by length/decode where lengths
+differ, by <code>InvalidProof</code> where they coincide — and never anchored.</li>
+<li><code>neg-cross-curve-bn254-under-stellar</code> — the converse fixture, shipped
+with this profile and executed against the Stellar charity binding when
+that binding exists; until then it is a published vector with an explicit
+&quot;counterpart unimplemented&quot; marker, not silently omitted.</li>
+<li><code>neg-foreign-statement</code> — a valid BN254 proof for a <em>different</em> statement
+family with a compatible shape (the notary <code>sep-*</code> transition circuits
+are the natural donor): <code>InvalidProof</code>, because the statement tag
+constant differs. This is the domain-separation fixture.</li>
+</ul>
+<p><strong>Encoding</strong></p>
+<ul>
+<li><code>neg-out-of-field-campaign-id</code> — <code>registerCampaign</code> with
+<code>campaignId &gt;= r</code>: <code>ValueNotInField</code>. Then the injectivity attack:
+register a valid <code>campaignId</code>, attempt a second registration with
+<code>campaignId + r</code> (as a 32-byte value): rejected out-of-range, proving
+the aliasing route is closed at the door rather than by reduction.</li>
+<li><code>neg-out-of-field-nullifier</code> — claim with <code>nullifier &gt;= r</code>:
+<code>ValueNotInField</code> before any verifier call.</li>
+<li><code>neg-out-of-field-policy-root</code> — <code>registerEligibilityPolicy</code> with
+<code>policyRoot &gt;= r</code>: <code>ValueNotInField</code> at registration. The companion
+assertion is the rationale made testable: with the check removed in a
+harness build, an honest prover against the malformed policy fails as
+opaque <code>InvalidProof</code> — which is exactly the failure mode the
+registration-time check exists to prevent.</li>
+<li><code>neg-invalid-epoch-schedule</code> — <code>registerCampaign</code> with
+<code>epochSeconds == 0</code>: <code>InvalidEpochSchedule</code>; assert the campaign does
+not exist afterward and <code>currentEpoch</code> on a registered campaign never
+divides by zero.</li>
+<li><code>neg-claim-before-start</code> — register a campaign with a future
+<code>epochStart</code>; claim immediately: <code>CampaignNotStarted</code>. Mine past the
+start; assert the same presentation strategy succeeds in epoch 0.</li>
+<li><code>neg-reduction-forbidden</code> — a harness-level fixture: feed the client SDK
+a 32-byte value <code>&gt;= r</code> for a freely chosen identifier and assert it
+<em>redraws</em> rather than reduces; assert digests are limb-split by asserting
+the two limbs recompose to the exact digest.</li>
+</ul>
+<p><strong>Staleness and policy binding</strong></p>
+<ul>
+<li><code>neg-stale-campaign-revision</code> — proof bound to revision <em>n</em>, campaign
+advanced to <em>n+1</em> before inclusion: <code>StaleCampaignRevision(n+1, n)</code>;
+assert the client's mapped behavior is re-resolve → re-consent → rebuild,
+and that rebuilding succeeds.</li>
+<li><code>neg-unknown-policy</code> — presentation referencing a policy digest never
+registered for the campaign: <code>UnknownPolicy</code>, verifier never invoked.</li>
+<li><code>neg-wrong-policy-root</code> — policy registered with root A, proof built
+against root B: <code>InvalidProof</code> (the root is storage-derived into the
+public inputs; the mismatch is cryptographic, not comparative).</li>
+</ul>
+<p><strong>State protection</strong></p>
+<ul>
+<li><code>neg-anchor-conflict</code> — all three conflict shapes of §4.1, each
+asserting <code>AnchorConflict</code>, nothing overwritten, and the client
+taxonomy mapping to a security event, not a retry: (a) anchor a
+disbursement receipt digest, then submit a <em>different</em> digest under
+the same <code>claimDigest</code>; (b) resubmit an anchored claim with one stored
+field changed (e.g. a different <code>recipientCommitment</code>); (c) re-anchor
+an anchored donation receipt digest with a different
+<code>campaignRevision</code> — the metadata conflict, since the digest is the
+key and cannot itself collide.</li>
+<li><code>neg-status-gate</code> — new claims and policy registrations against paused,
+closed, and revoked campaigns: <code>CampaignNotActive</code> with the correct
+status code each time. The gate's <em>scope</em> is asserted from both sides:
+the exempt paths (receipt, disbursement, and report anchors on
+non-active campaigns) succeed, per <code>fix-disbursement-after-close</code>.</li>
+<li><code>neg-operator-gate</code> — every operator-attested entrypoint called from a
+non-admin account: <code>OperatorOnly</code>. Complemented in-fixture by the
+positive assertion that <code>anchorAidClaim</code> succeeds from an arbitrary
+account, proving the two authority classes are actually distinct.</li>
+<li><code>neg-restricted-mode</code> — with restricted mode enabled: <code>anchorAidClaim</code>
+reverts <code>RestrictedMode</code> for a fresh claim <strong>and</strong> for a byte-identical
+resubmission of an already-anchored one (the entrypoint gate precedes
+the idempotence precheck, §4); every operator-attested write (receipt,
+disbursement, report anchors, status changes) and every view still
+succeeds — the audit trail records through the emergency stop. Assert
+the <code>RestrictedModeChanged</code> events, that the manifest declares the
+power, and that disabling restores claim intake without state loss.</li>
+<li><code>neg-canonicalization-drift</code> — mutations of the §2.1 vectors that MUST
+change or refuse the digest: reordered members re-canonicalize to the
+identical digest (order never matters); an added unknown critical field
+is refused at schema validation before any digest is computed; a
+signature-only change DOES change the anchor digest (digest-over-signed)
+while leaving the signing input unchanged; and a non-JCS serialization
+of the same object is detected by byte comparison against the vector.</li>
+</ul>
+<p><strong>PII exclusion</strong></p>
+<ul>
+<li><code>neg-pii-in-public-state</code> — the strongest invariant gets the bluntest
+fixture, in three layers:
+<ol>
+<li><em>interface layer</em>: assert by ABI inspection that no external function
+accepts a <code>string</code> or variable-length <code>bytes</code> other than <code>proof</code>, and
+that no event declares one;</li>
+<li><em>client layer</em>: feed the SDK's anchor-preparation path objects whose
+fields contain planted PII patterns (a name, an IBAN, an email, a
+phone number, a street address — the fixture ships the exact planted
+set) and assert every value that reaches calldata is a fixed-width
+digest, commitment, or field element in which no planted pattern's
+bytes appear;</li>
+<li><em>chain layer</em>: run the full happy path, dump every emitted log and
+every storage slot the contract wrote, and grep for the planted
+patterns in raw and UTF-8-decoded form. Zero hits is the pass
+condition.
+The fixture MUST also assert the <code>encryptedRecipient</code> payload of the
+delivery binding never appears in calldata at all — sealed bytes are
+excluded from the transaction, not merely encrypted within it.</li>
+</ol>
+</li>
+<li><code>neg-reorg-before-finality</code> — orphan a block containing a claim anchor;
+assert the client reports <code>conflicting_state</code>, does not auto-resubmit,
+and that the manual rebuild path terminates in an idempotent anchor or
+<code>NullifierUsed</code> as §11.4 requires.</li>
+</ul>
+<h2 id="14-open-questions">14. Open questions</h2>
+<p>Each is genuinely undecided; the criteria state what settles it.</p>
+<ol>
+<li><strong>Epoch boundary grace.</strong> Should <code>anchorAidClaim</code> accept
+<code>epochIndex == currentEpoch - 1</code> within a short window after rollover?
+Accepting it removes a boundary-race failure for slow submissions;
+rejecting it (the current text) keeps the invariant &quot;one claim per
+credential per epoch&quot; exact, because a grace window lets one credential
+claim in both <em>k</em> (late) and <em>k+1</em> (early). Decide by: whether pilot
+policies use epochs as hard entitlement windows (no grace) or as
+rate-limiting (grace acceptable); measured submission-to-inclusion tail
+latency on BSC.</li>
+<li><strong>Circuit hash instance.</strong> Poseidon over BN254 is the working choice for
+nullifier derivation and the membership accumulator; the exact instance
+(width, rounds, MDS parameters) is unpinned. Decide by: which audited
+instance the chosen proving toolchain ships natively — a hand-ported
+instance would reintroduce exactly the bespoke-audit surface the BN254
+re-target avoids.</li>
+<li><strong>Second predicate family.</strong> Candidates beyond <code>membership-set-v1</code>:
+revocation-aware membership (root plus non-membership in a revocation
+set), attribute threshold over an issuer-signed committed attribute, and
+credential-expiry binding. Decide by: what the first real eligibility
+issuers can actually attest and revoke, not by circuit ambition.</li>
+<li><strong>Campaign-scoped fields in claim anchors.</strong> Charity.md §6.8 says public
+state &quot;may contain only the claim digest, scoped nullifier, and
+recipient commitment required by the profile&quot;; this profile's claim
+anchor also carries <code>campaignId</code>, <code>campaignRevision</code>, and <code>epochIndex</code>
+— campaign-scoped, not beneficiary-scoped, and arguably outside §6.8's
+intent, but the sentence does not say so. Needs an upstream
+clarification in Charity.md; this profile proceeds on the reading that
+§6.8 constrains beneficiary-derived values and flags the reading
+explicitly rather than silently assuming it.</li>
+<li><strong>Anchor timing versus small-count inference.</strong> Anchors carry no
+amounts and no identities, but their counts and timing are public, and a
+campaign with three claims in a small community is a correlation risk
+Charity.md §6.9 addresses only for <em>reports</em> (bucketing/suppression).
+Whether the operator SHOULD batch anchors on a declared schedule, and at
+what minimum batch, is undecided. Decide by: pilot community sizes and a
+written analysis of what batching actually buys against an adversary
+with off-chain knowledge — batching must not be promised as a mitigation
+before that analysis exists.</li>
+<li><strong>Disbursement anchor authority.</strong> This draft makes <code>anchorDisbursement</code>
+operator-attested. An alternative requires a claimant countersignature
+(binding the claimant's acknowledgment into the anchored digest) so the
+operator cannot unilaterally anchor a disbursement the claimant
+disputes. Decide by: whether the receipt-acknowledgment flow in
+UI-Charity.md §5.4/§5.6 gains a signed acknowledgment object; if it
+does, the countersigned variant is strictly better and this profile
+should adopt it before first deployment.</li>
+<li><strong>Proof encoding.</strong> Deliberately unpinned; the conformance suite owns
+the toolchain release and exact bytes, inherited rationale from the
+notary EVM profile. Decided when the fixture chain first goes green.</li>
+</ol>
+<h2 id="15-current-implementation-gaps">15. Current implementation gaps</h2>
+<p>Everything below is unbuilt; this list is the work plan, not a polish list:</p>
+<ul>
+<li><strong>Contracts</strong>: <code>onym-contracts</code> contains no charity Solidity — no
+<code>cha-anchor</code>, no generated eligibility verifiers, no custom errors, no
+events.</li>
+<li><strong>Circuits</strong>: no <code>membership-set-v1</code> constraint system, setup, or
+verifying keys; no Poseidon instance selection.</li>
+<li><strong>Prover</strong>: the mobile Rust FFI has no charity proof backend (and no
+BN254 backend at all — that gap is shared with the notary EVM profile
+and MUST be built once, not twice).</li>
+<li><strong>Relayer</strong>: <code>onym-relayer</code> has no charity operations and no EVM
+backend; the operator manifest it serves (as of this draft's date)
+declares Stellar notary support only — the served bytes are
+authoritative, and no manifest anywhere declares a charity profile.</li>
+<li><strong>Stellar sibling</strong>: no <code>UI-Charity-Stellar.md</code> exists; the
+<code>neg-cross-curve-bn254-under-stellar</code> fixture has no counterpart to run
+against.</li>
+<li><strong>Clients</strong>: no charity module implements the UI-Charity.md port; no
+eligibility flow, no anchor reconciliation.</li>
+<li><strong>Fixtures</strong>: none of §13 exists in any repository.</li>
+</ul>
+<h2 id="16-acceptance-criteria">16. Acceptance criteria</h2>
+<p>This profile is satisfied when:</p>
+<ol>
+<li>a <code>cha-anchor</code> deployment is cryptographically bound to chain ID,
+address, runtime code hash, verifier anchors, and operator, and a client
+verifies all of it plus <code>getVerifier()</code>/<code>getOperatorAdmin()</code> against the
+signed manifest before first use;</li>
+<li>the two write-authority classes are contract-enforced: every
+operator-attested entrypoint refuses non-admin senders, and claim
+anchoring succeeds from arbitrary senders on proof validity alone;</li>
+<li>one credential yields exactly one anchored claim per campaign per epoch,
+across campaign revisions, proven by the §13.2 scope fixtures;</li>
+<li>every error in §4.1 is a distinct decodable selector whose mapped retry
+class the client actually implements;</li>
+<li>the §13.2 PII fixture passes at all three layers on the full happy path;</li>
+<li>cross-curve and cross-statement proofs are rejected in fixtures, in both
+directions once the Stellar sibling exists;</li>
+<li>write reconciliation survives nonce replacement, unknown outcomes, and
+pre-finality reorgs with the operation ID as the stable key and
+<code>conflicting_state</code> treated as a security event; and</li>
+<li>a third-party client, relayer, RPC provider, and deployment interoperate
+from the published profile and fixtures alone.</li>
+</ol>
+<h2 id="17-references">17. References</h2>
+<ol>
+<li>Technology-neutral charity boundary: <a href="../charity/Charity.html">Charity.md</a></li>
+<li>Messenger application profile: <a href="../charity/UI-Charity.html">UI-Charity.md</a></li>
+<li>Notary EVM implementation profile (source of the shared EVM rules,
+restated in §3, §5, §11, §12): <a href="../notary/UI-Notary-BNB.html">../notary/UI-Notary-BNB.md</a></li>
+<li>Abstract notary boundary: <a href="../notary/UI-Notary.html">../notary/UI-Notary.md</a></li>
+<li>Onym contracts repository: <a href="https://github.com/onymchat/onym-contracts">https://github.com/onymchat/onym-contracts</a></li>
+<li>Onym transaction relayer: <a href="https://github.com/onymchat/onym-relayer">https://github.com/onymchat/onym-relayer</a></li>
+<li>RFC 8785, JSON Canonicalization Scheme (JCS):
+<a href="https://www.rfc-editor.org/rfc/rfc8785">https://www.rfc-editor.org/rfc/rfc8785</a></li>
+<li>EIP-155 (chain ID): <a href="https://eips.ethereum.org/EIPS/eip-155">https://eips.ethereum.org/EIPS/eip-155</a></li>
+<li>EIP-196/197 (BN254 precompiles):
+<a href="https://eips.ethereum.org/EIPS/eip-196">https://eips.ethereum.org/EIPS/eip-196</a>,
+<a href="https://eips.ethereum.org/EIPS/eip-197">https://eips.ethereum.org/EIPS/eip-197</a></li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/charity/UI-Charity-BNB.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="../../remediation.html">Remediation plan</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as a sihtasutus under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

@@ -42,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Moderation authority</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">Apple case surface finalized</span><span class="tag">reference implementation</span><span class="tag">Apple path in production</span><span class="tag">08.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/moderation/Moderation.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">Apple case surface finalized</span><span class="tag">reference implementation</span><span class="tag">Apple path in production</span><span class="tag">08.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/moderation/Moderation.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-authority-contract-boundary">Onym Moderation Authority Contract Boundary</h1>
@@ -2317,10 +2317,9 @@ enforcement-profile pin; the Apple
 service's authority-signature enforcement defaults off; numeric
 manifest/mandate/report/verdict version fields are decoded but not rejected
 when they differ from 1; Authority startup does not validate the moderation
-seat/profile ID; and no current iOS call registers the finalized mandate with
-the Authority. There is no production deployment. The current iOS authority
-client remains a typed seam with no network transport, as the DeviceCheck
-profile records.</p>
+seat/profile ID. There is no production deployment. The iOS authority client
+is URLSession-backed and registers the finalized two-signature mandate with
+the Authority from the consent flow, as the DeviceCheck profile records.</p>
 <h2 id="14-acceptance-criteria">14. Acceptance criteria</h2>
 <p>The moderation seat is successfully specified when:</p>
 <ol>

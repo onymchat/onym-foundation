@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym Discovery: Static Snapshot / Ed25519 Implementation Profile — Onym Foundation</title>
+<meta name="description" content="Onym Discovery: Static Snapshot / Ed25519 Implementation Profile — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/discovery/Discovery-Static-Ed25519.html">
+<meta property="og:title" content="Onym Discovery: Static Snapshot / Ed25519 Implementation Profile — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/discovery/Discovery-Static-Ed25519.html">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e0e10">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">reference implementation</span><span class="tag">provider live at discovery.onym.app</span><span class="tag">13.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/discovery/Discovery-Static-Ed25519.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-discovery-static-snapshot-ed25519-implementation-profile">Onym Discovery: Static Snapshot / Ed25519 Implementation Profile</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>This profile maps the technology-neutral Discovery boundary onto signed
+static JSON files served over HTTPS: an Ed25519-signed provider manifest
+and append-only, expiring catalog snapshots that a client downloads whole
+and filters locally.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../discovery/Discovery.html">Discovery.md</a>, which remains authoritative for roles,
+authority, privacy, economics, and error semantics. The abstract contract
+recommends exactly this shape for a first profile: &quot;signed static snapshots
+over account-based remote search, because that makes verification, caching,
+mirroring, comparison, and local private filtering straightforward&quot; (§16).</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>profile requirements</strong>, which are required for a complete conforming
+implementation; and</li>
+<li><strong>gaps</strong> — §11 is the single source of truth for implementation
+status; no other section makes status claims.</li>
+</ul>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">This profile's mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider identity</td>
+<td><code>onym:key:&lt;64-lowercase-hex Ed25519 public key&gt;</code></td>
+</tr>
+<tr>
+<td>Provider manifest</td>
+<td>Static <code>manifest.json</code>, self-signed, served byte-for-byte</td>
+</tr>
+<tr>
+<td>Catalog snapshot</td>
+<td>Static JSON file per catalog, signed by the same operator key</td>
+</tr>
+<tr>
+<td>Snapshot chain</td>
+<td><code>sequence</code> strictly increasing by 1; <code>previousDigest</code> over prior published bytes</td>
+</tr>
+<tr>
+<td>Query</td>
+<td>None server-side; client downloads the full snapshot and filters locally</td>
+</tr>
+<tr>
+<td>Signature suite</td>
+<td>Ed25519 over canonical bytes (§3)</td>
+</tr>
+<tr>
+<td>Digest</td>
+<td><code>sha256:&lt;64-lowercase-hex&gt;</code> over exact published bytes</td>
+</tr>
+<tr>
+<td>Transport</td>
+<td>HTTPS static file hosting; no accounts, cookies, or query endpoints</td>
+</tr>
+<tr>
+<td>Capabilities</td>
+<td><code>signed-snapshot-v1</code>, <code>local-filtering-v1</code></td>
+</tr>
+</tbody>
+</table></div><p><code>version</code> is exactly <code>1</code> in every document of this profile; any other
+value — including a higher major — is <code>provider_manifest_invalid</code> /
+<code>snapshot_invalid</code> for the document carrying it, per the abstract §16
+unknown-major rule.</p>
+<p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:discovery-implementation:static-ed25519-v1
+</code></pre>
+<p>Out of scope for v1, stated here so their absence reads as a decision and
+not an oversight: server-side query, pagination, and transparency-log
+profiles (an oversized snapshot is split into multiple declared catalogs);
+<strong>private or authenticated catalogs</strong> (the abstract §10 permits them —
+this profile serves public catalogs only; a v1 client <strong>skips</strong> any
+catalog whose <code>audience</code> is not exactly <code>&quot;public&quot;</code> — skipped, not
+<code>provider_manifest_invalid</code>, so future audience values do not brick v1
+clients, and no soft private-catalog path exists — and the client must
+surface the skipped-catalog count on the source, so a manifest whose
+catalogs are all skipped reads as an empty-by-policy source, never a
+silently empty one); and <strong>operator
+key rotation</strong> (§6 — re-adding the source is the only path).</p>
+<p>The field name is <code>implementationProfileId</code>, matching the sibling seat
+profiles' convention. (An earlier draft used <code>implementationProfile</code>;
+it was renamed while no deployed provider had signed any bytes; the
+migration cost fell on the already-written client packages, which
+adopted the rename and regenerated fixtures — see §11.)</p>
+<h2 id="2-identifiers">2. Identifiers</h2>
+<ul>
+<li><strong>Operator key</strong>: <code>onym:key:&lt;hex&gt;</code> where <code>&lt;hex&gt;</code> is the 64-character
+lowercase hex encoding of a 32-byte Ed25519 public key. The same syntax
+used across Onym seats.</li>
+<li><strong>Provider ID</strong>: <code>onym:component:&lt;id&gt;</code> where <code>&lt;id&gt;</code> is a stable,
+operator-chosen token matching <code>[a-z0-9-]{1,64}</code>. The provider ID names
+the service; the operator key holds its authority.</li>
+<li><strong>Digest</strong>: the string <code>sha256:</code> followed by 64 lowercase hex characters,
+always computed over the <strong>exact published bytes</strong> of the referenced
+document, never over its canonical form. Byte-for-byte serving is what
+makes digests stable.</li>
+<li><strong>Timestamps</strong>: RFC 3339 / ISO-8601 UTC with <code>Z</code> suffix, second
+precision (<code>2026-08-13T12:00:00Z</code>).</li>
+</ul>
+<h2 id="3-canonical-encoding-and-signing">3. Canonical encoding and signing</h2>
+<p>Signing bytes are produced exactly as in the moderation seat's reference
+implementation (<code>onym-moderation</code> <code>authority/src/canonical.rs</code> /
+<code>apple/src/canonical.rs</code>), which is the system's precedent for
+cross-language byte agreement:</p>
+<ol>
+<li>decode the document as UTF-8 JSON; the top level must be an object;</li>
+<li>remove the <code>signature</code> field <strong>structurally and at the top level
+only</strong> — a nested <code>signature</code> key anywhere deeper is ordinary signed
+content, canonicalized like any other key (never string surgery:
+planted signature copies elsewhere in the document make textual
+removal forgeable, which is also why removal must not recurse);</li>
+<li>re-serialize compactly (no insignificant whitespace) with all object
+keys, at every nesting level, sorted by UTF-8 byte order; the <code>/</code>
+character is not escaped.</li>
+</ol>
+<p>The sort is <strong>UTF-8 byte order</strong>, stated normatively rather than by
+reference to any library: Rust <code>serde_json</code>'s <code>BTreeMap</code> ordering conforms;
+Foundation's <code>.sortedKeys</code> does <strong>not</strong> in general, because it sorts
+case-insensitively — and this profile's keys are camelCase, so two keys
+differing only by case at a discriminating position would diverge. A Swift
+implementation must therefore either sort explicitly by UTF-8 bytes or
+prove, via the mandatory case-divergence fixture (§10 item 1), that its
+serializer agrees on every document shape this profile can produce.</p>
+<p>Constraints that keep canonicalization trivial:</p>
+<ul>
+<li>all numbers are non-negative integers within 2^53 − 1; no floats, no
+exponents, no leading zeros;</li>
+<li>no duplicate keys; a document with duplicate keys is invalid;</li>
+<li>strings are valid UTF-8, and escaping is pinned, not delegated to a
+serializer (the same divergence class §3 rejects for key sorting):
+escape exactly <code>&quot;</code> , <code>\\</code>, and control characters U+0000–U+001F —
+using the two-character forms <code>\&quot;</code> <code>\\</code> <code>\b</code> <code>\f</code> <code>\n</code> <code>\r</code> <code>\t</code>
+where defined and <code>\u00xx</code> with <strong>lowercase</strong> hex otherwise — and
+escape nothing else: no <code>/</code>, no non-ASCII, no U+007F. (This is Rust
+<code>serde_json</code>'s exact behavior; any other serializer must prove
+agreement via the §10 item-1 escaping vector.)</li>
+</ul>
+<p>The <strong>signature</strong> is Ed25519 over the canonical bytes, embedded in the
+document's <code>signature</code> field as base64 (unpadded or padded both accepted on
+read; writers emit standard padded base64). A detached sibling file
+<code>&lt;name&gt;.json.sig</code> MAY be published for tooling that verifies before
+parsing; its content is exactly the embedded signature's standard padded
+base64 followed by one newline — never raw bytes. Agreement between the
+embedded and detached forms is defined <strong>after base64 decoding</strong>: both
+must decode to the same 64 signature bytes, regardless of padding
+differences on the embedded side. A client that fetches the detached
+form MUST fail closed on disagreement — <code>provider_manifest_invalid</code> /
+<code>snapshot_invalid</code> for that document — a stale or attacker-served
+<code>.sig</code> is never ignorable.</p>
+<p>Both the provider manifest and every catalog snapshot are signed by the
+<strong>same operator key</strong> named in the provider manifest's <code>operator</code> field.</p>
+<h2 id="4-document-shapes">4. Document shapes</h2>
+<p>The abstract objects of <code>Discovery.md</code> §5 are used with these
+profile-pinned refinements. Unknown top-level fields are rejected
+(<code>provider_manifest_invalid</code> / <code>snapshot_invalid</code>); unknown fields inside a
+<code>CatalogEntry</code> cause only that entry to be skipped (lossy entry decoding).</p>
+<h3 id="41-provider-manifest">4.1 Provider manifest</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:discovery-implementation:static-ed25519-v1&quot;,
+  &quot;providerId&quot;: &quot;onym:component:onym-discovery&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;hex&gt;&quot;,
+  &quot;seat&quot;: &quot;discovery&quot;,
+  &quot;catalogs&quot;: [
+    {
+      &quot;catalogId&quot;: &quot;public-all-seats&quot;,
+      &quot;snapshot&quot;: &quot;https://discovery.onym.app/catalogs/public-all-seats.json&quot;,
+      &quot;audience&quot;: &quot;public&quot;,
+      &quot;seatTypes&quot;: [&quot;transport.message&quot;, &quot;notary&quot;, &quot;moderation&quot;],
+      &quot;policy&quot;: &quot;sha256:&lt;policy-document-digest&gt;&quot;,
+      &quot;policyUri&quot;: &quot;https://discovery.onym.app/policies/public-all-seats.md&quot;
+    }
+  ],
+  &quot;capabilities&quot;: [&quot;signed-snapshot-v1&quot;, &quot;local-filtering-v1&quot;],
+  &quot;privacyProfile&quot;: &quot;sha256:&lt;privacy-profile-digest&gt;&quot;,
+  &quot;privacyProfileUri&quot;: &quot;https://discovery.onym.app/privacy.md&quot;,
+  &quot;offers&quot;: [],
+  &quot;validUntil&quot;: &quot;2026-12-31T23:59:59Z&quot;,
+  &quot;signature&quot;: &quot;&lt;base64-ed25519&gt;&quot;
+}
+</code></pre>
+<p><code>privacyProfile</code> + <code>privacyProfileUri</code> and every descriptor's
+<code>policyUri</code> are <strong>required</strong>: the abstract contract obliges a provider
+to declare and follow a privacy profile (§10, §14.1) and to publish the
+exact pinned policy (§14.1) — a public catalog has no reason to omit
+either, and without <code>policyUri</code> the <code>policy_unavailable</code> error is
+unreachable and rank could never be shown as policy-backed.</p>
+<p>Field requirements and strictness, normatively (levels not shown for
+<code>CatalogEntry</code> follow §4.2's entry-lossy rule):</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Document / level</th>
+<th scope="col">Required</th>
+<th scope="col">Optional</th>
+<th scope="col">Unknown keys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider manifest (top)</td>
+<td>version, implementationProfileId, providerId, operator, seat, catalogs, capabilities, offers, privacyProfile, privacyProfileUri, validUntil, signature</td>
+<td>—</td>
+<td>document invalid</td>
+</tr>
+<tr>
+<td><code>catalogs[]</code> descriptor</td>
+<td>catalogId, snapshot, audience, seatTypes, policy, policyUri</td>
+<td>—</td>
+<td>descriptor skipped (surfaced in the source's skipped-catalog count); a manifest where zero descriptors even <strong>decode</strong> is <code>provider_manifest_invalid</code> — audience-based skips (§1) do NOT count toward invalidity: a manifest of decodable but all-non-public catalogs is a valid, empty-by-policy source</td>
+</tr>
+<tr>
+<td>Snapshot (top)</td>
+<td>version, implementationProfileId, catalogId, providerId, sequence, policyDigest, generatedAt, expiresAt, entries, signature; previousDigest <strong>required when sequence &gt; 1, forbidden at 1</strong></td>
+<td>—</td>
+<td>document invalid</td>
+</tr>
+<tr>
+<td><code>CatalogEntry</code> + its nested <code>manifest{}</code></td>
+<td>componentId, seatType, manifest{uri,digest}, operator, listedAt, relationship, placement</td>
+<td>profiles, evidence, reviewedAt, status</td>
+<td>entry skipped (lossy)</td>
+</tr>
+</tbody>
+</table></div><p><code>catalogId</code> matches <code>[a-z0-9-]{1,64}</code>; a duplicate among the decoded
+descriptors is <code>provider_manifest_invalid</code> (pinned, like duplicate
+<code>componentId</code>, for cross-client determinism).
+Every <code>snapshot</code>, <code>policyUri</code>, and <code>privacyProfileUri</code> obeys the URI rules
+of §7. <code>seatTypes</code> members are either seat-type tokens matching
+<code>[a-z0-9.-]{1,64}</code> or the literal <code>&quot;*&quot;</code> wildcard the abstract §5.1
+defines (policy accepts every seat type; not a claim the snapshot
+contains one of each); <code>&quot;*&quot;</code> must appear alone if present. A member
+matching neither form <strong>skips the descriptor</strong> (aligned with the
+unknown-key rule — one lossiness model per level), surfaced in the
+skipped-catalog count. An empty <code>seatTypes</code> array likewise skips the
+descriptor: a catalog whose policy accepts no seat type is not a
+defined state.</p>
+<h3 id="42-catalog-snapshot">4.2 Catalog snapshot</h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;implementationProfileId&quot;: &quot;onym:discovery-implementation:static-ed25519-v1&quot;,
+  &quot;catalogId&quot;: &quot;public-all-seats&quot;,
+  &quot;providerId&quot;: &quot;onym:component:onym-discovery&quot;,
+  &quot;sequence&quot;: 42,
+  &quot;previousDigest&quot;: &quot;sha256:&lt;bytes-of-snapshot-41&gt;&quot;,
+  &quot;policyDigest&quot;: &quot;sha256:&lt;policy-document-digest&gt;&quot;,
+  &quot;generatedAt&quot;: &quot;2026-08-13T12:00:00Z&quot;,
+  &quot;expiresAt&quot;: &quot;2026-09-13T12:00:00Z&quot;,
+  &quot;entries&quot;: [
+    {
+      &quot;componentId&quot;: &quot;onym:component:onym-relayer&quot;,
+      &quot;seatType&quot;: &quot;notary&quot;,
+      &quot;manifest&quot;: {
+        &quot;uri&quot;: &quot;https://relayer.onym.app/manifest.json&quot;,
+        &quot;digest&quot;: &quot;sha256:&lt;manifest-bytes&gt;&quot;
+      },
+      &quot;operator&quot;: &quot;onym:key:&lt;hex&gt;&quot;,
+      &quot;profiles&quot;: [&quot;onym:notary-implementation:stellar-soroban-sep-plonk-v1&quot;],
+      &quot;evidence&quot;: [],
+      &quot;listedAt&quot;: &quot;2026-08-13T00:00:00Z&quot;,
+      &quot;reviewedAt&quot;: &quot;2026-08-13T00:00:00Z&quot;,
+      &quot;relationship&quot;: &quot;common-owner&quot;,
+      &quot;placement&quot;: &quot;policy-ranked&quot;
+    }
+  ],
+  &quot;signature&quot;: &quot;&lt;base64-ed25519&gt;&quot;
+}
+</code></pre>
+<p>Chain rules:</p>
+<ul>
+<li><code>sequence</code> starts at 1 and increases by exactly 1 per published snapshot
+of the same <code>catalogId</code>. This is a <strong>publisher</strong> rule — a provider MUST
+NOT publish a gap or a repeat; what a <em>verifier</em> does on observing a
+repeat (no-op refresh vs fork) or a gap (continuity walk, then
+accept-with-note) is defined solely by §6;</li>
+<li><code>previousDigest</code> is the SHA-256 of the previous snapshot's exact
+published bytes; it is absent (field omitted) only when <code>sequence</code> is 1;</li>
+<li>a correction is a new sequence; published snapshot bytes are immutable;</li>
+<li><code>policyDigest</code> must equal the <code>policy</code> digest the provider manifest
+declares for this <code>catalogId</code> — <strong>or the immediately previous
+declaration</strong> the client retained for it before the last manifest
+refresh, accepted with a surfaced policy-transition note. Two static
+files cannot be swapped atomically, so publishers MUST update the
+manifest first and the snapshot next, and the one-generation grace is
+what keeps conforming clients from rejecting the catalog inside that
+window. Any other digest is <code>snapshot_invalid</code>;</li>
+<li><code>expiresAt</code> must be strictly after <code>generatedAt</code>; a snapshot born
+expired is <code>snapshot_invalid</code>;</li>
+<li><code>generatedAt</code> must not lie in the verifier's future beyond a 10-minute
+clock-skew allowance; a future-dated snapshot is <code>snapshot_invalid</code>
+(otherwise the 90-day ceiling could be minted forward);</li>
+<li><code>expiresAt</code> − <code>generatedAt</code> must not exceed 90 days — a hard ceiling,
+not a default. Providers SHOULD publish much shorter windows (days to a
+few weeks): expiry is the abstract contract's primary defense (§13)
+against a removed or compromised instance remaining recommended, and a
+quarter-long window defeats it. Expiry is evaluated with the same 10-minute clock-skew allowance as
+<code>generatedAt</code> (a fast clock must not reject a fresh snapshot).
+Expired snapshots are <code>snapshot_expired</code> and a client must not treat
+their entries as current recommendations.</li>
+</ul>
+<p>Entry rules:</p>
+<ul>
+<li><code>entries</code> is ordered; the order is the provider's declared policy rank;</li>
+<li>duplicate <code>componentId</code> values are <code>snapshot_invalid</code>, detected over
+the <strong>decoded-and-surviving</strong> entries after lossy skipping (pinned so
+byte-identical fixtures verify identically on every client: a
+duplicate hidden inside a skipped-malformed entry does not invalidate
+the snapshot);</li>
+<li><code>manifest.digest</code> binds the destination manifest bytes the provider
+reviewed; a fetched manifest that hashes differently is
+<code>entry_manifest_mismatch</code> — the entry is rejected, never &quot;refreshed&quot; by
+trusting newer bytes the provider did not review;</li>
+<li><code>operator</code> repeats the destination operator key for indexing; the fetched
+manifest remains authoritative (<code>Discovery.md</code> §5.3);</li>
+<li><code>status</code>, when present, is <code>{&quot;state&quot;: &quot;warning&quot; | &quot;review&quot;, &quot;uri&quot;: &quot;&lt;https-informational-uri&gt;&quot;}</code> (<code>uri</code> optional) — <strong>defined in v1</strong>,
+optional for writers, and rendered distinctly by clients when present
+(abstract §9's disclosed-warning-or-review requirement). It is defined
+now rather than deferred because entry-lossy decoding would make a
+later addition silently drop the very entries carrying warnings. An
+undecodable <code>status</code> skips the entry like any other malformed field;</li>
+<li><code>evidence</code> must be absent or the empty array in v1: its member shape
+(issuer, subject, scope, artifact, result, expiry, status — the
+abstract §13 audit-laundering fields) is deferred to v2, and an
+unrenderable attestation is exactly what that row forbids presenting.
+A non-empty <code>evidence</code> skips the entry;</li>
+<li>within one provider, entries for the same <code>componentId</code> across its
+catalogs must carry the same <code>manifest.digest</code>; a mismatch is
+provider-level equivocation, surfaced as a source integrity warning
+— the cheapest equivocation must not be the one nobody checks;</li>
+<li>the accepted <code>relationship</code> values for this profile version are pinned
+inline: <code>none</code>, <code>catalog-subscriber</code>, <code>listing-fee</code>,
+<code>sponsored-placement</code>, <code>common-owner</code>, <code>catalog-sponsor</code>,
+<code>other-disclosed</code>. The abstract contract calls this set extensible
+(§5.3); this profile deliberately <strong>fails closed</strong> against it — an
+entry with an unknown <code>relationship</code>, or an unknown <code>placement</code>, is
+skipped rather than defaulted, because a commercial disclosure the
+client cannot render is a disclosure the user never saw. The accepted
+<code>placement</code> values are pinned the same way: <code>policy-ranked</code>,
+<code>sponsored</code>. Admitting a new relationship or placement value is a
+profile version bump, not a soft addition.</li>
+</ul>
+<h3 id="43-destination-seat-manifests">4.3 Destination seat manifests</h3>
+<p><code>manifest.uri</code> points at the instance's own signed <code>ServiceManifest</code>,
+served byte-for-byte under its destination seat's contract:</p>
+<ul>
+<li><strong>moderation</strong> — the authority manifest (<code>onym-moderation</code>), already
+served at <code>GET /manifest.json</code> with a detached <code>.sig</code>;</li>
+<li><strong>notary</strong> — the notary operator manifest specified in
+<a href="../notary/UI-Notary-BNB.html"><code>../notary/UI-Notary-BNB.md</code></a> §8.1;</li>
+<li><strong>transport.message</strong> — the courier manifest of
+<a href="../message/UI-Message.html"><code>../message/UI-Message.md</code></a> §5.3 (a courier
+whose endpoint is a WebSocket relay hosts its HTTPS manifest elsewhere,
+e.g. on the provider's static host, signed by the courier's own operator
+key);</li>
+<li><strong>blob storage</strong> and other seats — their seat contracts' manifests as
+they gain signed forms.</li>
+</ul>
+<p>Discovery verification stops at the digest and the destination operator's
+signature; whether the manifest satisfies the <em>destination seat's</em> rules is
+that seat's contract, applied by the client after discovery.</p>
+<h2 id="5-serving">5. Serving</h2>
+<ul>
+<li>All files are served over HTTPS as static content, byte-for-byte; any
+re-serialization breaks digests and signatures and is a conforming
+client's reason to reject.</li>
+<li>The provider manifest lives at a stable HTTPS URL chosen by the operator
+(recommended: <code>https://&lt;host&gt;/manifest.json</code>). Snapshot URLs come only
+from the verified provider manifest, and each catalog's <code>snapshot</code> URL
+always serves the latest snapshot.</li>
+<li>A provider <strong>MUST</strong> retain every superseded snapshot that has not yet
+expired as a sibling file named <code>&lt;catalogId&gt;-&lt;sequence&gt;.json</code> (e.g.
+<code>public-all-seats-41.json</code> beside <code>public-all-seats.json</code> — a flat
+scheme, because <code>&lt;name&gt;.json</code> and a <code>&lt;name&gt;/</code> directory cannot coexist
+on filesystem-backed static hosts). This retention window is what makes
+forward jumps auditable: without it, an equivocator could publish
+divergent branches that always skip a sequence and never face a
+continuity check. Retention beyond expiry is optional.</li>
+<li>No cookies, no authentication, no per-user URLs for public catalogs
+(abstract §10 baseline). <code>Cache-Control</code> is operator's choice; clients
+bound staleness by <code>expiresAt</code>, not by HTTP caching.</li>
+<li>Mirroring is explicitly permitted: signatures and digests make bytes
+location-independent. A mirror is not a new provider; the operator key
+is the identity.</li>
+</ul>
+<h2 id="6-client-verification-procedure">6. Client verification procedure</h2>
+<p>On adding a provider (by URL entry, QR, file, or deep link):</p>
+<ol>
+<li>fetch the manifest within the size bounds of §7;</li>
+<li>parse and check <code>version</code>, <code>implementationProfileId</code>, <code>seat</code>,
+<code>providerId</code>, and <code>validUntil</code>;</li>
+<li>verify the embedded signature against the manifest's own <code>operator</code>
+key;</li>
+<li>display the operator key fingerprint for user confirmation and <strong>pin
+the key</strong> (trust-on-first-use; a later manifest signed by a different
+key is <code>provider_manifest_invalid</code>, never a silent rotation).
+<strong>Key rotation is out of scope for v1 of this profile</strong>: there is no
+rotation-statement document, and the only path to a new key is the
+user removing the source and re-adding it — a fresh, explicit TOFU
+decision. A future profile version may define an old-key-signed
+rotation statement; until it does, nothing may be interpreted as one.</li>
+</ol>
+<p>On each refresh cycle, <strong>first re-fetch the provider manifest</strong> from its
+stable URL: unchanged bytes are a no-op; changed bytes are verified
+against the pinned operator key (§6 add-time rules — a different key is
+<code>provider_manifest_invalid</code>, never a silent rotation), require
+<code>providerId</code>, <code>seat</code>, and <code>implementationProfileId</code> to match the pinned
+source (a mismatch is <code>provider_manifest_invalid</code> — the URL now serves a
+different provider), and, when valid, replace the working manifest (catalogs added/removed/re-pointed, policy
+digests updated). Retained per-catalog sequence state is keyed by
+<code>(providerId, catalogId)</code> and is <strong>never deleted when a catalogId
+disappears</strong> from the manifest: if the catalog later returns, chain
+comparison resumes against the retained digest and sequence, so a
+returning catalog at a lower sequence is a rollback, not a fresh
+catalog. A pinned manifest whose <code>validUntil</code> has passed puts
+the <strong>source into an expired state</strong>: existing data may be shown only as
+clearly stale history, no new snapshot is accepted, and the state is
+surfaced on the source — this is what makes §9's expired-<code>validUntil</code>
+trigger reachable after add time.</p>
+<p>Then, per catalog:</p>
+<ol>
+<li>fetch the snapshot from the current manifest's <code>snapshot</code> URL within
+bounds;</li>
+<li>verify the signature against the pinned operator key;</li>
+<li>check <code>catalogId</code>/<code>providerId</code> match, <code>version</code>, profile, expiry;</li>
+<li>compare <code>sequence</code> and <code>previousDigest</code> against the last retained
+acceptance, distinguishing four cases:
+<ul>
+<li><strong>no-op refresh</strong> — <code>sequence</code> equal to the retained one and bytes
+hashing to the retained digest: the provider simply hasn't
+published since; keep the retained acceptance, no warning;</li>
+<li><strong>rollback</strong> — <code>sequence</code> strictly lower than the retained one:
+<code>snapshot_invalid</code>, surfaced as a source integrity warning;</li>
+<li><strong>fork</strong> — the same <code>sequence</code> with different bytes, or
+<code>sequence</code> retained + 1 whose <code>previousDigest</code> does not match the
+retained snapshot's digest: <code>snapshot_invalid</code>, evidence of
+equivocation, never silently resolved toward either side;</li>
+<li><strong>forward jump</strong> — <code>sequence</code> more than retained + 1 (the client
+missed intermediate publications): the client MUST first attempt to
+fetch the intermediate files (§5 requires their retention within
+the expiry window), each URL derived normatively by replacing the
+final path segment of the manifest's <code>snapshot</code> URL with
+<code>&lt;catalogId&gt;-&lt;sequence&gt;.json</code> — the derived URL must itself pass
+the §7 rules, walking at most the §7 length bound (a larger gap
+degrades to accept-with-note). Three outcomes: the chain verifies
+through the intermediates (full acceptance); intermediates are
+unavailable (accept-with-note, below); or intermediates fetch but
+the chain <strong>provably breaks</strong> — that is equivocation,
+<code>snapshot_invalid</code>, the strongest signal here, never a note.
+Intermediates are <strong>chain-continuity evidence only</strong>:
+signature, chain, and schema are checked but <code>expiresAt</code> is NOT
+evaluated (a superseded snapshot is expected to age out) — and verify chain
+continuity through them, in which case the jump verifies fully.
+Only when intermediates are unavailable does the client <strong>accept
+with a source-integrity note.</strong> The note asserts a provider
+retention failure only when the missing intermediate lies within
+the §5 retention window (its sequence's snapshot would not yet
+have expired); a gap older than the window is stated as
+unverifiable-by-construction, with no blame — §5 never required
+those files to exist. A client that skips publications still must not permanently
+reject an honest catalog;</li>
+</ul>
+</li>
+<li>decode entries lossily; retain at least the digest of the accepted
+snapshot for future chain comparison.</li>
+</ol>
+<p>Before presenting or selecting an instance:</p>
+<ol>
+<li>fetch the destination manifest from <code>manifest.uri</code> within bounds;</li>
+<li>verify its bytes against <code>manifest.digest</code>
+(<code>entry_manifest_mismatch</code> on failure);</li>
+<li>compare the entry's indexing fields against the fetched manifest:
+a conflict on <code>seatType</code>, <code>operator</code>, or any <code>profiles</code> member is
+also <code>entry_manifest_mismatch</code> — the catalog must not advertise
+capabilities the operator's signed manifest does not declare
+(exactly the extrapolation the notary operator-manifest rules
+forbid);</li>
+<li>verify the destination operator's signature under its seat's rules;</li>
+<li>apply the destination seat's own compatibility and consent flow.</li>
+</ol>
+<p>Direct import of a destination manifest (no provider) follows only the
+last block, with the digest supplied by the user's source or skipped in
+favor of the operator-signature check — the abstract contract's §8
+obligation that absence from every catalog never blocks use.</p>
+<h2 id="7-bounds-and-uri-rules">7. Bounds and URI rules</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Bound</th>
+<th scope="col">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider manifest size</td>
+<td>≤ 64 KiB</td>
+</tr>
+<tr>
+<td>Catalog snapshot size</td>
+<td>≤ 1 MiB</td>
+</tr>
+<tr>
+<td>Entries per snapshot</td>
+<td>≤ 512</td>
+</tr>
+<tr>
+<td>Destination manifest size</td>
+<td>≤ 256 KiB</td>
+</tr>
+<tr>
+<td>Policy / privacy document size</td>
+<td>≤ 1 MiB</td>
+</tr>
+<tr>
+<td>Redirects per fetch</td>
+<td>≤ 3, HTTPS-to-HTTPS only</td>
+</tr>
+<tr>
+<td>Fetch timeout</td>
+<td>≤ 60 s per request</td>
+</tr>
+<tr>
+<td>Continuity-walk length</td>
+<td>≤ 64 intermediates per refresh; a larger gap degrades to accept-with-note (never rejection)</td>
+</tr>
+</tbody>
+</table></div><p>URI rules for every URI in these documents (<code>snapshot</code>, <code>manifest.uri</code>,
+<code>policyUri</code>, <code>privacyProfileUri</code>, evidence URIs):</p>
+<ul>
+<li>scheme <code>https</code> only; no <code>http</code>, no custom schemes;</li>
+<li>host is a DNS name — IP literals (v4 or v6) are invalid, which closes
+the obvious SSRF-to-local-network path; clients additionally refuse to
+follow redirects to IP literals or non-HTTPS targets;</li>
+<li>no userinfo, no query, no fragment;</li>
+<li>no explicit port of any kind, including a redundant <code>:443</code>: writers
+must omit it, and a verifier MUST reject a URI whose <strong>raw string</strong>
+contains a port component. The raw-string requirement exists because
+URL libraries commonly normalize <code>:443</code> away before a parsed-port
+check is reachable; a verifier relying only on the parsed port does
+not conform. One outcome per URI, on every client.</li>
+</ul>
+<p>These mirror and tighten the checks in <code>onym-relayer</code>'s
+<code>scripts/validate-*.py</code>, today's de facto catalog validators.</p>
+<h2 id="8-freshness-and-retention-on-the-client">8. Freshness and retention on the client</h2>
+<ul>
+<li>The client retains, per source, at least: pinned operator key; per
+catalog the last accepted snapshot digest + sequence, <strong>its decoded
+entry set</strong> (required to distinguish &quot;previously listed, now absent&quot;
+— abstract §9), and <strong>the previous <code>policy</code> digest declared before
+the last manifest refresh</strong> (required by the §4.2 policy-transition
+grace); and the timestamps of acceptance.</li>
+<li>A removed source's pins are deleted only on explicit user removal, and
+a removed default source is never silently restored (abstract §8).</li>
+<li>Entries from an expired snapshot may be shown only as stale history,
+clearly distinct from current recommendations.</li>
+</ul>
+<h2 id="9-error-mapping">9. Error mapping</h2>
+<p>The abstract error table (<code>Discovery.md</code> §12) applies unchanged. Profile-
+specific sources:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract error</th>
+<th scope="col">This profile's trigger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider_manifest_invalid</code></td>
+<td>Signature/key-pin failure, detached-<code>.sig</code> disagreement, unknown top-level field, bad version/profile/seat, refresh identity mismatch, zero decodable catalog descriptors (audience skips excluded), expired <code>validUntil</code>, oversize, URI violation</td>
+</tr>
+<tr>
+<td><code>snapshot_invalid</code></td>
+<td>Signature or detached-<code>.sig</code> failure, rollback, fork/<code>previousDigest</code> mismatch or <code>previousDigest</code> missing at sequence &gt; 1 / present at sequence 1, more than 512 entries, <code>policyDigest</code> ≠ manifest's declared policy, future-dated or born-expired <code>generatedAt</code>/<code>expiresAt</code>, duplicate <code>componentId</code>, unknown top-level field, oversize (unverifiable forward jumps are accepted-with-note; a proven discontinuity through fetched intermediates is <code>snapshot_invalid</code>, §6)</td>
+</tr>
+<tr>
+<td><code>snapshot_expired</code></td>
+<td><code>expiresAt</code> more than 10 minutes in the past (the §4.2 skew allowance — one outcome per client)</td>
+</tr>
+<tr>
+<td><code>policy_unavailable</code></td>
+<td><code>policyUri</code> unreachable or bytes ≠ the <strong>manifest's current</strong> <code>policy</code> digest. During the §4.2 grace window a snapshot legitimately cites the previous digest; the policy fetch is evaluated only against the current manifest pair, and the transition note stands in until the next snapshot aligns</td>
+</tr>
+<tr>
+<td><code>entry_manifest_unavailable</code></td>
+<td>Destination fetch failure/timeout/oversize</td>
+</tr>
+<tr>
+<td><code>entry_manifest_mismatch</code></td>
+<td>Fetched bytes ≠ <code>manifest.digest</code>, or an entry-vs-manifest field conflict on <code>seatType</code>/<code>operator</code>/<code>profiles</code> (§6)</td>
+</tr>
+<tr>
+<td><code>entry_manifest_invalid</code></td>
+<td>Destination seat signature/schema/expiry failure</td>
+</tr>
+<tr>
+<td><code>result_incomplete</code></td>
+<td>One or more entries were skipped by lossy decode or the fail-closed relationship rule — the client must surface the skip count and never present the shrunken set as the whole catalog</td>
+</tr>
+<tr>
+<td><code>profile_incompatible</code></td>
+<td>An entry's <code>profiles</code> contains nothing the client implements — hidden only under an explicit compatibility filter, never silently</td>
+</tr>
+<tr>
+<td><code>query_unsupported</code></td>
+<td>Always, for server-side filters — this profile has none; filter locally</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td>HTTP 429 from static host; honor <code>Retry-After</code></td>
+</tr>
+<tr>
+<td><code>source_conflict</code></td>
+<td>Two configured sources bind the same <code>componentId</code> to different manifest digests — both claims preserved, per the abstract §12. Clients MAY grade severity (routine review lag when only one digest matches the currently served bytes, versus both manifests fetchable with conflicting signed contents) but must not suppress the error</td>
+</tr>
+</tbody>
+</table></div><h2 id="10-conformance-fixtures">10. Conformance fixtures</h2>
+<p>The reference implementation publishes, and every client consumes
+byte-identically (the moderation seat's fixture-pinning pattern):</p>
+<ol>
+<li>
+<p>canonical-bytes vectors: document → canonical bytes → signature, for
+the provider manifest and a snapshot, including a key-order-scrambled
+input that must canonicalize identically <strong>and a case-divergence
+vector whose keys differ only by letter case at a discriminating
+position</strong> — necessarily a <em>synthetic, non-conforming document</em>
+(every schema key in this profile is camelCase with no case-only
+pairs), because it exercises the serializer layer in isolation: the
+vector a case-insensitive sort fails on (§3), guarding the layer
+before schema validation ever runs — plus an <strong>escaping vector</strong>
+containing every §3 escape class (two-char forms, <code>\u00xx</code> control
+characters, <code>/</code>, non-ASCII, U+007F), likewise synthetic;</p>
+</li>
+<li>
+<p>a valid three-snapshot chain (sequences 1–3);</p>
+</li>
+<li>
+<p>tamper set, each expected to fail with a named error: bad signature;
+resigned-by-different-key manifest; sequence rollback; forked
+<code>previousDigest</code> (also how a skipped link fails when the claimed
+predecessor's bytes are supplied — a forward jump <em>without</em> them is
+the acceptance fixture, item 8, not a tamper case);
+expired snapshot; duplicate <code>componentId</code>;
+oversize snapshot; entry with digest-mismatched destination manifest;
+URI-rule violations (http, IP literal, query string); planted-signature
+canonicalization attack per §3;</p>
+</li>
+<li>
+<p>a lossy-decoding snapshot: one malformed entry among valid ones —
+valid entries survive, the malformed one is skipped;</p>
+</li>
+<li>
+<p>a direct-import destination manifest with no catalog context;</p>
+</li>
+<li>
+<p>a sponsored-placement entry whose <code>relationship</code>/<code>placement</code>
+disclosure must survive into the client's rendered attribution;</p>
+</li>
+<li>
+<p>a <code>source_conflict</code> pair: two providers binding the same
+<code>componentId</code> to different manifest digests, both claims preserved;</p>
+</li>
+<li>
+<p>a forward-jump acceptance: latest snapshot at sequence N versus a
+retained acceptance at N−2, accepted with the integrity note; and</p>
+</li>
+<li>
+<p>privacy-profile behavior: a fetch trace showing snapshot download +
+local filtering issues no per-query requests and carries no cookies
+or identifiers.</p>
+</li>
+<li>
+<p>a policy-transition pair: manifest updated to a new policy digest,
+snapshot still citing the previous one — accepted with the
+transition note; any third digest fails;</p>
+</li>
+<li>
+<p>a no-op refresh: identical latest snapshot re-fetched — no warning;</p>
+</li>
+<li>
+<p>same-provider cross-catalog digest equivocation — surfaced;</p>
+</li>
+<li>
+<p>an audience-skip manifest (single non-public catalog) — valid,
+empty-by-policy, skip count surfaced; and</p>
+</li>
+<li>
+<p>detached-<code>.sig</code> disagreement — fails closed.</p>
+</li>
+</ol>
+<p>Two fixtures the abstract §16 lists are discharged as <strong>not applicable</strong>
+rather than omitted: pagination and unsupported server-side filters —
+this profile has no server-side query surface at all (<code>query_unsupported</code>
+is unconditional, §9).</p>
+<p>Item 9 is likewise discharged rather than published as bytes: it is a
+<strong>client network-behavior obligation</strong>, not an offline byte fixture —
+there are no reference bytes to pin, so the obligation is met by tests
+and traces in each consuming client (§11), not by a vector in the
+reference set.</p>
+<h2 id="11-gaps">11. Gaps</h2>
+<p>What exists as of this revision (reference CLI, both client packages
+merged to their repos' <code>main</code>, and a live Onym provider), grouped for
+line-by-line audit:</p>
+<p><strong>Fixtures (§10, in the <code>onym-discovery</code> reference CLI):</strong></p>
+<ul>
+<li>items 1 (all three canonical sub-vectors: scrambled-order,
+case-divergence, escaping), 2, 5, 6, 7, 10, 12, 13, and 14 as
+published byte-pinned fixtures;</li>
+<li>items 3–4 as in-repo tests;</li>
+<li>items 8 and 11 (forward-jump acceptance, no-op refresh) as tests
+over the chain fixtures;</li>
+<li>item 9 (the privacy fetch trace) is discharged as a client
+network-behavior obligation, not an offline byte fixture.</li>
+</ul>
+<p><strong>Shared by all three implementations:</strong></p>
+<ul>
+<li>the §6 four-case chain comparison against retained per-catalog
+state (no-op refresh without warning, rollback and forks rejected,
+forward jumps accepted with a surfaced source-integrity note, any
+sequence accepted on first acceptance of a source);</li>
+<li>the §4.2 one-generation policy-transition grace via a retained
+previous policy digest, surfaced as a note;</li>
+<li>future-dated <code>generatedAt</code> rejection and the strictly-after
+born-expired rule;</li>
+<li>audience-based skipping of non-public catalogs (counted, never
+invalid — zero <em>decodable</em> descriptors is the invalidity bar) and
+<code>seatTypes</code> member validation;</li>
+<li>the entry <code>status</code> field decoded (<code>warning</code>/<code>review</code>, optional URI)
+and surfaced — a valid status never skips its entry — with both
+clients rendering it as a distinct chip;</li>
+<li>non-empty <code>evidence</code> skipping the entry;</li>
+<li>the closed relationship set failing closed;</li>
+<li>optional <code>profiles</code>/<code>evidence</code>;</li>
+<li>the §7 raw-string port check (a redundant <code>:443</code> is rejected before
+URL-library normalization) plus integer- and hex-form IPv4 literal
+rejection;</li>
+<li>oversize destination manifests mapped to
+<code>entry_manifest_unavailable</code>;</li>
+<li>skip counts surfaced — both clients now attach per-source refresh
+notes (skipped catalogs and entries / <code>result_incomplete</code>, audience
+skips, forward-jump and policy-transition notes) to their UI models.</li>
+</ul>
+<p><strong>Client-specific (and reference-only):</strong></p>
+<ul>
+<li>the iOS canonicalizer no longer delegates to Foundation's
+<code>.sortedKeys</code> — it serializes with UTF-8-byte-order key sorting and
+the §3 pinned escaping, proven against the case-divergence and
+escaping vectors;</li>
+<li>both clients enforce the §7 redirect bounds (≤ 3, HTTPS-to-HTTPS,
+IP-literal targets refused) and the 60 s timeout;</li>
+<li>the reference implementation rejects §3 duplicate keys at any
+depth, has a detached-<code>.sig</code> verify path that fails closed, ships
+cross-catalog equivocation and <code>source_conflict</code> detection helpers
+with fixtures, and its builder publishes the §5 retention siblings
+(<code>&lt;catalogId&gt;-&lt;sequence&gt;.json</code>);</li>
+<li>the relayer's operator-manifest endpoint is merged (onym-relayer#13)
+and the deployed relayer serves a signed manifest live at
+<code>https://relayer.onym.app/manifest.json</code> (with its detached <code>.sig</code>):
+signing runs in CI with the signed bytes committed in-repo and
+byte-verified against the served pair, and a
+<code>verify-operator-manifest</code> subcommand checks any pair the same way
+(onym-relayer#14–#16);</li>
+<li>the Onym provider deployment (<code>discovery.onym.app</code>) is live: it
+serves a signed provider manifest and the <code>onym-services</code> catalog
+(sequence 1, four entries) plus hosted courier/blossom seat
+manifests, with the inclusion/ranking policy and privacy-profile
+documents written, served, and pinned by
+<code>policyDigest</code>/<code>privacyProfile</code>; the operator key's fingerprint
+(<code>4d:a9:ec:c9:e8:6f:6e:97</code>) is published out of band.</li>
+</ul>
+<p>Remaining gaps:</p>
+<ul>
+<li>the §6 intermediate-fetch continuity walk is implemented nowhere:
+every implementation degrades a forward jump directly to
+accept-with-note without first attempting the retained-sibling
+fetches §6 requires (the note §6 reserves for <em>unavailable</em>
+intermediates), so a provably-broken chain hidden behind a jump is
+currently indistinguishable from a retention failure — and the §7
+walk-length bound is consequently unexercised;</li>
+<li>the §3 duplicate-key rejection is enforced by the reference
+implementation but remains unenforced in both client decoders (last
+key wins), and clients do not fetch the detached <code>.sig</code> at all, so
+the §3 agreement check has a verify path only in the reference CLI;</li>
+<li>the §10 item 9 privacy trace is asserted by construction in client
+tests (fake fetchers, no query surface) but no client test records
+an actual network trace proving the no-cookies/no-identifier
+obligation;</li>
+<li>cross-catalog equivocation and <code>source_conflict</code> detection exist as
+reference-implementation helpers and fixtures, but neither client
+yet runs those comparisons over its aggregate (graded
+source-conflict severity is likewise unimplemented); the
+entry-vs-manifest field conflict checks exist partially in both
+clients' consent flows (<code>operator</code> and <code>seatType</code>, not <code>profiles</code>)
+and are not surfaced as <code>entry_manifest_mismatch</code>;</li>
+<li>the §6 expired-<code>validUntil</code> source state (existing data shown only
+as clearly stale history, surfaced on the source) is approximated on
+both clients as a refresh failure plus retained-snapshot expiry
+filtering, not as the distinct source-level state §6 describes;</li>
+<li>the Android instrumented-test suite (onym-android#208) is merged
+alongside the other client packages; a pre-existing androidTest
+compile break on <code>main</code> in
+three legacy identity/nostr test files (internal-visibility,
+unrelated to discovery) blocks <em>running</em> the full instrumented
+suite, not pushing it — the discovery suite itself assembles
+(<code>assembleDebugAndroidTest</code>), and execution additionally requires a
+device;</li>
+<li>several §9 codes remain declared but unreachable in the clients
+(<code>policy_unavailable</code> among them — policy documents are published
+now, but the clients still never fetch them);</li>
+<li>no snapshot field carries the abstract §9 removal reason codes
+(<code>manifest_expired</code>, <code>policy_mismatch</code>, …); since top-level decoding
+is strict, adding one is a profile version bump, deferred to v2; and</li>
+<li>migration off the unsigned legacy catalogs (<code>relayers.json</code>,
+<code>nostr-relays.json</code>, <code>blossom-servers.json</code>, <code>authorities.json</code>),
+which remain the operational path until then.</li>
+</ul>
+<h2 id="12-acceptance-criteria">12. Acceptance criteria</h2>
+<p>This profile satisfies <code>Discovery.md</code> when:</p>
+<ol>
+<li>a second, independently keyed provider can publish a conforming
+manifest + snapshot chain that the same client code verifies;</li>
+<li>rollback, equivocation, and re-keying are detected and surfaced, in
+fixtures and in the client;</li>
+<li>a destination manifest that drifts from its reviewed digest is
+rejected with <code>entry_manifest_mismatch</code>, not refreshed;</li>
+<li>direct import works with zero configured providers;</li>
+<li>removing a source removes it durably;</li>
+<li>all fixtures pass byte-identically in the reference implementation
+and every consuming client; and</li>
+<li>no step of public catalog use requires an account, cookie, or stable
+client identifier.</li>
+</ol>
+<h2 id="13-references">13. References</h2>
+<ol>
+<li>Abstract contract: <a href="../discovery/Discovery.html">Discovery.md</a></li>
+<li>Canonicalization precedent: <code>onym-moderation</code>
+<code>authority/src/canonical.rs</code> (and its byte-identical <code>apple/</code> twin)</li>
+<li>Notary operator manifest: <a href="../notary/UI-Notary-BNB.html">../notary/UI-Notary-BNB.md</a> §8.1</li>
+<li>Courier manifest: <a href="../message/UI-Message.html">../message/UI-Message.md</a> §5.3</li>
+<li>Legacy catalog validators: <code>onym-relayer/scripts/validate-*.py</code></li>
+<li>RFC 8032 (Ed25519), RFC 3339 (timestamps)</li>
+</ol>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/discovery/Discovery-Static-Ed25519.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="../../remediation.html">Remediation plan</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as a sihtasutus under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

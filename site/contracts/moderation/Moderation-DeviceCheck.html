@@ -42,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">Apple case surface finalized</span><span class="tag">reference implementation</span><span class="tag">Apple path in production</span><span class="tag">08.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">Apple case surface finalized</span><span class="tag">reference implementation</span><span class="tag">Apple path in production</span><span class="tag">08.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/moderation/Moderation-DeviceCheck.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-moderation-device-mark-apple-devicecheck-implementation">Onym Moderation ↔ Device Mark: Apple DeviceCheck Implementation</h1>
@@ -535,14 +535,16 @@ iOS package implements detached authority-directory and manifest
 verification plus verdict verification, but the relevant enforcement
 switches remain off, and the Rust backend likewise defaults authority
 verdict-signature enforcement off. The merged reference fixes the current Rust HTTP shapes
-and UTF-8-byte-order canonical JSON form, but the Swift authority client has
-no network transport and its report signing must use the same ordering.
-Turning enforcement on requires real keys plus cross-language fixtures.</li>
+and UTF-8-byte-order canonical JSON form, and the Swift authority client now
+ships a URLSession transport whose signing forms are pinned to the same
+ordering. Turning enforcement on requires real keys plus cross-language
+fixtures.</li>
 <li><strong>Ban recourse is not wired end to end.</strong> The abstract contract requires
 the gate to display working ordinary-appeal and new-holder paths. The Rust
 <code>BanState</code> has <code>appealUrl</code> and <code>newHolderUrl</code>, but the merged Apple backend
-leaves both absent, and the iOS client has no Authority transport. A ban
-screen without usable recourse remains nonconforming.</li>
+leaves both absent; the iOS client now has Authority transport, so the
+remaining gap is the backend's missing recourse URLs. A ban screen without
+usable recourse remains nonconforming.</li>
 <li><strong>Authority-failure defaults are missing.</strong> The Rust Interface clears
 <code>case-open</code> only after the Authority sweep delivers a dismissal and has no
 designation-revocation or successor-forum state. Permanent Authority
@@ -554,9 +556,9 @@ abstract deadline and revocation requirements.</li>
 <a href="https://github.com/onymchat/onym-ios/pull/216">onym-ios PR #216</a> maps the
 abstract contract to the following client components. The authority-client
 claims below are directly checkable in
-<a href="https://github.com/onymchat/onym-ios/blob/87d5b62e8ebaeeb5aa623e4eaed41c038c8c695a/Packages/OnymModeration/Sources/OnymModeration/ModerationAuthorityClient.swift"><code>ModerationAuthorityClient.swift</code></a>,
+<a href="https://github.com/onymchat/onym-ios/blob/dad8ffffe757e37e6a70593681d4668835dcabef/Packages/OnymModeration/Sources/OnymModeration/ModerationAuthorityClient.swift"><code>ModerationAuthorityClient.swift</code></a>,
 and the gate result in
-<a href="https://github.com/onymchat/onym-ios/blob/87d5b62e8ebaeeb5aa623e4eaed41c038c8c695a/Packages/OnymModeration/Sources/OnymModeration/EnforcementBackendClient.swift"><code>EnforcementBackendClient.swift</code></a>:</p>
+<a href="https://github.com/onymchat/onym-ios/blob/dad8ffffe757e37e6a70593681d4668835dcabef/Packages/OnymModeration/Sources/OnymModeration/EnforcementBackendClient.swift"><code>EnforcementBackendClient.swift</code></a>:</p>
 <div class="tscroll"><table><thead>
 <tr>
 <th scope="col">Contract/profile responsibility</th>
@@ -602,7 +604,7 @@ and the gate result in
 </tr>
 <tr>
 <td>Authority client boundary</td>
-<td><code>ModerationAuthorityClient</code> exposes <code>fileReport</code>, <code>respond</code> (including additional evidence), <code>appeal</code> (ordinary or new-holder), and <code>queryStatus</code>; typed request/result objects and an honest throwing stub exist, but no endpoint resolution or network transport does</td>
+<td><code>ModerationAuthorityClient</code> exposes <code>registerMandate</code>, <code>fileReport</code>, <code>uploadEvidenceImage</code>, <code>respond</code> (including additional evidence), <code>appeal</code> (ordinary or new-holder), <code>queryStatus</code>, and the device-recovery claim operations; <code>URLSessionModerationAuthorityClientFactory</code> resolves a URLSession transport per directory-selected authority, with the honest throwing stub retained for previews</td>
 </tr>
 <tr>
 <td>Authority outbound delivery</td>
@@ -610,7 +612,7 @@ and the gate result in
 </tr>
 <tr>
 <td>Mandate registration</td>
-<td>Missing: the client appends and persists the interface countersignature but exposes no path that registers the finalized mandate with the named authority</td>
+<td>Implemented: the client appends the interface countersignature and registers the finalized two-signature mandate with the named authority via <code>registerMandate</code>, verifying the returned <code>mandateRef</code> against its own content hash, with single-flight deduplication and retry of interrupted registrations</td>
 </tr>
 <tr>
 <td>Authority reference service</td>
@@ -622,7 +624,7 @@ and the gate result in
 </tr>
 <tr>
 <td>Authority service and Apple writes</td>
-<td>Merged work through PR #10 implements the Authority, triage/review, reconciliation, write log, and <code>update_two_bits</code> path; no production deployment exists, verdict-signature enforcement defaults off, external appellate routing is absent, and the iOS app does not call mandate registration</td>
+<td>Merged work through PR #10 implements the Authority, triage/review, reconciliation, write log, and <code>update_two_bits</code> path; no production deployment exists, verdict-signature enforcement defaults off, and external appellate routing is absent; the iOS app now calls mandate registration from its consent flow</td>
 </tr>
 </tbody>
 </table></div><p>The iOS reviewed-manifest path is stricter than the v1 Rust reference: it

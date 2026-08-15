@@ -42,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Group verification</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/notary/UI-Notary.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/notary/UI-Notary.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-ui-notary-boundary">Onym UI ↔ Notary Boundary</h1>
@@ -86,6 +86,24 @@ offers remain logically separate. A group created through one conforming UI
 must remain under the same notary binding when opened in another. A frontend
 may support several notary profiles. A notary may serve several frontends
 without making their publisher an authority over group state.</p>
+<p>A notary operator may run deployments on several canonical systems
+simultaneously — different blockchains, or a blockchain beside a
+non-blockchain backend. Each backend is a separate deployment under its own
+implementation profile; sharing an operator does not merge their state,
+evidence, or finality semantics. The <strong>user chooses, at group creation,
+which backend receives the group's authorization evidence</strong>; that choice is
+pinned into the group binding and is thereafter as sticky as every other
+binding field.</p>
+<p>The Discovery seat presents the catalog of notaries operated by different
+parties. Each catalog entry declares, machine-readably, which implementation
+profiles and network namespaces that operator supports — and some operators
+support only a subset. A conforming UI filters its creation choices to the
+intersection of what the selected operator declares, what the client can
+verify and prove, and what the catalog entry's signatures substantiate. It
+must never infer chain support from an operator's brand, another operator's
+capabilities, or an earlier catalog version; and a Discovery listing remains
+advertisement, not verification — the deployment objects it points to are
+still verified independently before use.</p>
 <h2 id="2-what-the-notary-does">2. What the notary does</h2>
 <p>The notary answers narrow questions about shared state:</p>
 <ol>
@@ -738,6 +756,13 @@ profile. A profile must state how the abstract boundary becomes executable.</p>
 <li><a href="../notary/UI-Notary-Stellar.html">UI-Notary-Stellar.md</a> — Stellar network, Soroban
 contracts, PLONK evidence, HTTP fee-paying relayer, and Stellar RPC/read
 reconciliation.</li>
+</ul>
+<p>An accepted second implementation is in draft:</p>
+<ul>
+<li><a href="../notary/UI-Notary-BNB.html">UI-Notary-BNB.md</a> — BNB Smart Chain, Solidity contracts,
+PLONK evidence re-targeted to BN254, the relayer operating as a declared
+notary-seat operator, and user-selectable circuit type in the notary
+manifest.</li>
 </ul>
 <p>Future profiles may use different canonical systems while preserving the same
 UI-facing semantics. They must not reuse the same profile ID if state,

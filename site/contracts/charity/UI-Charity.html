@@ -42,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/charity/UI-Charity.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/charity/UI-Charity.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-messenger-charity-ui-profile">Onym Messenger ↔ Charity UI Profile</h1>
@@ -61,7 +61,10 @@ financial, credential, proof, and notary providers.</p>
 bind this UI to Soroban contracts on Stellar, another ledger, a regulated
 payment provider, bank rails, or several adapters. Every concrete financial,
 proof, or notary implementation must publish its own profile and conformance
-vectors. Ledger-specific values do not leak into the common charity UI port.</p>
+vectors. Ledger-specific values do not leak into the common charity UI port.
+A BNB/EVM notary-and-eligibility binding is drafted in
+<a href="../charity/UI-Charity-BNB.html">UI-Charity-BNB.md</a>; no financial binding is profiled
+anywhere yet.</p>
 <p>The status of this document is <strong>proposed</strong>. It describes the boundary that an
 Onym Messenger implementation should satisfy; it is not a claim that every
 screen, adapter, contract, or audit described here is already deployed.</p>
