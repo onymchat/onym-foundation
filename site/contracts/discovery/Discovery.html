@@ -42,7 +42,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Discovery</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0fcdd2d66a8bcb02c418349787d768e3fda20fa0/discovery/Discovery.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/discovery/Discovery.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-discovery-contract-boundary">Onym Discovery Contract Boundary</h1>
@@ -64,8 +64,9 @@ trust.</p>
 layer, ranking algorithm, payment rail, jurisdiction, or business model. A
 concrete implementation profile must define canonical encodings, transport,
 pagination, signatures, and test vectors.</p>
-<p>This is proposed architecture. No current Onym repository implements this
-contract or a conforming Discovery profile.</p>
+<p>This began as proposed architecture. A first implementation profile is
+in draft (§16); implementation status is tracked solely by that
+profile's §11.</p>
 <h2 id="1-decision">1. Decision</h2>
 <p>Onym separates finding an instance from trusting or selecting it.</p>
 <ul>
@@ -686,10 +687,12 @@ equivocation, expiry, manifest mismatch, duplicate entries, pagination,
 unsupported filters, sponsored placement, source conflicts, malicious URIs,
 oversized content, and privacy-profile behavior.</li>
 </ul>
-<p>No concrete implementation profile exists yet. A first profile should prefer
-signed static snapshots over account-based remote search, because that makes
-verification, caching, mirroring, comparison, and local private filtering
-straightforward.</p>
+<p>A first implementation profile is in draft:
+<a href="../discovery/Discovery-Static-Ed25519.html">Discovery-Static-Ed25519.md</a> — Ed25519-signed
+static snapshots over HTTPS with full-download local filtering. It follows
+this contract's recommendation to prefer signed static snapshots over
+account-based remote search, because that makes verification, caching,
+mirroring, comparison, and local private filtering straightforward.</p>
 <h2 id="17-acceptance-criteria">17. Acceptance criteria</h2>
 <p>The Discovery boundary is successfully separated when:</p>
 <ol>

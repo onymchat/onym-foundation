@@ -6,7 +6,7 @@
 export const REPO = 'onymchat/onym-system';
 
 export const REFS = {
-  main: '0fcdd2d66a8bcb02c418349787d768e3fda20fa0',
+  main: '0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba',
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
@@ -25,11 +25,14 @@ export const DOCS = {
   'blob/UI-Blob-Blossom.md':            { ref: 'main' },
   'notary/UI-Notary.md':                { ref: 'main', seat: 'Group verification' },
   'notary/UI-Notary-Stellar.md':        { ref: 'main' },
+  'notary/UI-Notary-BNB.md':            { ref: 'main', tags: ['profile merged — no code'] },
   'audit/Audit.md':                     { ref: 'main', seat: 'Audit & attestation' },
   'arbitration/Arbitration.md':         { ref: 'main', seat: 'Arbitration' },
   'discovery/Discovery.md':             { ref: 'main', seat: 'Discovery' },
+  'discovery/Discovery-Static-Ed25519.md': { ref: 'main', tags: ['reference implementation', 'provider live at discovery.onym.app'] },
   'charity/Charity.md':                 { ref: 'main', seat: 'Charitable coordination' },
   'charity/UI-Charity.md':              { ref: 'main' },
+  'charity/UI-Charity-BNB.md':          { ref: 'main', tags: ['profile merged — no code'] },
   'lead/Lead-Generation.md':            { ref: 'main', seat: 'Distribution (lead generation)' },
   'lead/Lead-Generation-Telegram.md':   { ref: 'main' },
   'acquisition/Acquisition.md':         { ref: 'main', seat: 'Acquisition' },

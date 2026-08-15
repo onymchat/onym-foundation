@@ -18,11 +18,14 @@
   <url><loc>https://onym.foundation/contracts/blob/UI-Blob-Blossom.html</loc></url>
   <url><loc>https://onym.foundation/contracts/notary/UI-Notary.html</loc></url>
   <url><loc>https://onym.foundation/contracts/notary/UI-Notary-Stellar.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/notary/UI-Notary-BNB.html</loc></url>
   <url><loc>https://onym.foundation/contracts/audit/Audit.html</loc></url>
   <url><loc>https://onym.foundation/contracts/arbitration/Arbitration.html</loc></url>
   <url><loc>https://onym.foundation/contracts/discovery/Discovery.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/discovery/Discovery-Static-Ed25519.html</loc></url>
   <url><loc>https://onym.foundation/contracts/charity/Charity.html</loc></url>
   <url><loc>https://onym.foundation/contracts/charity/UI-Charity.html</loc></url>
+  <url><loc>https://onym.foundation/contracts/charity/UI-Charity-BNB.html</loc></url>
   <url><loc>https://onym.foundation/contracts/lead/Lead-Generation.html</loc></url>
   <url><loc>https://onym.foundation/contracts/lead/Lead-Generation-Telegram.html</loc></url>
   <url><loc>https://onym.foundation/contracts/acquisition/Acquisition.html</loc></url>
