@@ -30,11 +30,10 @@ ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" hr
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${SITE_ORIGIN}/assets/og-card.png">
 <meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">`}
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f3">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1115">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e0e10">
 <link rel="icon" type="image/png" sizes="32x32" href="${up}assets/favicon-32.png">
 <link rel="apple-touch-icon" href="${up}assets/apple-touch-icon.png">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="${up}assets/fonts/InstrumentSans-Variable.woff2">
 <script src="${up}theme.js"></script>
 <link rel="stylesheet" href="${up}styles.css">`;
 }

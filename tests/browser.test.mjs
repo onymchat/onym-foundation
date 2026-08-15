@@ -86,18 +86,15 @@ if (!fs.existsSync(CHROME)) {
       await page.close();
     });
 
-    await t.test('self-hosted fonts load', async () => {
+    await t.test('type uses the design-system stacks', async () => {
       const page = await browser.newPage();
       await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
-      const fonts = await page.evaluate(async () => {
-        await document.fonts.ready;
-        return {
-          sans: document.fonts.check('600 16px "Instrument Sans"'),
-          mono: document.fonts.check('400 12px "IBM Plex Mono"'),
-        };
-      });
-      assert.ok(fonts.sans, 'Instrument Sans should be loaded');
-      assert.ok(fonts.mono, 'IBM Plex Mono should be loaded');
+      const fams = await page.evaluate(() => ({
+        sans: getComputedStyle(document.body).fontFamily,
+        mono: getComputedStyle(document.querySelector('.eyebrow')).fontFamily,
+      }));
+      assert.ok(fams.sans.includes('-apple-system'), 'body should use the DS system stack');
+      assert.ok(fams.mono.includes('ui-monospace'), 'mono elements should use the DS mono stack');
       await page.close();
     });
 
@@ -107,9 +104,9 @@ if (!fs.existsSync(CHROME)) {
       await page.setViewport({ width: 1280, height: 900 });
       await page.goto(base + '/index.html', { waitUntil: 'networkidle0' });
       assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
-        'rgb(15, 17, 21)', 'canvas should be charcoal in dark mode');
+        'rgb(14, 14, 16)', 'canvas should be the DS dark surface');
       assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.diagram text')).fill),
-        'rgb(243, 244, 246)', 'diagram ink should follow the theme');
+        'rgb(242, 242, 244)', 'diagram ink should follow the theme');
       const results = await new AxePuppeteer(page).analyze();
       const bad = results.violations.filter(v => v.impact === 'serious' || v.impact === 'critical');
       assert.deepEqual(bad.map(v => `${v.id} — ${v.help}`), [], JSON.stringify(bad, null, 2).slice(0, 2000));
@@ -118,7 +115,7 @@ if (!fs.existsSync(CHROME)) {
         const s = getComputedStyle(document.querySelector('.doc pre'));
         return { bg: s.backgroundColor, fg: s.color };
       });
-      assert.deepEqual(pre, { bg: 'rgb(23, 26, 32)', fg: 'rgb(243, 244, 246)' }, 'code blocks use dark surface tokens');
+      assert.deepEqual(pre, { bg: 'rgb(23, 23, 26)', fg: 'rgb(242, 242, 244)' }, 'code blocks use dark surface tokens');
       await page.close();
     });
 
@@ -132,7 +129,7 @@ if (!fs.existsSync(CHROME)) {
       await page.goto(base + '/seats.html', { waitUntil: 'networkidle0' });
       assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark', 'choice survives navigation');
       assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
-        'rgb(15, 17, 21)');
+        'rgb(14, 14, 16)');
       await page.evaluate(() => localStorage.clear());
       await page.close();
     });
@@ -149,8 +146,8 @@ if (!fs.existsSync(CHROME)) {
       const metas = await page.evaluate(() =>
         [...document.querySelectorAll('meta[name="theme-color"]')].map(m => [m.media, m.content]));
       assert.deepEqual(metas, [
-        ['(prefers-color-scheme: light)', '#f5f5f3'],
-        ['(prefers-color-scheme: dark)', '#0f1115'],
+        ['(prefers-color-scheme: light)', '#f5f5f7'],
+        ['(prefers-color-scheme: dark)', '#0e0e10'],
       ], 'Auto must hand theme-color selection back to the browser');
       assert.equal(await page.$eval('.themebtn', el => el.textContent), 'Theme: Auto');
       await page.evaluate(() => localStorage.clear());
