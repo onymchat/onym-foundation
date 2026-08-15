@@ -1,42 +1,38 @@
 *{box-sizing:border-box;margin:0;padding:0}
 
-/* fonts — self-hosted, OFL; licenses in assets/fonts/ */
-@font-face{font-family:"Instrument Sans";src:url("assets/fonts/InstrumentSans-Variable.woff2") format("woff2");font-weight:400 700;font-stretch:75% 100%;font-style:normal;font-display:swap}
-@font-face{font-family:"Instrument Sans";src:url("assets/fonts/InstrumentSans-Italic-Variable.woff2") format("woff2");font-weight:400 700;font-stretch:75% 100%;font-style:italic;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("assets/fonts/IBMPlexMono-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("assets/fonts/IBMPlexMono-SemiBold.woff2") format("woff2");font-weight:600;font-display:swap}
 
-/* semantic tokens — light is the default; dark applies via system preference
+/* semantic tokens — values from the Onym design system (OnymTokens,
+   design-system/src/tokens.css in onym-website). Light is the default; dark applies via system preference
    unless the user pinned light, and via the explicit data-theme override */
 :root{
   color-scheme:light;
-  --font-sans:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
-  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-  --canvas:#f5f5f3;--surface:#fbfbfa;--text:#0e0f12;--muted:#61636a;
-  --accent:#5ca7f8;--accent-text:#07111d;
-  --border:rgba(14,15,18,.12);--glass:rgba(245,245,243,.92);
-  --inverse-bg:#0e0f12;--inverse-fg:#f3f4f6;--inverse-muted:rgba(243,244,246,.72);
-  --codeblock-bg:#0e0f12;--codeblock-fg:#f3f4f6;--code-bg:rgba(14,15,18,.05);
-  --shadow:0 30px 80px -38px rgba(14,15,18,.3);
+  --font-sans:-apple-system,BlinkMacSystemFont,system-ui,"Helvetica Neue",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --canvas:#f5f5f7;--surface:#ffffff;--text:#0a0a0c;--muted:rgba(10,10,12,.62);
+  --accent:#1f86e0;--accent-text:#ffffff;
+  --border:rgba(0,0,0,.12);--glass:rgba(245,245,247,.72);
+  --inverse-bg:#0a0a0c;--inverse-fg:#f2f2f4;--inverse-muted:rgba(242,242,244,.72);
+  --codeblock-bg:#0a0a0c;--codeblock-fg:#f2f2f4;--code-bg:rgba(10,10,12,.05);
+  --shadow:0 30px 80px -38px rgba(10,10,12,.3);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --canvas:#0f1115;--surface:#171a20;--text:#f3f4f6;--muted:#a9adb7;
-    --accent:#68adfa;--accent-text:#07111d;
-    --border:rgba(255,255,255,.14);--glass:rgba(15,17,21,.9);
-    --inverse-bg:#f3f4f6;--inverse-fg:#0e0f12;--inverse-muted:rgba(14,15,18,.72);
-    --codeblock-bg:#171a20;--codeblock-fg:#f3f4f6;--code-bg:rgba(255,255,255,.07);
+    --canvas:#0e0e10;--surface:#17171a;--text:#f2f2f4;--muted:rgba(242,242,244,.62);
+    --accent:#3fa8ff;--accent-text:#000000;
+    --border:rgba(255,255,255,.12);--glass:rgba(14,14,16,.72);
+    --inverse-bg:#f2f2f4;--inverse-fg:#0a0a0c;--inverse-muted:rgba(10,10,12,.72);
+    --codeblock-bg:#17171a;--codeblock-fg:#f2f2f4;--code-bg:rgba(255,255,255,.07);
     --shadow:0 30px 80px -38px rgba(0,0,0,.65);
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --canvas:#0f1115;--surface:#171a20;--text:#f3f4f6;--muted:#a9adb7;
-  --accent:#68adfa;--accent-text:#07111d;
-  --border:rgba(255,255,255,.14);--glass:rgba(15,17,21,.9);
-  --inverse-bg:#f3f4f6;--inverse-fg:#0e0f12;--inverse-muted:rgba(14,15,18,.72);
-  --codeblock-bg:#171a20;--codeblock-fg:#f3f4f6;--code-bg:rgba(255,255,255,.07);
+  --canvas:#0e0e10;--surface:#17171a;--text:#f2f2f4;--muted:rgba(242,242,244,.62);
+  --accent:#3fa8ff;--accent-text:#000000;
+  --border:rgba(255,255,255,.12);--glass:rgba(14,14,16,.72);
+  --inverse-bg:#f2f2f4;--inverse-fg:#0a0a0c;--inverse-muted:rgba(10,10,12,.72);
+  --codeblock-bg:#17171a;--codeblock-fg:#f2f2f4;--code-bg:rgba(255,255,255,.07);
   --shadow:0 30px 80px -38px rgba(0,0,0,.65);
 }
 
@@ -44,7 +40,7 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;background:
 .mono,.eyebrow,.number{font-family:var(--font-mono)}
 .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .number{font-size:11px;letter-spacing:.12em;color:var(--muted)}
-h1{font-size:clamp(64px,10vw,112px);line-height:.93;letter-spacing:-.04em;font-weight:620;font-stretch:94%;text-wrap:balance}
+h1{font-size:clamp(64px,10vw,112px);line-height:.93;letter-spacing:-.04em;font-weight:700;text-wrap:balance}
 .h1-sm{font-size:clamp(48px,7.2vw,96px)}
 h2{font-size:clamp(36px,5.5vw,72px);line-height:.98;letter-spacing:-.035em;font-weight:600;text-wrap:balance}
 h3{font-size:22px;letter-spacing:-.02em;font-weight:600}

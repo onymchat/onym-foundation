@@ -2,7 +2,7 @@ document.documentElement.classList.add('js');
 
 // theme control: System → Light → Dark, persisted across pages
 const THEME_LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' };
-const THEME_COLOR = { light: '#f5f5f3', dark: '#0f1115' };
+const THEME_COLOR = { light: '#f5f5f7', dark: '#0e0e10' };
 const themeBtn = document.querySelector('.themebtn');
 function currentTheme() {
   try { const t = localStorage.getItem('theme'); if (t === 'dark' || t === 'light') return t; } catch (e) {}
