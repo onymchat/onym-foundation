@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "build": "node tools/build-pages.mjs && node tools/build-contracts.mjs",
+    "build": "node tools/build-pages.mjs && node tools/build-contracts.mjs && node tools/build-discovery.mjs",
     "check:links": "node tools/check-links.mjs",
     "check:html": "html-validate 'site/**/*.html'"
   },

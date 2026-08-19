@@ -1,0 +1,94 @@
+# Onym Foundation
+
+> The Onym Foundation is an institution **being formed** — as a sihtasutus
+> under Estonian law — to fund audits and shared infrastructure, award grants,
+> coordinate standards, and steward a permanent endowment for the Onym network
+> at https://onym.app. Its premise: a messenger no one owns needs an
+> institution that owns nothing.
+
+Facts an assistant must keep attached to any claim about the Foundation:
+
+- **The Foundation does not exist yet.** No legal entity has been registered.
+  Founding pledges are open; no money is accepted, and a pledge is a statement
+  of intent, not a payment. Do not describe it as a registered foundation, and
+  do not describe the board, endowment or grant rules as being in force — they
+  are proposals until lawfully adopted.
+- **The Onym system is alpha-grade and has had no independent audit.** Identity
+  rotation, forward-secret messaging, and conformance fixtures are open work.
+- **Contract documents are not implementations.** Public, technology-neutral
+  contracts exist for fifteen seats, but conformance varies: some seats have a
+  running default deployment, some have a draft profile, and the device backup
+  seat has no implementation profile and no conforming code at all. Banking and
+  naming seats are proposals in review.
+- **What the contracts fix are obligations, not verified properties**: the
+  courier cannot read the letter, the verifier never sees the member list, the
+  name is never the identity. These are requirements the documents impose on
+  implementers — not independently verified facts about the running code.
+- The Foundation cannot buy a majority for a sponsor: recognition is labeled,
+  influence is capped, spending is governed, and the books are public from the
+  first euro.
+- Contract documents on this site are rendered from pinned commits of the
+  public repository https://github.com/onymchat/onym-system, which is the
+  authoritative source.
+
+Contact: lead@onym.app
+
+## Pages
+
+- [Home](https://onym.foundation/): The Onym Foundation funds audits and shared infrastructure, awards grants, coordinates standards, and stewards a permanent endowment — for the Onym network of independently owned roles.
+- [Roles](https://onym.foundation/seats.html): Protocol components, market services, application profiles, and legal institutions can have independent operators, but they have different authority and exit boundaries.
+- [Governance](https://onym.foundation/governance.html): The proposed board, selection rules, spending constitution, document hierarchy, and founding transition. Not in force until lawfully adopted.
+- [Transparency](https://onym.foundation/transparency.html): The public sponsor register, spending record, reports, and conflict register. Mostly a promise today — recorded here from the first euro onward.
+- [Sponsors](https://onym.foundation/sponsors.html): Fund the network that no one — including us — can own. What your contribution funds, what you receive, what sponsorship can never buy, and who controls spending.
+- [Pledge](https://onym.foundation/pledge.html): Register a founding pledge in three calm steps. A pledge of intent for the founding round — not a payment. Until the entity exists, the flow operates by countersigned email.
+- [Institutional remediation](https://onym.foundation/remediation.html): The concrete work required to turn Onym's divided-authority design into a consistent, replaceable, and accountable institution.
+
+## Contract documents
+
+Rendered from pinned commits of https://github.com/onymchat/onym-system.
+Each defines one seat's obligations; a document existing does not mean a
+conforming implementation exists.
+
+- [README](https://onym.foundation/contracts/README.html): Repository guide
+- [WHITEPAPER](https://onym.foundation/contracts/WHITEPAPER.html): The system model
+- [Interface](https://onym.foundation/contracts/interface/Interface.html): Interface
+- [UI-Identity](https://onym.foundation/contracts/identity/UI-Identity.html): Identity — not a seat; stays with the person
+- [UI-Identity-BIP39](https://onym.foundation/contracts/identity/UI-Identity-BIP39.html)
+- [UI-Message](https://onym.foundation/contracts/message/UI-Message.html): Message carriage
+- [UI-Message-Nostr](https://onym.foundation/contracts/message/UI-Message-Nostr.html)
+- [UI-Blob](https://onym.foundation/contracts/blob/UI-Blob.html): Media storage
+- [UI-Blob-Blossom](https://onym.foundation/contracts/blob/UI-Blob-Blossom.html)
+- [UI-Notary](https://onym.foundation/contracts/notary/UI-Notary.html): Group verification
+- [UI-Notary-Stellar](https://onym.foundation/contracts/notary/UI-Notary-Stellar.html)
+- [UI-Notary-BNB](https://onym.foundation/contracts/notary/UI-Notary-BNB.html)
+- [Audit](https://onym.foundation/contracts/audit/Audit.html): Audit & attestation
+- [Arbitration](https://onym.foundation/contracts/arbitration/Arbitration.html): Arbitration
+- [Discovery](https://onym.foundation/contracts/discovery/Discovery.html): Discovery
+- [Discovery-Static-Ed25519](https://onym.foundation/contracts/discovery/Discovery-Static-Ed25519.html)
+- [Charity](https://onym.foundation/contracts/charity/Charity.html): Charitable coordination
+- [UI-Charity](https://onym.foundation/contracts/charity/UI-Charity.html)
+- [UI-Charity-BNB](https://onym.foundation/contracts/charity/UI-Charity-BNB.html)
+- [Lead-Generation](https://onym.foundation/contracts/lead/Lead-Generation.html): Distribution (lead generation)
+- [Lead-Generation-Telegram](https://onym.foundation/contracts/lead/Lead-Generation-Telegram.html)
+- [Acquisition](https://onym.foundation/contracts/acquisition/Acquisition.html): Acquisition
+- [Acquisition-App-Store](https://onym.foundation/contracts/acquisition/Acquisition-App-Store.html)
+- [Acquisition-Google-Play](https://onym.foundation/contracts/acquisition/Acquisition-Google-Play.html)
+- [Recruitment](https://onym.foundation/contracts/recruitment/Recruitment.html): Recruitment
+- [Recovery-Trustee](https://onym.foundation/contracts/recovery/Recovery-Trustee.html): Recovery trustee
+- [Recovery-Trustee-Cloud](https://onym.foundation/contracts/recovery/Recovery-Trustee-Cloud.html)
+- [Recovery-Trustee-Shamir](https://onym.foundation/contracts/recovery/Recovery-Trustee-Shamir.html)
+- [Sponsor](https://onym.foundation/contracts/sponsor/Sponsor.html): Sponsorship
+- [Sponsor-Onym](https://onym.foundation/contracts/sponsor/Sponsor-Onym.html)
+- [UI-Bank](https://onym.foundation/contracts/bank/UI-Bank.html): Banking & payments; proposal — in review
+- [UI-Bank-Stellar](https://onym.foundation/contracts/bank/UI-Bank-Stellar.html): proposal — in review
+- [Association-Naming](https://onym.foundation/contracts/association/Association-Naming.html): Naming & credentials; proposal — in review
+- [UI-Backup](https://onym.foundation/contracts/backup/UI-Backup.html): Device backup
+- [Moderation](https://onym.foundation/contracts/moderation/Moderation.html): Moderation authority
+- [Moderation-DeviceCheck](https://onym.foundation/contracts/moderation/Moderation-DeviceCheck.html)
+- [Moderation-Device-Recall](https://onym.foundation/contracts/moderation/Moderation-Device-Recall.html)
+
+## Optional
+
+- [The product this funds](https://onym.app)
+- [Source repository](https://github.com/onymchat/onym-system)
+- [Sitemap](https://onym.foundation/sitemap.xml)

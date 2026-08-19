@@ -1,5 +1,5 @@
 // Pre-renders the onym-system contract documents into static pages under
-// site/contracts/, and regenerates site/sitemap.xml. Content is fetched at
+// site/contracts/. Content is fetched at
 // the pinned commits declared in tools/docs.mjs, so builds are reproducible
 // and the deployed site does not depend on GitHub at visit time.
 
@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
 import { REPO, REFS, DOCS, DOCUMENT_NOTICES, SITE_ORIGIN, parseFrontmatter, headingId, resolveMdHref } from './docs.mjs';
-import { head, nav, footer } from './partials.mjs';
+import { head, nav, footer, jsonld } from './partials.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = path.join(ROOT, 'site');
@@ -81,16 +81,25 @@ export function pageHtml(docPath, meta, entry, bodyHtml, title) {
   if (meta.proposed) chips.push(`<span class="metaline">proposed by ${esc(meta.proposed)}</span>`);
   chips.push(`<a class="metaline" href="${github}">source on GitHub →</a>`);
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-${head({
+  const seo = {
     title: `${title} — Onym Foundation`,
     desc: `${title} — an open, technology-neutral contract document from the Onym system repository, rendered for reading.`,
     ogDesc: 'Every seat is defined by an open contract. Read it here.',
     ogType: 'article',
     path: 'contracts/' + docPath.replace(/\.md$/, '.html'),
-    up,
+  };
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+${head({ ...seo, up })}
+${jsonld({
+    ...seo,
+    crumbs: [
+      { name: 'Onym Foundation', url: `${SITE_ORIGIN}/` },
+      { name: 'Roles', url: `${SITE_ORIGIN}/seats.html` },
+      { name: title, url: `${SITE_ORIGIN}/${seo.path}` },
+    ],
   })}
 </head>
 <body>
@@ -116,13 +125,6 @@ ${footer({ up })}
 `;
 }
 
-function sitemap(docPaths) {
-  const pages = ['', 'seats.html', 'governance.html', 'transparency.html', 'remediation.html', 'sponsors.html', 'pledge.html',
-    ...docPaths.map(p => 'contracts/' + p.replace(/\.md$/, '.html'))];
-  const rows = pages.map(p => `  <url><loc>${SITE_ORIGIN}/${p}</loc></url>`).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${rows}\n</urlset>\n`;
-}
-
 async function fetchDoc(docPath, entry) {
   const sha = REFS[entry.ref];
   const url = `https://raw.githubusercontent.com/${REPO}/${sha}/${docPath}`;
@@ -145,8 +147,7 @@ async function main() {
     n++;
     process.stdout.write(`\r${n}/${Object.keys(DOCS).length} ${docPath}          `);
   }
-  fs.writeFileSync(path.join(SITE, 'sitemap.xml'), sitemap(Object.keys(DOCS)));
-  console.log(`\nbuilt ${n} contract pages + sitemap.xml`);
+  console.log(`\nbuilt ${n} contract pages`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

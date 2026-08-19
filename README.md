@@ -14,7 +14,7 @@ dependency: plain HTML, one stylesheet, one small script.
 |---|---|
 | `pages/*.html` | **Page sources** (content + a `<!--page {…}-->` meta comment) — edit these |
 | `tools/partials.mjs` | Shared head/nav/footer chrome used by both builders — edit nav/footer here |
-| `site/*.html`, `site/contracts/**` | **Generated output** — never edit by hand; CI fails on drift |
+| `site/*.html`, `site/contracts/**`, `site/sitemap.xml`, `site/robots.txt`, `site/llms.txt` | **Generated output** — never edit by hand; CI fails on drift |
 | `site/styles.css` | The design system: semantic light/dark tokens, type scale, utilities |
 | `site/theme.js`, `site/main.js` | Pre-paint theme application; menu, theme toggle, scroll reveal, mailto builders |
 | `site/assets/fonts/` | Self-hosted Instrument Sans (variable) + IBM Plex Mono, with OFL licenses |
@@ -22,7 +22,8 @@ dependency: plain HTML, one stylesheet, one small script.
 | `tools/docs.mjs` | Manifest of contract documents with **pinned commit SHAs** and visible notices for known draft conflicts |
 | `governance/foundation-policy.json` | Single machine-readable source for proposed board, endowment, and grantmaking constants |
 | `governance/REMEDIATION.md` | Foundation/system work ledger and operational stop conditions |
-| `tools/build-pages.mjs`, `tools/build-contracts.mjs` | `npm run build` renders `site/` from `pages/` and the pinned docs + `sitemap.xml` |
+| `tools/build-pages.mjs`, `tools/build-contracts.mjs` | `npm run build` renders `site/` from `pages/` and the pinned docs |
+| `tools/build-discovery.mjs` | Generates `site/sitemap.xml`, `site/robots.txt`, `site/llms.txt` from the same page metas and doc manifest — **generated output, don't hand-edit** |
 | `tools/check-links.mjs` | Internal link and anchor checker |
 | `tests/` | Unit tests (render/resolution) and browser tests (390px/1440px layout, mobile menu, fonts, dark mode, theme persistence, axe) |
 
