@@ -50,7 +50,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/charity/UI-Charity.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/charity/UI-Charity.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-messenger-charity-ui-profile">Onym Messenger ↔ Charity UI Profile</h1>
@@ -71,8 +71,11 @@ payment provider, bank rails, or several adapters. Every concrete financial,
 proof, or notary implementation must publish its own profile and conformance
 vectors. Ledger-specific values do not leak into the common charity UI port.
 A BNB/EVM notary-and-eligibility binding is drafted in
-<a href="../charity/UI-Charity-BNB.html">UI-Charity-BNB.md</a>; no financial binding is profiled
-anywhere yet.</p>
+<a href="../charity/UI-Charity-BNB.html">UI-Charity-BNB.md</a>. Two further notary-and-eligibility
+bindings are planned and neither has a profile document yet: Stellar/Soroban,
+and Cardano (eUTXO, Plutus, at protocol version 11 or later). No financial
+binding is profiled anywhere yet. Bindings do not gate one another; a
+deployment declares the ones it uses and nothing else.</p>
 <p>The status of this document is <strong>proposed</strong>. It describes the boundary that an
 Onym Messenger implementation should satisfy; it is not a claim that every
 screen, adapter, contract, or audit described here is already deployed.</p>
@@ -563,6 +566,30 @@ must separately define:</p>
 </ul>
 <p>Until that document exists and passes conformance tests, “uses Soroban” is an
 implementation choice, not evidence that this UI boundary is satisfied.</p>
+<p>The requirement is not Stellar-specific. The list above is the general bar for
+selecting any ledger: substitute the ledger's own terms for each item and the
+obligation is unchanged — network and deployment identifiers, code and
+interface hashes, canonical object and operation mappings, authorization and
+public-input coverage, submission and finality rules, public field schemas,
+administrative authorities, read verification and reorganization handling, and
+golden vectors against <code>Charity.md</code>. Ledgers whose execution model does not
+supply an item directly must say what replaces it and what the replacement
+costs; an item a profile cannot answer is an open question the profile states,
+not one it omits. “Uses chain X” carries exactly as much evidential weight as
+“uses Soroban” does above — none, until the profile exists and its conformance
+vectors pass.</p>
+<p>One requirement binds every implementation profile in this family, and is
+stated here rather than in any one of them because no sibling can impose it on
+the others. A proof accepted under one implementation profile MUST NOT be
+valid evidence under another. Where two profiles select different proof
+systems or curves, that difference supplies part of the separation — but it is
+never sufficient on its own, and it supplies nothing at all between two
+profiles that select the same one. Each profile MUST therefore carry a
+separation that holds independently of the proof system: a statement-family or
+domain-separation constant bound into the proven statement, distinct per
+profile, together with a fixture proving that a proof valid under a sibling
+profile is rejected. A profile whose only separation from a sibling is the
+curve does not satisfy this requirement.</p>
 <h3 id="84-provider-offers-and-participant-incentives">8.4 Provider offers and participant incentives</h3>
 <p>Onym can present signed offers from independent charity, issuer, financial,
 notary, proof, audit, or UI providers. The offer flow reuses the general seat

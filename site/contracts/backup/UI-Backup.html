@@ -50,7 +50,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">Device backup</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">no implementation profile yet</span><span class="tag">11.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/backup/UI-Backup.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">11.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/backup/UI-Backup.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-ui-device-backup-boundary">Onym UI ↔ Device Backup Boundary</h1>
@@ -68,8 +68,9 @@ protocol, storage engine, or billing rail.</p>
 <p>A concrete implementation may use object storage, a content-addressed network,
 an institutional archive, a self-hosted server, removable media, or another
 mechanism that satisfies the profile's opacity, integrity, retention,
-erasure, export, and error semantics. No implementation profile exists yet;
-§17 records what a first profile must settle.</p>
+erasure, export, and error semantics.
+<a href="../backup/UI-Backup-Object-HTTP.html">UI-Backup-Object-HTTP.md</a> is the first such profile;
+§17 records what any profile must settle and what that one still leaves open.</p>
 <p>Here <strong>UI</strong> means the frontend application layer, not a screen issuing a
 network request. Views send intent to flows, view-models, repositories, or
 interactors. Those components decide what is eligible, seal it, and address it
@@ -323,6 +324,7 @@ to the operator:</p>
     &quot;format&quot;: &quot;&lt;portable-sealed-form&gt;&quot;,
     &quot;availableWhileUnpaid&quot;: true
   },
+  &quot;shutdownNotice&quot;: &quot;&lt;declared-duration-export-remains-available&gt;&quot;,
   &quot;endOfPayment&quot;: {
     &quot;notice&quot;: &quot;&lt;declared-duration&gt;&quot;,
     &quot;grace&quot;: &quot;&lt;declared-duration&gt;&quot;,
@@ -330,8 +332,12 @@ to the operator:</p>
     &quot;afterGrace&quot;: &quot;&lt;erase-or-declared-cold-state&gt;&quot;
   },
   &quot;metadataRetention&quot;: {
-    &quot;accessLogs&quot;: &quot;&lt;declared-duration&gt;&quot;,
-    &quot;sizeAndTiming&quot;: &quot;&lt;declared-duration&gt;&quot;
+    &quot;accessLogs&quot;: &quot;&lt;declared-duration-or-none&gt;&quot;,
+    &quot;sizeAndTiming&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;holderIdentifiers&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;operationOutcomes&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;erasureReceipts&quot;: &quot;&lt;declared-duration&gt;&quot;,
+    &quot;entitlementRecords&quot;: &quot;&lt;declared-duration&gt;&quot;
   },
   &quot;signature&quot;: &quot;&lt;operator-signature&gt;&quot;
 }
@@ -410,7 +416,9 @@ recovery artifacts, and trustee shares are never eligible (§16.1).</p>
 terms;</li>
 <li><code>already_retained</code>: the same reference was already held;</li>
 <li><code>rejected</code>: the operator explicitly refused;</li>
-<li><code>erased</code>: the operator confirmed erasure within its declared scope;</li>
+<li><code>erased</code>: the operator acknowledged erasure within its declared scope, and
+the deadline it committed to has passed without contradiction — an
+acknowledgement alone is not this state;</li>
 <li><code>unreachable</code>: no meaningful operator response was obtained; and</li>
 <li><code>unknown</code>: the request may have succeeded, but its result is inconclusive.</li>
 </ul>
@@ -432,8 +440,13 @@ the declared scope and never covers other parties' copies.</p>
 }
 </code></pre>
 <p>The access key is held by the person, not by the operator, and is separate
-from the identity signing key so a backup credential can be rotated or
-abandoned without touching the identity. The operator verifies the proof and
+from the identity signing key, so abandoning a backup credential touches
+nothing else. Whether it can also be <em>rotated</em> is a profile decision with real
+costs on both sides — a rotation that changes how an operator recognises a
+holder strands every snapshot retained under the previous credential unless the
+profile also defines a re-binding proof — and a profile that omits rotation, or
+makes it destructive, must say so at enrolment rather than imply the property
+(§14.4). The operator verifies the proof and
 serves bytes. It cannot issue, reset, escrow, or recover the access key, and it
 cannot open the snapshot with anything it holds — a failed restore is a lost
 history, which is the honest price of the previous sentence and must be
@@ -523,8 +536,9 @@ side effect of an update, migration, or default change;</li>
 the declared terms before the first upload;</li>
 <li>display retention period, erasure deadlines and scope, jurisdictions,
 sub-processors, lawful-access practice, breach-notice period, export
-availability, price, and end-of-payment behaviour on the consent surface —
-before enrolment, not on first failure;</li>
+availability, the shutdown-notice window, metadata retention, price, and
+end-of-payment behaviour on the consent surface — before enrolment, not on
+first failure;</li>
 <li>state plainly that a snapshot extends how long this history exists for
 every participant in it, including people who did not choose the operator;</li>
 <li>bound the eligible set to what the person included, and exclude seed
@@ -536,8 +550,9 @@ and never with content-derived keys;</li>
 before uploading under new terms;</li>
 <li>keep plaintext state, keys, contact labels, filenames, group secrets, and
 identity credentials out of backup requests, metadata, and logs;</li>
-<li>hold the backup access key locally, offer its rotation and export, and
-explain that no operator can recover it;</li>
+<li>hold the backup access key locally, explain that no operator can recover
+it, and — where the selected profile defines rotation — offer it, and state
+what it does to snapshots already retained under the previous credential;</li>
 <li>verify a complete snapshot reference before replacing any local state, and
 never merge a partial or unverified snapshot;</li>
 <li>treat locators, receipts, retention dates, and operator descriptors as
@@ -793,7 +808,7 @@ prove retention.</p>
 </tr>
 <tr>
 <td><code>erasure_unconfirmed</code></td>
-<td>Operator</td>
+<td>Client verification</td>
 <td>Preserve uncertainty; do not claim destruction</td>
 </tr>
 <tr>
@@ -843,13 +858,21 @@ prove retention.</p>
 <h2 id="14-security-and-privacy-invariants">14. Security and privacy invariants</h2>
 <ol>
 <li><strong>Only sealed snapshots cross the boundary.</strong> Plaintext state, keys,
-contact labels, filenames, and group secrets never enter operator requests.</li>
+contact labels, filenames, and group secrets never appear in the clear, in
+metadata, in a locator, in a receipt, or in a log. A restorable snapshot
+necessarily <em>contains</em> group secrets and content keys — that is what makes
+it a restore rather than a transcript — so the rule this invariant states is
+opacity, not absence.</li>
 <li><strong>No seed material, ever.</strong> Recovery artifacts, trustee shares, and root
 secrets are ineligible for backup under this contract (§16.1).</li>
 <li><strong>The operator holds no opening capability.</strong> No escrowed key, no wrapped
 key it can unwrap, no operator-controlled reset.</li>
-<li><strong>Restore is possession, not identity.</strong> The access key is holder-held,
-separate from the identity signing key, and rotatable without touching it.</li>
+<li><strong>Restore is possession, not identity.</strong> The access key is holder-held and
+separate from the identity signing key. Whether it is <em>independently</em>
+rotatable is a profile decision with a real cost either way, and a profile
+that shares a root with the identity keys, or that omits rotation because it
+would strand retained snapshots, must say so rather than claim the property
+(see <a href="../backup/UI-Backup-Object-HTTP.html">UI-Backup-Object-HTTP.md</a> §16.2).</li>
 <li><strong>The reference covers sealed bytes.</strong> It is recomputed before upload and
 verified in full before any restore.</li>
 <li><strong>Sealing keys are fresh and holder-derived.</strong> Convergent or
@@ -872,8 +895,11 @@ another's entitlement, token, access proof, or authorization.</li>
 identifiers never enter snapshots, locators, or ordinary access logs.</li>
 <li><strong>Lapse is disclosed, never silent.</strong> Notice, grace, download, export, and
 erasure precede any post-grace deletion.</li>
-<li><strong>Export is unconditional.</strong> Retention is never leverage; export survives
-non-payment and operator shutdown.</li>
+<li><strong>Export is unconditional.</strong> Retention is never leverage: export is never
+withheld for non-payment, and it keeps working through notice and grace. It
+cannot survive shutdown — a shut-down operator serves nothing — so an
+operator declares a <code>shutdownNotice</code> window during which export works, and
+the consent surface shows it beside retention and grace.</li>
 <li><strong>A snapshot is not evidence and not group state.</strong> The operator
 adjudicates nothing, discloses nothing legible, and no backup operation
 authorizes or rolls back a notary transition.</li>
@@ -926,8 +952,9 @@ message to an authority, that act happens under
 <a href="../moderation/Moderation.html">../moderation/Moderation.md</a> from the person's
 own device, whether or not the message came back from a snapshot.</p>
 <h2 id="17-concrete-implementation-profiles">17. Concrete implementation profiles</h2>
-<p>None exists yet. This abstract boundary is not executable until a profile
-pins:</p>
+<p><a href="../backup/UI-Backup-Object-HTTP.html">UI-Backup-Object-HTTP.md</a>
+(<code>onym:backup-implementation:object-http-v1</code>) is the first, and it is draft. This
+abstract boundary is not executable until a profile pins:</p>
 <ul>
 <li>the digest suite, canonical sealed form, and increment composition rules;</li>
 <li>the sealing suite and the key derivation from holder-held input, including
@@ -940,12 +967,13 @@ and indirection policy;</li>
 <li>the payment-refusal mapping.</li>
 </ul>
 <p><em>Known gaps.</em> No implementation exists in any Onym client today, so nothing in
-this document is a claim about running code. Two gaps are design work, not
-profile detail: an incremental scheme that is verifiable against a
-whole-snapshot reference without leaking a change map to the operator, and a
-disclosure pattern for §10.4 that is honest without being unusable. Until a
-profile and fixtures exist, the interface rule stands unchanged — local state
-stays out of any cloud backup unless the person explicitly includes it.</p>
+this document is a claim about running code, and the profile above is a
+specification rather than a report. Two gaps are design work, not profile
+detail, and the first profile solves neither: an incremental scheme that is
+verifiable against a whole-snapshot reference without leaking a change map to
+the operator, and a disclosure pattern for §10.4 that is honest without being
+unusable. Until fixtures exist, the interface rule stands unchanged — local
+state stays out of any cloud backup unless the person explicitly includes it.</p>
 <h2 id="18-acceptance-criteria">18. Acceptance criteria</h2>
 <p>The UI ↔ backup boundary is successfully separated when:</p>
 <ol>

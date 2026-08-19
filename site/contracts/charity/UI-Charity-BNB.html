@@ -50,7 +50,7 @@
     <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
     <header>
       
-      <div class="badges"><span class="tag">draft</span><span class="tag">profile merged — no code</span><span class="tag">15.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/charity/UI-Charity-BNB.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">profile merged — no code</span><span class="tag">15.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/charity/UI-Charity-BNB.md">source on GitHub →</a></div>
     </header>
     <div class="doc">
 <h1 id="onym-charity-bnb-chain-evm-implementation-profile">Onym Charity ↔ BNB Chain (EVM) Implementation Profile</h1>
@@ -68,12 +68,12 @@ its own legal authority.</p>
 <a href="../charity/Charity.html">Charity.md</a>. The abstract boundary remains authoritative for
 object meaning and trust semantics; <a href="../charity/UI-Charity.html">UI-Charity.md</a> remains
 authoritative for what the user application shows and refuses. The
-Stellar/Soroban charity binding is a separate, unwritten sibling profile.
-UI-Charity.md §8.3 states, for Soroban, that &quot;uses X&quot; is an implementation
-choice and not evidence of conformance until the implementation profile
-exists and passes conformance tests; this document adopts the same
-principle for BNB — the attribution is to the principle, since §8.3
-itself addresses only the Soroban case.</p>
+Stellar/Soroban and Cardano charity bindings are separate, unwritten
+sibling profiles; both verify over BLS12-381, and neither gates this one.
+UI-Charity.md §8.3 states the conformance bar for selecting any ledger:
+&quot;uses X&quot; is an implementation choice and not evidence of conformance until
+the implementation profile exists and passes conformance tests. This
+document is that profile for BNB.</p>
 <p>The document distinguishes:</p>
 <ul>
 <li><strong>accepted decisions</strong>, settled for this profile;</li>
@@ -239,8 +239,23 @@ interoperability criterion would be unachievable; the §13 canonicalization
 fixtures are the proof that they cannot. The <code>-bn254-</code> segment is the
 circuit-type discriminator and is load-bearing: a BLS12-381 eligibility proof
 is not valid evidence under this profile, and a BN254 proof is not valid
-evidence under any Stellar charity profile. Fixtures MUST prove both
+evidence under any BLS12-381 charity profile. Fixtures MUST prove both
 rejections (§13, <code>neg-cross-curve-*</code>).</p>
+<p>Curve separation is necessary but never sufficient, which is why
+UI-Charity.md §8.3 requires every profile in this family to carry a separation
+that holds independently of the proof system. This profile satisfies that
+requirement through the statement-tag constant bound into the proven
+statement, not through the curve: the <code>-bn254-</code> discriminator above is the
+weaker of the two checks, and would carry no weight at all against a sibling
+that shared this curve. The planned Stellar/Soroban and Cardano bindings both
+verify over BLS12-381, so they are separated from each other only by their own
+statement tags — a constraint on those profiles, stated in §8.3 where it binds
+them, not here.</p>
+<p>The fixture that exercises this profile's statement separation is §13's
+<code>neg-foreign-statement</code>, which rejects a BN254 proof from the notary <code>sep-*</code>
+family. It demonstrates the mechanism against the donor family available
+today; it is not, and cannot be, evidence about separation between two
+profiles that do not yet exist.</p>
 <h2 id="3-deployment-identity-and-hardening">3. Deployment identity and hardening</h2>
 <p>Restated here in full, not referenced, because every rule is normative for
 this contract too:</p>
@@ -1007,13 +1022,26 @@ and live in §13.1 as <code>fix-cross-campaign-derivation</code> and
 <p><strong>Curve and statement separation</strong></p>
 <ul>
 <li><code>neg-cross-curve-bls-under-bn254</code> — a well-formed BLS12-381 eligibility
-proof (valid under the future Stellar charity profile's encoding)
-submitted to <code>anchorAidClaim</code>: rejected — by length/decode where lengths
-differ, by <code>InvalidProof</code> where they coincide — and never anchored.</li>
-<li><code>neg-cross-curve-bn254-under-stellar</code> — the converse fixture, shipped
-with this profile and executed against the Stellar charity binding when
-that binding exists; until then it is a published vector with an explicit
-&quot;counterpart unimplemented&quot; marker, not silently omitted.</li>
+proof submitted to <code>anchorAidClaim</code>: rejected — by length/decode where
+lengths differ, by <code>InvalidProof</code> where they coincide — and never anchored.
+Two stages, because no sibling encoding is defined yet. <strong>Until a BLS12-381
+sibling profile exists</strong>, the vector is generated from this profile's own
+circuit re-instantiated over BLS12-381, and ships marked
+&quot;sibling-encoding pending&quot; — it proves the curve check rejects, which is all
+it can prove without a sibling to borrow an encoding from. <strong>Once a sibling
+exists</strong>, the vector MUST be regenerated under that sibling's published
+encoding and MUST record which sibling produced it, because the two sibling
+encodings are not interchangeable and a vector under one is not evidence
+about the other. (Draft 0.1 described the vector as &quot;valid under the future
+Stellar charity profile's encoding&quot;, which was already unsatisfiable for the
+same reason.)</li>
+<li><code>neg-cross-curve-bn254-under-bls</code> — the converse fixture, shipped with this
+profile and executed against each BLS12-381 charity binding as that binding
+arrives. Until the first one exists it is a published vector with an
+explicit &quot;counterpart unimplemented&quot; marker, not silently omitted; once one
+exists, the marker is retired only for the sibling actually run against, and
+remains for the other. (Named <code>neg-cross-curve-bn254-under-stellar</code> in draft
+0.1, when Stellar was the only planned counterpart.)</li>
 <li><code>neg-foreign-statement</code> — a valid BN254 proof for a <em>different</em> statement
 family with a compatible shape (the notary <code>sep-*</code> transition circuits
 are the natural donor): <code>InvalidProof</code>, because the statement tag
@@ -1190,9 +1218,12 @@ and MUST be built once, not twice).</li>
 backend; the operator manifest it serves (as of this draft's date)
 declares Stellar notary support only — the served bytes are
 authoritative, and no manifest anywhere declares a charity profile.</li>
-<li><strong>Stellar sibling</strong>: no <code>UI-Charity-Stellar.md</code> exists; the
-<code>neg-cross-curve-bn254-under-stellar</code> fixture has no counterpart to run
-against.</li>
+<li><strong>BLS12-381 siblings</strong>: neither <code>UI-Charity-Stellar.md</code> nor
+<code>UI-Charity-Cardano.md</code> exists, so the <code>neg-cross-curve-bn254-under-bls</code>
+fixture has no counterpart to run against in either direction. Whichever
+sibling profile is written first supplies the counterpart; the other keeps
+the &quot;counterpart unimplemented&quot; marker until it arrives. Neither sibling
+gates this profile, and this profile gates neither.</li>
 <li><strong>Clients</strong>: no charity module implements the UI-Charity.md port; no
 eligibility flow, no anchor reconciliation.</li>
 <li><strong>Fixtures</strong>: none of §13 exists in any repository.</li>
@@ -1213,7 +1244,9 @@ across campaign revisions, proven by the §13.2 scope fixtures;</li>
 class the client actually implements;</li>
 <li>the §13.2 PII fixture passes at all three layers on the full happy path;</li>
 <li>cross-curve and cross-statement proofs are rejected in fixtures, in both
-directions once the Stellar sibling exists;</li>
+directions once a BLS12-381 sibling exists — and cross-statement rejection
+is required on its own terms, since it is the only separation available
+between two siblings that share a curve;</li>
 <li>write reconciliation survives nonce replacement, unknown outcomes, and
 pre-finality reorgs with the operation ID as the stable key and
 <code>conflicting_state</code> treated as a security event; and</li>

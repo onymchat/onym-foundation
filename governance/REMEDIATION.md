@@ -44,14 +44,15 @@ accepts money.
 | SYS-04 | `onym-system` | Reconcile individual defaults, replaceable read/submit providers, and group-governed notary migration | corrected interface text and migration fixtures | before conformance claims |
 | SYS-05 | `onym-system` | Define route-level incident coordination and the billing broker's marketplace duties | accountable assembler/incident profile and broker insolvency, audit, complaint, and exit rules | before commercial channel launch |
 | SYS-06 | `onym-system` | Merge or remove the arbitration dependency on the unmerged bank boundary; harmonize the Foundation rule across whitepaper/profile/examples | no broken main-branch link; one Foundation formula; link and constitutional-constant CI | before next whitepaper draft |
-| SYS-07 | `onym-system` | Give the merged device backup contract ([onym-system#24](https://github.com/onymchat/onym-system/pull/24)) its first implementation profile, and settle the two design gaps its §17 records | a profile pinning the digest, sealing, and proof-of-possession suites, with fixtures for restore, terms regression, erasure receipts, lapse, and export; plus a verifiable increment scheme that leaks no change map and a workable third-party-retention disclosure | before paid backup listings or an operator grant |
+| SYS-07 | `onym-system` + implementations | The merged device backup contract ([onym-system#24](https://github.com/onymchat/onym-system/pull/24)) has its first implementation profile ([onym-system#37](https://github.com/onymchat/onym-system/pull/37), object-HTTP); build a conforming adapter, operator, and fixture suite, and settle the two design gaps the profile still names | fixtures for restore, terms regression, erasure receipts, lapse, and export passing against a real adapter and operator; plus a verifiable increment scheme that leaks no change map and a workable third-party-retention disclosure | before paid backup listings or an operator grant |
 | SYS-08 | `onym-system` | Add a **sealed single-holder custody profile** under the Recovery Trustee seat: one holder, material it cannot unwrap alone, notice-and-delay release, published beside the existing custodial cloud profile rather than replacing it | profile merged with an adversarial review showing the holder alone cannot recover the artifact, and the cloud profile's custody class restated in the same commit | before the Foundation funds or lists a single-holder custody operator |
 
 SYS-07 and SYS-08 record where the two durable-copy arrangements actually
 stand, which is not where an earlier version of this ledger put them. Device
-backup is a seat, and its contract is now merged upstream rather than merely
-described here — but no implementation profile pins it to a concrete stack, so
-nothing conforms to it and no operator can yet be measured against it. Seed
+backup is a seat, and its contract is now merged upstream, with a first
+implementation profile (object-HTTP) merged alongside it — but no conforming
+adapter, operator, or fixture exists in any Onym repository, so nothing
+conforms to it and no operator can yet be measured against it. Seed
 custody is **not** a seat: it is how the Recovery Trustee
 seat's profiles differ, and one of them —
 `recovery/Recovery-Trustee-Cloud.md` — already publishes a 1-of-1 custodial

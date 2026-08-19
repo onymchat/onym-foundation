@@ -78,7 +78,7 @@
             <h3>Exists today</h3>
             <ul>
               <li>Native iOS and Android clients, and one replaceable default deployment of message carriage, media storage, and group verification — plus, on iOS only, a live moderation authority and the DeviceCheck enforcement backend that executes its verdicts.</li>
-              <li>Public, technology-neutral contract documents for fifteen seats. The moderation seat's Apple profile is finalized and implemented; its Android sibling is still draft. The device backup seat has no implementation profile and no conforming code at all.</li>
+              <li>Public, technology-neutral contract documents for fifteen seats. The moderation seat's Apple profile is finalized and implemented; its Android sibling is still draft. The device backup seat has a merged Object-HTTP implementation profile but no conforming code at all.</li>
             </ul>
           </div>
           <div>
@@ -92,7 +92,7 @@
             <h3>Open and unaudited</h3>
             <ul>
               <li>The system is alpha-grade and has had no independent audit. Identity rotation, forward-secret messaging, and conformance fixtures are explicitly open work.</li>
-              <li>Banking and naming seats are proposals in review. The device backup contract is merged with no implementation profile, so nothing conforms to it yet. Metadata-exposure assumptions are documented in the whitepaper's threat model.</li>
+              <li>Banking and naming seats are proposals in review. The device backup contract has a merged Object-HTTP implementation profile, but no conforming code exists, so nothing conforms to it yet. Metadata-exposure assumptions are documented in the whitepaper's threat model.</li>
             </ul>
           </div>
         </div>
@@ -247,7 +247,7 @@
         <a href="contracts/moderation/Moderation.html">Moderation authority</a> ·
         <a href="contracts/bank/UI-Bank.html">Banking</a><span class="tag">in review</span> ·
         <a href="contracts/association/Association-Naming.html">Naming</a><span class="tag">in review</span>.
-        <a href="contracts/backup/UI-Backup.html">Device backup</a><span class="tag">no profile yet</span>.
+        <a href="contracts/backup/UI-Backup.html">Device backup</a><span class="tag">profile merged, no code</span>.
         <a href="contracts/identity/UI-Identity.html">Identity</a> is not a seat — it stays with the person, and seed custody is not a seat either: it is how the <a href="contracts/recovery/Recovery-Trustee.html">recovery trustee</a>'s profiles differ. <a href="seats.html#durability">What durable copies cost everyone →</a></p>
     </div>
   </section>
