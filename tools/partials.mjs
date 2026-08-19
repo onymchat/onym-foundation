@@ -23,19 +23,86 @@ export function head({ title, desc, path, up, ogType = 'website', ogDesc, noinde
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
-${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${url}">
+${noindex ? '<meta name="robots" content="noindex,follow">' : `<link rel="canonical" href="${url}">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(ogDesc || desc)}">
 <meta property="og:type" content="${esc(ogType)}">
 <meta property="og:url" content="${url}">
+<meta property="og:site_name" content="Onym Foundation">
+<meta property="og:locale" content="en_US">
 <meta property="og:image" content="${SITE_ORIGIN}/assets/og-card.png">
-<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">`}
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(ogDesc || desc)}">
+<meta name="twitter:image" content="${SITE_ORIGIN}/assets/og-card.png">`}
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f7">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e0e10">
 <link rel="icon" type="image/png" sizes="32x32" href="${up}assets/favicon-32.png">
 <link rel="apple-touch-icon" href="${up}assets/apple-touch-icon.png">
 <script src="${up}theme.js"></script>
 <link rel="stylesheet" href="${up}styles.css">`;
+}
+
+// Structured data, emitted on every indexable page. Search engines and
+// assistant retrievers both read this; it is the only place the site
+// states machine-readably what the Foundation is and how the pages relate.
+//
+// Inline `application/ld+json` survives the site's CSP (`script-src 'self'`,
+// no `unsafe-inline`): browsers only apply script-src to executable script
+// types, and a JSON-LD block is data, not script. Verified in Chrome — the
+// block parses and stays readable from the DOM under the deployed policy.
+//
+// The Foundation does not legally exist yet, so the Organization node says
+// so in `disambiguatingDescription` rather than implying a registered body.
+export function jsonld({ title, desc, path, ogType = 'website', crumbs = [] }) {
+  const url = `${SITE_ORIGIN}/${path}`;
+  const org = {
+    '@type': 'Organization',
+    '@id': `${SITE_ORIGIN}/#organization`,
+    name: 'Onym Foundation',
+    url: `${SITE_ORIGIN}/`,
+    logo: `${SITE_ORIGIN}/assets/apple-touch-icon.png`,
+    email: 'lead@onym.app',
+    disambiguatingDescription:
+      'Being formed as a sihtasutus (foundation) under Estonian law. No legal entity exists yet.',
+    sameAs: ['https://github.com/onymchat', 'https://onym.app'],
+  };
+  const website = {
+    '@type': 'WebSite',
+    '@id': `${SITE_ORIGIN}/#website`,
+    url: `${SITE_ORIGIN}/`,
+    name: 'Onym Foundation',
+    inLanguage: 'en',
+    publisher: { '@id': `${SITE_ORIGIN}/#organization` },
+  };
+  const node = {
+    '@type': ogType === 'article' ? 'TechArticle' : 'WebPage',
+    '@id': `${url}#webpage`,
+    url,
+    name: title,
+    description: desc,
+    inLanguage: 'en',
+    isPartOf: { '@id': `${SITE_ORIGIN}/#website` },
+    primaryImageOfPage: `${SITE_ORIGIN}/assets/og-card.png`,
+    publisher: { '@id': `${SITE_ORIGIN}/#organization` },
+  };
+  const graph = [org, website];
+  if (crumbs.length > 1) {
+    graph.push({
+      '@type': 'BreadcrumbList',
+      '@id': `${url}#breadcrumb`,
+      itemListElement: crumbs.map((c, i) => ({
+        '@type': 'ListItem', position: i + 1, name: c.name, item: c.url,
+      })),
+    });
+    node.breadcrumb = { '@id': `${url}#breadcrumb` };
+  }
+  graph.push(node);
+  const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })
+    .replace(/</g, '\\u003c');
+  return `<script type="application/ld+json">${json}</script>`;
 }
 
 export function nav({ up, current }) {
@@ -77,10 +144,15 @@ ${groups}    <p class="legalline${simple ? ' bare' : ''}">The Onym Foundation is
 
 export function page({ meta, content }) {
   const up = meta.root ? '/' : (meta.up ?? '');
+  const name = meta.title.replace(/\s+—\s+Onym Foundation$/, '');
+  const crumbs = meta.path
+    ? [{ name: 'Onym Foundation', url: `${SITE_ORIGIN}/` },
+       { name, url: `${SITE_ORIGIN}/${meta.path}` }]
+    : [];
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-${head({ ...meta, up })}
+${head({ ...meta, up })}${meta.noindex ? '' : '\n' + jsonld({ ...meta, crumbs })}
 </head>
 <body>
 ${nav({ up, current: meta.current ?? null })}

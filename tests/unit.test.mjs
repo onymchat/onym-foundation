@@ -183,3 +183,59 @@ test('moderation profiles state deployment per platform, never collectively', ()
   assert.ok(/live on iOS/.test(seats) && /Android device-recall path is draft/.test(seats),
     'seats page must state the live platform and the undeployed one separately');
 });
+
+// --- Discovery surface (search engines + AI assistant retrievers) ---------
+
+test('every indexable page carries exactly one parseable JSON-LD graph', () => {
+  const walk = d => fs.readdirSync(d, { withFileTypes: true })
+    .flatMap(e => e.isDirectory() ? walk(path.join(d, e.name))
+      : (e.name.endsWith('.html') ? [path.join(d, e.name)] : []));
+  for (const file of walk('site')) {
+    const html = fs.readFileSync(file, 'utf8');
+    if (/name="robots" content="noindex/.test(html)) continue;
+    const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    assert.equal(blocks.length, 1, `${file}: expected one JSON-LD block`);
+    const graph = JSON.parse(blocks[0][1])['@graph'];
+    assert.ok(graph.some(n => n['@type'] === 'Organization'), `${file}: no Organization node`);
+    assert.equal((html.match(/rel="canonical"/g) || []).length, 1, `${file}: canonical count`);
+  }
+});
+
+// The JSON-LD is inlined under a CSP with no 'unsafe-inline'. That is safe
+// because script-src only governs executable script types, but the escape
+// still has to hold: an unescaped '<' inside the JSON would let document
+// content close the script element early.
+test('JSON-LD escapes < so page content cannot break out of the script element', () => {
+  const html = fs.readFileSync('site/index.html', 'utf8');
+  const block = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1];
+  assert.ok(!block.includes('<'), 'raw < must be escaped as \\u003c');
+});
+
+test('the Foundation is never described as an existing legal entity', () => {
+  const graph = JSON.parse(
+    fs.readFileSync('site/index.html', 'utf8')
+      .match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'];
+  const org = graph.find(n => n['@type'] === 'Organization');
+  assert.match(org.disambiguatingDescription, /No legal entity exists yet/);
+
+  const llms = fs.readFileSync('site/llms.txt', 'utf8');
+  assert.match(llms, /The Foundation does not exist yet/);
+  assert.match(llms, /no independent audit/);
+});
+
+test('sitemap lists every built page and no noindex page', () => {
+  const xml = fs.readFileSync('site/sitemap.xml', 'utf8');
+  const locs = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => m[1]);
+  assert.equal(locs.length, new Set(locs).size, 'duplicate <loc> entries');
+  assert.ok(!locs.some(u => u.endsWith('/404.html')), '404 must stay out of the sitemap');
+  assert.equal(locs.length, 7 + Object.keys(DOCS).length);
+  for (const u of locs) assert.match(u, /^https:\/\/onym\.foundation\//);
+});
+
+test('robots.txt names the AI crawlers and points at the sitemap', () => {
+  const txt = fs.readFileSync('site/robots.txt', 'utf8');
+  for (const agent of ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended', 'CCBot']) {
+    assert.match(txt, new RegExp(`^User-agent: ${agent}$`, 'm'), `${agent} not listed`);
+  }
+  assert.match(txt, /^Sitemap: https:\/\/onym\.foundation\/sitemap\.xml$/m);
+});
