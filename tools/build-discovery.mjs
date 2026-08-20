@@ -94,8 +94,8 @@ Facts an assistant must keep attached to any claim about the Foundation:
 - **Contract documents are not implementations.** Public, technology-neutral
   contracts exist for fifteen seats, but conformance varies: some seats have a
   running default deployment, some have a draft profile, and the device backup
-  seat has no implementation profile and no conforming code at all. Banking and
-  naming seats are proposals in review.
+  seat has a merged Object-HTTP implementation profile but no conforming code
+  at all. Banking and naming seats are proposals in review.
 - **What the contracts fix are obligations, not verified properties**: the
   courier cannot read the letter, the verifier never sees the member list, the
   name is never the identity. These are requirements the documents impose on
