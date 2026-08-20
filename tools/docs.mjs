@@ -6,7 +6,7 @@
 export const REPO = 'onymchat/onym-system';
 
 export const REFS = {
-  main: '0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba',
+  main: 'b2d06d4b20af4bdef2864dcbc7abba3f86b32a72',
   'discovery-seat': 'b1c286b58d1fef638e7dc98fe0dcb4081256441d',
   'worktree-bank-boundary': '85bc43ce476748faf679849666f9334868e74fc8',
   'worktree-association-naming': '4712694da80a9d2f82fff0fa73725af30260eb6b',
@@ -47,7 +47,8 @@ export const DOCS = {
   'bank/UI-Bank.md':                    { ref: 'worktree-bank-boundary', seat: 'Banking & payments', review: true },
   'bank/UI-Bank-Stellar.md':            { ref: 'worktree-bank-boundary', review: true },
   'association/Association-Naming.md':  { ref: 'worktree-association-naming', seat: 'Naming & credentials', review: true },
-  'backup/UI-Backup.md':                { ref: 'main', seat: 'Device backup', tags: ['no implementation profile yet'] },
+  'backup/UI-Backup.md':                { ref: 'main', seat: 'Device backup' },
+  'backup/UI-Backup-Object-HTTP.md':    { ref: 'main', tags: ['profile merged — no code'] },
   'moderation/Moderation.md':           { ref: 'main', seat: 'Moderation authority', tags: ['Apple case surface finalized', 'reference implementation', 'Apple path in production'] },
   'moderation/Moderation-DeviceCheck.md':   { ref: 'main', tags: ['Apple case surface finalized', 'reference implementation', 'Apple path in production'] },
   'moderation/Moderation-Device-Recall.md': { ref: 'main', tags: ['Android path not deployed'] },

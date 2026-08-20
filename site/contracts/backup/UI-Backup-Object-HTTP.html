@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onym UI ↔ Backup: Object-HTTP Implementation — Onym Foundation</title>
+<meta name="description" content="Onym UI ↔ Backup: Object-HTTP Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.">
+<link rel="canonical" href="https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<meta property="og:title" content="Onym UI ↔ Backup: Object-HTTP Implementation — Onym Foundation">
+<meta property="og:description" content="Every seat is defined by an open contract. Read it here.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html">
+<meta property="og:site_name" content="Onym Foundation">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://onym.foundation/assets/og-card.png">
+<meta property="og:image:alt" content="onym.foundation — A messenger no one owns needs an institution that owns nothing.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Onym UI ↔ Backup: Object-HTTP Implementation — Onym Foundation">
+<meta name="twitter:description" content="Every seat is defined by an open contract. Read it here.">
+<meta name="twitter:image" content="https://onym.foundation/assets/og-card.png">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e0e10">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<script src="../../theme.js"></script>
+<link rel="stylesheet" href="../../styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://onym.foundation/#organization","name":"Onym Foundation","url":"https://onym.foundation/","logo":"https://onym.foundation/assets/apple-touch-icon.png","email":"lead@onym.app","disambiguatingDescription":"Being formed as a sihtasutus (foundation) under Estonian law. No legal entity exists yet.","sameAs":["https://github.com/onymchat","https://onym.app"]},{"@type":"WebSite","@id":"https://onym.foundation/#website","url":"https://onym.foundation/","name":"Onym Foundation","inLanguage":"en","publisher":{"@id":"https://onym.foundation/#organization"}},{"@type":"BreadcrumbList","@id":"https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Onym Foundation","item":"https://onym.foundation/"},{"@type":"ListItem","position":2,"name":"Roles","item":"https://onym.foundation/seats.html"},{"@type":"ListItem","position":3,"name":"Onym UI ↔ Backup: Object-HTTP Implementation","item":"https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html"}]},{"@type":"TechArticle","@id":"https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html#webpage","url":"https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html","name":"Onym UI ↔ Backup: Object-HTTP Implementation — Onym Foundation","description":"Onym UI ↔ Backup: Object-HTTP Implementation — an open, technology-neutral contract document from the Onym system repository, rendered for reading.","inLanguage":"en","isPartOf":{"@id":"https://onym.foundation/#website"},"primaryImageOfPage":"https://onym.foundation/assets/og-card.png","publisher":{"@id":"https://onym.foundation/#organization"},"breadcrumb":{"@id":"https://onym.foundation/contracts/backup/UI-Backup-Object-HTTP.html#breadcrumb"}}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="site" aria-label="Main">
+  <div class="wrap navbar">
+    <a class="brand" href="../../index.html"><svg class="mark" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3.4" stroke-dasharray="22.3 5.95 22.3 6" transform="rotate(24 12 12)"/></svg><span class="wordmark">onym<span>.foundation</span></span></a>
+    <div class="navlinks" id="sitemenu">
+      <a href="../../seats.html" aria-current="page">Seats</a>
+      <a href="../../governance.html">Governance</a>
+      <a href="../../transparency.html">Transparency</a>
+      <a href="https://onym.app">onym.app ↗</a>
+      <a class="pill accent" href="../../sponsors.html">Become a founding sponsor</a>
+    </div>
+    <div class="navctl">
+      <button class="themebtn" type="button" aria-label="Color theme: system — activate to change">Theme: Auto</button>
+      <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitemenu">Menu</button>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <article class="wrap docpage">
+    <p class="mono docback"><a href="../../index.html">← Foundation</a> · <a href="../../seats.html">All seats</a></p>
+    <header>
+      
+      <div class="badges"><span class="tag">draft</span><span class="tag">profile merged — no code</span><span class="tag">19.08.2026</span><span class="metaline">proposed by Claude &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/backup/UI-Backup-Object-HTTP.md">source on GitHub →</a></div>
+    </header>
+    <div class="doc">
+<h1 id="onym-ui-backup-object-http-implementation">Onym UI ↔ Backup: Object-HTTP Implementation</h1>
+<p><strong>Implementation profile draft 0.1 — August 2026</strong></p>
+<blockquote>
+<p>The device seals a whole snapshot under a key derived from the person's own
+recovery phrase, addresses it by a digest over the sealed bytes, and hands an
+operator opaque chunks over HTTPS. The operator authenticates a public key,
+counts bytes, and can do nothing else with what it holds.</p>
+</blockquote>
+<p>This document is a concrete implementation of
+<a href="../backup/UI-Backup.html">UI-Backup.md</a>. The abstract specification remains authoritative
+for operation meaning, retention and erasure semantics, restore authorization,
+terms binding, payment isolation, and the disclosure obligations. This document
+pins the wire mapping, the sealing and digest suites, the key derivation, the
+proof-of-possession construction, the erasure-receipt semantics, the portable
+export container, and the payment-refusal mapping — the seven items
+<a href="../backup/UI-Backup.html">UI-Backup.md</a> §17 names as preconditions for the boundary being
+executable at all.</p>
+<p>The document distinguishes:</p>
+<ul>
+<li><strong>profile requirements</strong>, which are required for a conforming adapter or
+operator;</li>
+<li><strong>rationale</strong>, which explains a choice that is not forced; and</li>
+<li><strong>gaps</strong>, where the profile knowingly stops short.</li>
+</ul>
+<p><strong>Nothing in this profile is implemented yet.</strong> There is no conforming adapter,
+no conforming operator, and no fixture suite. Unlike
+<a href="../blob/UI-Blob-Blossom.html">UI-Blob-Blossom.md</a>, this profile has no
+&quot;implemented behavior&quot; column to report, and no sentence here is a claim about
+running code.</p>
+<h2 id="1-conformance-declaration">1. Conformance declaration</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Abstract concept</th>
+<th scope="col">Object-HTTP mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operator endpoint</td>
+<td>HTTPS origin, operations under <code>/v1/</code></td>
+</tr>
+<tr>
+<td>Snapshot reference</td>
+<td><code>sha256:&lt;64 lowercase hex&gt;</code> over the exact sealed byte sequence</td>
+</tr>
+<tr>
+<td>Sealing</td>
+<td>AES-256-GCM over 1 MiB plaintext chunks under a per-snapshot key</td>
+</tr>
+<tr>
+<td>Key derivation</td>
+<td>HKDF-SHA256 from the holder's BIP39 seed</td>
+</tr>
+<tr>
+<td>Access authorization</td>
+<td>Request-bound Ed25519 proof of possession, single-use</td>
+</tr>
+<tr>
+<td>Holder identity at the operator</td>
+<td>An Ed25519 public key and nothing else</td>
+</tr>
+<tr>
+<td>Increment model</td>
+<td>None; whole snapshot, transfer-chunked</td>
+</tr>
+<tr>
+<td>Upload</td>
+<td><code>POST /v1/preflight</code>, <code>PUT /v1/uploads/{id}/chunks/{n}</code>, <code>POST /v1/uploads/{id}/commit</code></td>
+</tr>
+<tr>
+<td>List</td>
+<td><code>GET /v1/snapshots</code></td>
+</tr>
+<tr>
+<td>Download</td>
+<td><code>GET /v1/snapshots/{digest}</code>, <code>Range</code> supported</td>
+</tr>
+<tr>
+<td>Erase</td>
+<td><code>POST /v1/erasures</code> returning a signed receipt</td>
+</tr>
+<tr>
+<td>Export</td>
+<td><code>GET /v1/exports</code>, <code>GET /v1/exports/{digest}</code></td>
+</tr>
+<tr>
+<td>Outcome reconciliation</td>
+<td><code>GET /v1/operations/{operationId}</code></td>
+</tr>
+<tr>
+<td>Payment refusal</td>
+<td>HTTP <code>402</code> with a <code>PaymentRequired</code> body</td>
+</tr>
+<tr>
+<td>Entitlement</td>
+<td>Broker-signed <code>SeatEntitlement</code>, verified locally by the operator</td>
+</tr>
+</tbody>
+</table></div><p>The implementation profile identifier is:</p>
+<pre><code class="language-text">onym:backup-implementation:object-http-v1
+</code></pre>
+<p>It maps this portable profile:</p>
+<pre><code class="language-text">onym:backup-profile:sealed-device-archive-v1
+</code></pre>
+<h2 id="2-physical-topology">2. Physical topology</h2>
+<pre><code class="language-text">device                         operator origin              billing broker
+  |                                  |                            |
+  |-- GET /manifest.json -----------&gt;|                            |
+  |-- GET /terms/{termsId}.json ----&gt;|                            |
+  |-- POST /v1/preflight -----------&gt;|                            |
+  |&lt;-- 402 PaymentRequired ----------|                            |
+  |                                                               |
+  |-- purchase evidence + seat key -----------------------------&gt;|
+  |&lt;-- sealed SeatEntitlement -----------------------------------|
+  |                                                               |
+  |-- POST /v1/entitlements --------&gt;|                            |
+  |                                  |-- GET /v1/revocations ----&gt;|
+  |-- PUT chunks, POST commit ------&gt;|   (signed, cacheable,      |
+  |&lt;-- outcome ----------------------|    unauthenticated)        |
+</code></pre>
+<p>There is no operator-to-broker request path and no broker-to-operator webhook.
+The operator's only dependency on the broker is a public, signed, cacheable JSON
+document it verifies against a key pinned at boot (§10.4). This is what makes
+the operator's access decisions independent of broker goodwill, and it is a
+profile requirement, not a deployment detail.</p>
+<h2 id="3-pinned-suites">3. Pinned suites</h2>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Suite</th>
+<th scope="col">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>digestSuite</code></td>
+<td><code>sha-256/lowercase-hex</code>, rendered <code>sha256:&lt;hex&gt;</code></td>
+</tr>
+<tr>
+<td><code>sealingSuite</code></td>
+<td><code>aes-256-gcm/hkdf-sha256-from-bip39-seed</code></td>
+</tr>
+<tr>
+<td><code>incrementModel</code></td>
+<td><code>whole-snapshot-transfer-chunked-v1</code></td>
+</tr>
+<tr>
+<td><code>authentication</code></td>
+<td><code>holder-scoped-capability/ed25519-request-bound-v1</code></td>
+</tr>
+<tr>
+<td><code>receiptSchema</code></td>
+<td><code>per-operation-backup-outcome-v1</code></td>
+</tr>
+<tr>
+<td><code>erasureReceiptSchema</code></td>
+<td><code>onym-backup-erasure-receipt-v1</code> (§11)</td>
+</tr>
+<tr>
+<td><code>errorSchema</code></td>
+<td><code>onym-backup-errors-v1</code></td>
+</tr>
+<tr>
+<td><code>paymentRefusal</code></td>
+<td><code>onym-payment-required-v1</code></td>
+</tr>
+</tbody>
+</table></div><p><em>Rationale — hex, not base64url.</em> Every other content address in this system is
+<code>sha256:&lt;lowercase hex&gt;</code>: the service manifest digest, the mandate hash, the
+contracts manifest. A second encoding for one seat would buy nothing and cost a
+class of comparison bugs.</p>
+<p><em>Rationale — AES-GCM, not XChaCha20-Poly1305.</em> AES-GCM is what the platform
+crypto libraries on both current clients expose natively and what the rest of
+this system already seals with. A nonce-misuse-resistant construction would be
+preferable in the abstract, but the per-snapshot key and the counter nonce of
+§5.4 make nonce reuse impossible by construction rather than by discipline.</p>
+<h2 id="4-operator-declaration">4. Operator declaration</h2>
+<h3 id="41-served-documents">4.1 Served documents</h3>
+<p>A conforming operator serves, over HTTPS, without authentication:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Path</th>
+<th scope="col">Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/manifest.json</code> and <code>/manifest.json.sig</code></td>
+<td>the <code>ServiceManifest</code> of <a href="../backup/UI-Backup.html">UI-Backup.md</a> §5.3, <code>seat: &quot;storage.backup&quot;</code>, with a detached Ed25519 signature over the exact served bytes</td>
+</tr>
+<tr>
+<td><code>/profile.json</code></td>
+<td>the <code>BackupImplementationProfile</code> of §5.2, naming this document's identifier</td>
+</tr>
+<tr>
+<td><code>/terms/{termsId}.json</code> and <code>/terms/{termsId}.json.sig</code></td>
+<td>the <code>BackupTerms</code> of §5.4</td>
+</tr>
+<tr>
+<td><code>/health</code></td>
+<td>liveness, current terms digest, and revocation-epoch staleness</td>
+</tr>
+</tbody>
+</table></div><p><code>termsId</code> is <code>sha256:&lt;hex&gt;</code> over the canonical bytes of the terms document with
+<code>termsId</code> and <code>signature</code> omitted (§6.3 defines canonical bytes).</p>
+<p><strong>Every terms document the operator has ever accepted a snapshot under must
+remain served, forever, at its content-addressed path.</strong> Retained snapshots pin
+a <code>termsId</code>, and a holder who cannot fetch the terms its snapshot was accepted
+under cannot check what it was promised. An operator that stops serving a
+historical terms document has broken the pinning of <a href="../backup/UI-Backup.html">UI-Backup.md</a>
+§5.4, whatever its current terms say.</p>
+<h3 id="42-free-and-paid-operators-are-the-same-implementation">4.2 Free and paid operators are the same implementation</h3>
+<p>An operator that declares no <code>entitlementIssuers</code> never returns <code>402</code> and never
+consults an entitlement. That is the self-hosting path required by
+<a href="../backup/UI-Backup.html">UI-Backup.md</a> §15, and it must be the same binary with the same
+routes — entitlement enforcement is a declared capability, not a build flavour.</p>
+<h2 id="5-sealing-and-key-derivation">5. Sealing and key derivation</h2>
+<h3 id="51-root">5.1 Root</h3>
+<p>All backup key material derives from the holder's BIP39 seed: the 64-byte
+PBKDF2-HMAC-SHA512 output over the mnemonic, salt <code>&quot;mnemonic&quot;</code> plus the optional
+passphrase, 2048 iterations.</p>
+<p><strong>The seed must be the root, not a device-scoped key.</strong> A snapshot sealed under
+key material that a device cannot export is unrestorable by construction on the
+replacement device, which is the only device that will ever need it. This sounds
+obvious and is the single most likely implementation mistake: a client whose
+local at-rest encryption uses a device-bound key must perform a <strong>logical
+export</strong> — decrypt through its own stores, re-serialise, and re-seal under §5.3
+— not copy its encrypted database files.</p>
+<h3 id="52-derivations">5.2 Derivations</h3>
+<p>All derivations are <code>HKDF-SHA256(ikm, salt, info, 32)</code>.</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Key</th>
+<th scope="col">ikm</th>
+<th scope="col">salt</th>
+<th scope="col">info</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Archive root</td>
+<td>BIP39 seed</td>
+<td><code>app.onym.bip39</code></td>
+<td><code>backup-archive-v1</code></td>
+</tr>
+<tr>
+<td>Snapshot key</td>
+<td>archive root</td>
+<td>the snapshot's 32-byte <code>snapshotSalt</code></td>
+<td><code>backup-snapshot-v1</code></td>
+</tr>
+<tr>
+<td>Access signing (Ed25519)</td>
+<td>BIP39 seed</td>
+<td><code>app.onym.bip39</code></td>
+<td><code>backup-access-ed25519-v1|&lt;componentId&gt;|r&lt;rotation&gt;</code></td>
+</tr>
+<tr>
+<td>Access agreement (X25519)</td>
+<td>BIP39 seed</td>
+<td><code>app.onym.bip39</code></td>
+<td><code>backup-access-x25519-v1|&lt;componentId&gt;|r&lt;rotation&gt;</code></td>
+</tr>
+</tbody>
+</table></div><p><code>&lt;componentId&gt;</code> is the operator's <code>componentId</code> verbatim; <code>&lt;rotation&gt;</code> is a
+decimal counter starting at <code>0</code>.</p>
+<p>The <strong>signing</strong> key is what this profile authenticates with (§8). The
+<strong>agreement</strong> key is not used against the operator at all — it is the key a
+billing broker seals a <code>SeatEntitlement</code> to, so a purchased credential travels to
+one seat and is readable by one device
+(<a href="../WHITEPAPER.html">../WHITEPAPER.md</a> §17.5,
+<a href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/settlement/ChannelOffer.md">../settlement/ChannelOffer.md</a> §9). It is derived
+here, beside its sibling, because both are seat-scoped and both must survive a
+restore from the recovery phrase alone; an operator never sees it. A free
+operator's holder derives it and never uses it, which is correct rather than
+wasteful. Binding the access key to <code>componentId</code> means
+one operator never receives a key another operator can recognise
+(<a href="../backup/UI-Backup.html">UI-Backup.md</a> §14.12), and no operator receives anything linkable
+to the holder's identity keys.</p>
+<p>The holder handle the operator stores and shards on is:</p>
+<pre><code class="language-text">holderHandle = sha256(&quot;onym-backup-holder-v1&quot; ‖ accessSigningPublicKeyRaw)
+</code></pre>
+<p>rendered as lowercase hex. The raw public key still appears in request headers —
+it must, to verify a signature — but nothing the operator persists or logs is the
+key itself.</p>
+<h3 id="53-snapshot-key-freshness">5.3 Snapshot key freshness</h3>
+<p>Each snapshot draws a fresh 32-byte <code>snapshotSalt</code> from a CSPRNG and derives its
+key through it. The salt is stored in the clear in the sealed header (§5.4).</p>
+<p>This is what satisfies <a href="../backup/UI-Backup.html">UI-Backup.md</a> §5.6's prohibition on
+convergent keying: two holders sealing byte-identical archives produce unrelated
+ciphertext and unrelated digests, so no observer can confirm that a holder
+possesses a known file. <strong>The cost is that cross-holder deduplication is
+impossible, permanently, and storage cost is strictly linear in holders.</strong> That
+cost is deliberate and must reach the operator's pricing rather than being
+engineered away later.</p>
+<h3 id="54-sealed-container">5.4 Sealed container</h3>
+<pre><code class="language-text">&quot;ONYMSEAL1&quot;          9 bytes, ASCII magic
+u8   suiteId         0x01 = aes-256-gcm/hkdf-sha256-from-bip39-seed
+u8   reserved        0x00
+u32  chunkPlainBytes big-endian; 1048576 for suite 0x01
+u32  chunkCount      big-endian
+byte snapshotSalt    32 bytes
+repeat chunkCount times:
+     AES-256-GCM combined chunk: nonce(12) ‖ ciphertext ‖ tag(16)
+</code></pre>
+<p>Nonce for chunk <em>i</em> is <code>0x00000000 ‖ bigEndianU64(i)</code>. Under a per-snapshot key
+this is unique by construction; a random nonce would also be sound but would add
+a birthday argument where none is needed.</p>
+<p>Every chunk but the last holds exactly <code>chunkPlainBytes</code> of plaintext. The last
+chunk holds the remainder. The plaintext being chunked is the <strong>padded</strong> archive
+of §7, so the last chunk's true length is not a signal.</p>
+<p>1 MiB is chosen so a client can seal and open a multi-hundred-megabyte archive
+in bounded memory. It is a property of the sealing layer only and has nothing to
+do with the 8 MiB transfer framing of §9.3.</p>
+<h3 id="55-access-key-rotation">5.5 Access-key rotation</h3>
+<p>Rotation increments <code>&lt;rotation&gt;</code> in §5.2, which changes the access keypair and
+therefore the holder handle. <strong>A rotation orphans every snapshot retained under
+the previous handle unless the operator supports re-binding</strong>, and this profile
+does <strong>not</strong> define a re-bind operation.</p>
+<p>A conforming client must therefore either:</p>
+<ul>
+<li>present rotation as &quot;start a new archive; the old one becomes unreachable and
+should be erased first&quot;, performing the erase under the old key before
+rotating; or</li>
+<li>not offer rotation, and say plainly that the access key is not rotatable.</li>
+</ul>
+<p>Silently rotating and stranding a holder's snapshots does not conform. See §16.2
+for why this profile takes the cost rather than adding a re-bind.</p>
+<h2 id="6-snapshot-reference-and-canonical-forms">6. Snapshot reference and canonical forms</h2>
+<h3 id="61-reference">6.1 Reference</h3>
+<pre><code class="language-json">{
+  &quot;referenceVersion&quot;: 1,
+  &quot;algorithm&quot;: &quot;sha-256/lowercase-hex&quot;,
+  &quot;digest&quot;: &quot;sha256:&lt;64 lowercase hex&gt;&quot;,
+  &quot;sealedByteSize&quot;: 41235904
+}
+</code></pre>
+<p><code>digest</code> is SHA-256 over the <strong>exact</strong> sealed byte sequence of §5.4, beginning at
+the <code>O</code> of <code>ONYMSEAL1</code> and ending at the final tag byte. It covers no local state,
+no decoded archive, no locator, and no mutable metadata.</p>
+<p><code>sealedByteSize</code> is the length of that same sequence. An operator must reject a
+commit whose received byte count differs, before recomputing anything.</p>
+<h3 id="62-digest-scope">6.2 Digest scope</h3>
+<p><strong>A snapshot's identity is the pair <code>(holder, digest)</code>, never the digest alone.</strong></p>
+<p>Within one holder, a <code>digest</code> already retained is <code>already_retained</code>: the
+operator does not accept a second upload under it and does not overwrite.</p>
+<p>Across holders there is no collision concept at all, and an operator must not
+invent one. The same digest legitimately appears under two handles whenever
+sealed bytes move — a migration under §12, a re-upload of an exported archive, or
+the destructive rotation flow of §5.5, all of which are supposed to preserve the
+bytes and therefore the reference verbatim. An operator seeing a familiar digest
+arrive under a new handle is watching the export path work.</p>
+<p>It follows that the operator must not deduplicate across holders (§14.6 of the
+abstract forbids it independently), must not refuse the second upload, must never
+serve one holder's bytes to another, and must not treat the coincidence as
+evidence about either holder. The last of those is the one worth stating: two
+handles holding one digest is exactly what a person migrating between operators,
+or restoring their own archive under a rotated key, produces — and an operator
+that logged or acted on the observation would be building the cross-holder
+linkage this seat is shaped to prevent.</p>
+<h3 id="63-canonical-bytes">6.3 Canonical bytes</h3>
+<p>Wherever this profile says &quot;canonical bytes&quot; of a signed JSON document, it means:
+parse to a JSON value, remove the named signature field <strong>structurally</strong> (never
+by string editing), re-serialise with object keys sorted by <strong>UTF-8 byte order</strong>,
+no insignificant whitespace, and integer-only numbers.</p>
+<p>Byte-order sorting is not the same as case-insensitive, locale, or
+Unicode-scalar sorting. The trap is that <strong>every document this profile defines
+today sorts identically under all four</strong>, because their keys are all lowercase
+ASCII — so an implementation can choose the wrong rule, pass every test it has,
+and break the first time a field arrives with an uppercase initial (<code>Z</code> precedes
+<code>a</code> by byte order and follows it case-insensitively) or a character above
+U+FFFF (where UTF-8 byte order and <strong>UTF-16 code-unit</strong> order diverge, because
+the surrogate code units <code>0xD800</code>–<code>0xDBFF</code> sort below <code>0xE000</code>–<code>0xFFFF</code> while
+the scalars they encode are the largest — so a runtime whose default string
+comparison is UTF-16, such as Java or JavaScript, sorts U+1D400 <em>before</em>
+U+FED6, which both UTF-8 byte order and codepoint order put the other way).</p>
+<p>UTF-8 byte order and codepoint order never diverge: UTF-8 was designed so
+byte-wise comparison reproduces scalar comparison exactly. The rule could
+therefore be stated either way; it is stated as byte order because that is what
+an implementation actually does to the serialized document.</p>
+<p>The rule is therefore pinned now, before anything depends on it, and the
+conformance fixtures must include a document whose keys actually distinguish the
+orderings — not only the real documents, which cannot (§18.11).</p>
+<p>Floating-point numbers are prohibited in every signed document this profile
+touches, matching the service-manifest rule. A fractional value is published as
+a string or a scaled integer.</p>
+<h2 id="7-padding">7. Padding</h2>
+<p>The plaintext archive is padded before sealing, to the Padmé bucket of its
+length. For a length <code>L</code> with <code>E = floor(log2(L))</code> and <code>S = floor(log2(E)) + 1</code>,
+<code>L</code> is rounded up to the next multiple of <code>2^(E - S)</code>. The padding bytes are
+zero, and the archive's true length is recorded in its own header, inside the
+seal.</p>
+<p>Worked example: <code>L = 41_000_000</code> gives <code>E = 25</code>, <code>S = 5</code>, so <code>L</code> rounds up to a
+multiple of <code>2^20 = 1_048_576</code>, yielding <code>41_943_040</code> — 2.3% overhead.</p>
+<p><em>Rationale.</em> Padmé caps overhead at about 12% while leaving <code>sealedByteSize</code> a
+coarse bucket rather than a measurement of a person's history. A power-of-two
+ladder leaks less but can double the stored bytes, and storage cost here is
+already linear in holders and unhedgeable by deduplication (§5.3); doubling it to
+buy a marginal reduction in an already-coarse signal is the wrong trade.</p>
+<p>An operator sees <code>sealedByteSize</code> and cannot avoid seeing it. What it must not do
+is retain a time series of it per holder beyond the snapshot's own retention
+(§15).</p>
+<h2 id="8-proof-of-possession">8. Proof of possession</h2>
+<h3 id="81-construction">8.1 Construction</h3>
+<p>Every <code>/v1/</code> request carries:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Header</th>
+<th scope="col">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X-Onym-Holder</code></td>
+<td><code>onym:seat-key:&lt;64 lowercase hex&gt;</code>, the access signing public key</td>
+</tr>
+<tr>
+<td><code>X-Onym-Timestamp</code></td>
+<td>RFC 3339, UTC, second precision, no fractional seconds</td>
+</tr>
+<tr>
+<td><code>X-Onym-Nonce</code></td>
+<td>16 random bytes, lowercase hex</td>
+</tr>
+<tr>
+<td><code>X-Onym-Signature</code></td>
+<td>base64 Ed25519 over the bytes below</td>
+</tr>
+</tbody>
+</table></div><p>The signed bytes are the concatenation, each field prefixed by its big-endian
+<code>u32</code> length:</p>
+<pre><code class="language-text">&quot;onym-backup-v1&quot; | method | path | holder | timestamp | nonce | sha256(body)
+</code></pre>
+<p><code>method</code> is the uppercase HTTP method. <code>path</code> is the request path with its query
+string, exactly as sent. <code>sha256(body)</code> is the 32 raw bytes of the digest of the
+request body, or the digest of the empty string for a body-less request.</p>
+<p>Length prefixing is not decoration: without it, a signature over concatenated
+fields can be reinterpreted by shifting a boundary between two adjacent
+attacker-influenced fields.</p>
+<p>The <code>onym:seat-key:</code> prefix is deliberate and must be carried verbatim. Every
+other identifier in this profile — issuer, operator, component — uses
+<code>onym:key:</code> or <code>onym:component:</code>, and the holder's is the one place the wire
+says <em>this key is seat-scoped and is not an identity key</em>, which is §5.2's
+anti-correlation rule made visible rather than merely intended. It is also the
+byte-for-byte value a <code>SeatEntitlement</code>'s <code>subject</code> must equal (§10.4), so the
+two documents share one spelling of one key.</p>
+<h3 id="82-verification">8.2 Verification</h3>
+<p>The operator recomputes the byte string from the request it actually received —
+never from a client-supplied copy — verifies the signature against the key in
+<code>X-Onym-Holder</code>, requires <code>|now - timestamp| &lt;= 300s</code>, and requires that the
+signature has not been seen before.</p>
+<p><strong>Seen signatures are retained for at least twice the freshness window — 600s —
+not once.</strong> The window is two-sided to tolerate a client clock running fast, so a
+signature timestamped 300s ahead of the operator's clock is accepted now and
+stays acceptable until <code>now + 300s</code>: it is live for up to 600s from first sight.
+A cache swept at 300s would drop it while it is still valid and reopen exactly
+the replay this check exists to close. The alternative — refusing any
+future-dated timestamp — closes it too, at the cost of failing every client whose
+clock is a few seconds fast, which is most of them.</p>
+<p>Because <code>path</code> and <code>sha256(body)</code> are inside the signature, a chunk PUT cannot be
+replayed into a different chunk index, a different upload, or a different
+operation.</p>
+<h3 id="83-there-is-no-other-authority">8.3 There is no other authority</h3>
+<p>A holder is an Ed25519 public key. There is no account, no email address, no
+support identifier, no password, and no recovery question. This is the mechanical
+content of <a href="../backup/UI-Backup.html">UI-Backup.md</a> §11 and §18.6, and it means a conforming
+operator can be checked for it rather than trusted about it:</p>
+<ul>
+<li>no route accepts a credential other than the proof above;</li>
+<li>no route, authenticated or otherwise, changes the holder a snapshot belongs to;</li>
+<li>no administrative route exists — not a token-gated one, not a localhost-only
+one;</li>
+<li>no per-holder access log exists (§15).</li>
+</ul>
+<p>An operator that adds any of these has left this seat and must say so before the
+capability exists, not after.</p>
+<h2 id="9-wire-mapping">9. Wire mapping</h2>
+<p>All request and response bodies are JSON with camelCase keys, RFC 3339 UTC
+timestamps, and base64 for opaque bytes — except chunk uploads, which are
+<code>application/octet-stream</code>. All responses to a failed operation use the error
+body of §14.</p>
+<h3 id="91-register-an-entitlement-post-v1entitlements">9.1 Register an entitlement — <code>POST /v1/entitlements</code></h3>
+<p>Body: <code>{&quot;version&quot;: 1, &quot;entitlement&quot;: { … the SeatEntitlement document … }}</code>.</p>
+<p>The operator verifies it per §10.4 and stores it against the presenting holder.
+Registering is idempotent by <code>entitlementId</code>.</p>
+<h3 id="92-preflight-post-v1preflight">9.2 Preflight — <code>POST /v1/preflight</code></h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;operationId&quot;: &quot;&lt;random 128-bit, lowercase hex&gt;&quot;,
+  &quot;snapshotReference&quot;: {&quot;referenceVersion&quot;: 1, &quot;algorithm&quot;: &quot;sha-256/lowercase-hex&quot;,
+                        &quot;digest&quot;: &quot;sha256:…&quot;, &quot;sealedByteSize&quot;: 41943040},
+  &quot;acceptedTermsId&quot;: &quot;sha256:…&quot;,
+  &quot;supersedes&quot;: &quot;sha256:… or null&quot;
+}
+</code></pre>
+<p>Checked in this order, each failing closed:</p>
+<ol>
+<li><code>acceptedTermsId</code> is not the operator's current terms → <code>409 terms_changed</code>,
+with <code>currentTermsId</code>. The client stops and re-presents consent.</li>
+<li>entitlement required and absent, expired, or revoked → <code>402 payment_required</code>
+(§10).</li>
+<li>digest already retained for this holder → <code>200</code> with an <code>already_retained</code>
+outcome.</li>
+<li><code>sealedByteSize</code> exceeds <code>maximumSealedSnapshotBytes</code> → <code>413 snapshot_too_large</code>.</li>
+<li>retained count or bytes would exceed the declared limits → <code>409 quota_exceeded</code>,
+reporting the limit and current usage. The operator <strong>must not</strong> silently drop
+an older snapshot to make room.</li>
+<li>otherwise → <code>200 {&quot;uploadId&quot;: …, &quot;chunkBytes&quot;: 8388608, &quot;chunkCount&quot;: …, &quot;expiresAt&quot;: …}</code>.</li>
+</ol>
+<p>The general rule behind that ordering: <strong>every check that only matters when new
+bytes would be accepted runs after the digest lookup.</strong> Both limits — size and
+quota — bound acceptance, and a re-preflight for a digest the operator already
+holds accepts nothing, so neither may refuse it. Idempotent reconciliation has to
+keep working <em>at</em> the limit, which is exactly where a client will need it, and
+<code>maximumSealedSnapshotBytes</code> is a manifest-level declaration an operator can
+lower without any <code>terms_changed</code> to warn the holder — so a snapshot accepted
+under an older, higher limit must still be reconcilable afterwards.</p>
+<p><strong>Preflight is the entire point of the payment mapping.</strong> A <code>402</code> must cost one
+small request, not a completed multi-hundred-megabyte upload. An operator that
+declines to implement preflight does not conform to this profile.</p>
+<h3 id="93-upload-put-v1uploadsuploadidchunksindex">9.3 Upload — <code>PUT /v1/uploads/{uploadId}/chunks/{index}</code></h3>
+<p><code>application/octet-stream</code>, <code>index</code> zero-based. Every chunk but the last is
+exactly <code>chunkBytes</code>; the last is the remainder. Chunks may be sent in any order
+and retried idempotently; a chunk already received with a matching body digest is
+a <code>200</code>, and one with a differing digest is <code>409 chunk_mismatch</code>.</p>
+<p>Transfer chunking is independent of the AEAD chunking of §5.4. It exists so an
+interrupted upload resumes, and so an operator can bound a single request body.</p>
+<p><code>POST /v1/uploads/{uploadId}/commit</code> with an empty body. The operator:</p>
+<ol>
+<li>asserts every index received;</li>
+<li>asserts the total byte count equals <code>sealedByteSize</code>;</li>
+<li>recomputes SHA-256 over the concatenation in index order and compares to
+<code>digest</code> — mismatch is <code>409 digest_mismatch</code> and the partial upload is
+discarded;</li>
+<li>only then moves the bytes into place and records the snapshot.</li>
+</ol>
+<p>An upload that expires uncommitted is discarded. A crash between step 4's move
+and its record leaves an orphan, which a startup reconciliation sweep resolves —
+deleting bytes with no record, and marking a record with no bytes as unavailable.
+<strong>A record whose bytes are missing is never reported as <code>retained</code>.</strong></p>
+<h3 id="94-list-get-v1snapshots">9.4 List — <code>GET /v1/snapshots</code></h3>
+<p><code>200</code> with an array of <code>{snapshotReference, acceptedTermsId, retainedAt, retainedUntil, supersedes, status}</code>. Scoped to the presenting holder; there is no
+parameter that widens it.</p>
+<h3 id="95-download-get-v1snapshotsdigest">9.5 Download — <code>GET /v1/snapshots/{digest}</code></h3>
+<p><code>200</code> or <code>206</code> with <code>application/octet-stream</code>; <code>Range</code> is supported. The client
+verifies the full digest before treating any byte as restorable, and a partial or
+mismatching download is <code>incomplete_snapshot</code> locally — never a partial restore.</p>
+<h3 id="96-erase-post-v1erasures">9.6 Erase — <code>POST /v1/erasures</code></h3>
+<pre><code class="language-json">{&quot;version&quot;: 1, &quot;scope&quot;: &quot;sha256:…&quot;}          // one snapshot
+{&quot;version&quot;: 1, &quot;scope&quot;: &quot;all&quot;}               // every snapshot under this holder
+</code></pre>
+<p><code>200</code> with the signed receipt of §11.</p>
+<h3 id="97-export-get-v1exports-get-v1exportsdigest">9.7 Export — <code>GET /v1/exports</code>, <code>GET /v1/exports/{digest}</code></h3>
+<p><code>/v1/exports</code> returns the manifest of the portable container (§12);
+<code>/v1/exports/{digest}</code> streams one snapshot's sealed bytes in portable form.</p>
+<p><strong>These two routes must not consult entitlements at all.</strong> Not &quot;consult and
+allow&quot; — not consult. <a href="../backup/UI-Backup.html">UI-Backup.md</a> §14.15 makes export
+unconditional, and the only way that survives future edits is for the code path
+to have no access to entitlement state. A conformance fixture asserts export
+succeeds for a holder with zero entitlements (§18).</p>
+<h3 id="98-outcome-reconciliation-get-v1operationsoperationid">9.8 Outcome reconciliation — <code>GET /v1/operations/{operationId}</code></h3>
+<p>Returns the outcome recorded for that operation, or <code>404</code> if the operator has no
+record. A client that lost a response uses this to reconcile rather than
+relabelling silence. <code>unknown</code> is preserved as <code>unknown</code>
+(<a href="../backup/UI-Backup.html">UI-Backup.md</a> §14.9).</p>
+<p>The operator declares how long it keeps outcome records in <code>metadataRetention</code>,
+and a <code>404</code> after that window is not evidence the operation failed — a client
+that has aged past it reconciles by <em>reference</em> instead, through <code>listSnapshots</code>.
+The window exists to be short (§15).</p>
+<h2 id="10-payment-mapping">10. Payment mapping</h2>
+<h3 id="101-refusal">10.1 Refusal</h3>
+<pre><code class="language-http">HTTP/1.1 402 Payment Required
+Content-Type: application/json
+</code></pre>
+<pre><code class="language-json">{
+  &quot;error&quot;: &quot;payment_required&quot;,
+  &quot;message&quot;: &quot;This operator requires a valid entitlement to accept a snapshot.&quot;,
+  &quot;paymentRequired&quot;: {
+    &quot;version&quot;: 1,
+    &quot;componentId&quot;: &quot;onym:component:&lt;operator&gt;&quot;,
+    &quot;offers&quot;: [&quot;&lt;offerId&gt;&quot;],
+    &quot;entitlementIssuers&quot;: [&quot;onym:key:&lt;issuer&gt;&quot;],
+    &quot;manifestUrl&quot;: &quot;https://&lt;operator&gt;/manifest.json&quot;
+  }
+}
+</code></pre>
+<p>The refusal carries <strong>no price, no currency, no storefront, and no product
+identifier.</strong> Pricing belongs to the frontend's channel agreement, not to the
+operator's refusal (<a href="../backup/UI-Backup.html">UI-Backup.md</a> §12). An operator that puts a
+price in a <code>402</code> is asserting terms it is not party to.</p>
+<h3 id="102-retry-preserves-the-bytes">10.2 Retry preserves the bytes</h3>
+<p>After obtaining an entitlement the client retries the <strong>same</strong> <code>operationId</code> with
+the <strong>same</strong> sealed bytes and the <strong>same</strong> reference. Re-sealing would mint a new
+<code>snapshotSalt</code> and therefore a new digest, defeating both the retry and
+<code>already_retained</code>.</p>
+<h3 id="103-lapse-and-grace">10.3 Lapse and grace</h3>
+<p>Lapse is derived from entitlement expiry. It is never derived from a failed
+charge, because the operator has no charge to fail — it is not the seller.</p>
+<p>On lapse, <strong>each retained snapshot is governed by the <code>endOfPayment</code> clause of
+its own pinned terms.</strong> Its notice, its grace, and its post-grace fate come from
+the terms it was accepted under, and from nothing else.</p>
+<p>There is no single account-wide clause to apply, and reaching for one gets the
+direction wrong. Forward-only binding means a client refuses to upload under
+terms weaker than those a retained snapshot already pins, so across a holder's
+retained snapshots the terms <strong>strengthen</strong> with age: the oldest snapshot pins
+the <em>least</em> protective set, not the strictest. An operator applying the oldest
+snapshot's clause account-wide would hand every newer snapshot a shorter notice
+and a shorter grace than the person consented to.</p>
+<p>The one thing that must be decided holder-wide is which operations stay
+available, because a route is either open or closed. It is the <strong>union</strong> across
+retained snapshots: an operation any snapshot's <code>duringGrace</code> promises stays
+available while that snapshot is in grace. Refusing wholesale what the holder is
+owed on one snapshot is the same under-delivery in another form. <code>preflight</code> and
+upload refuse for the whole holder, because a lapsed holder is not owed new
+retention by any snapshot's terms.</p>
+<p>This must be an explicit allowlist in the authorization path, not an emergent
+property of which routes happen to check an entitlement.</p>
+<h3 id="104-entitlement-verification">10.4 Entitlement verification</h3>
+<p>The operator verifies a presented <code>SeatEntitlement</code>
+(<a href="../WHITEPAPER.html">WHITEPAPER.md</a> §17.5) entirely locally:</p>
+<ol>
+<li>compute canonical bytes per §6.3, omitting <code>signature</code>;</li>
+<li>verify the Ed25519 signature against an issuer pinned at boot and published in
+the manifest's <code>entitlementIssuers</code> — never against a key from the response;</li>
+<li><code>audience</code> equals the operator's own <code>componentId</code>;</li>
+<li><code>subject</code> equals the presenting <code>X-Onym-Holder</code> — <strong>as an exact string,
+prefix included</strong>. Both are <code>onym:seat-key:&lt;64 lowercase hex&gt;</code>; there is no
+normalization step, and an implementation that needs one has a spelling
+mismatch to fix rather than a comparison to loosen;</li>
+<li><code>notBefore &lt;= now &lt;= expiresAt</code>;</li>
+<li><code>entitlementId</code> is absent from the cached revocation epoch.</li>
+</ol>
+<p>The revocation epoch is a broker-signed document the operator polls on its own
+schedule and verifies against the same pinned key. <strong>If the poll fails, the
+operator keeps using the last good epoch and does not refuse.</strong> A broker outage
+must not delete anyone's access; the failure mode of a stale epoch is a refund
+honoured late, which the terms' grace and the channel agreement's reserve already
+absorb. Staleness is exposed in <code>/health</code>.</p>
+<p>The maximum revocation latency an operator can honestly claim is its poll
+interval plus the broker's epoch interval. That number, not the entitlement TTL,
+is what belongs in the channel agreement.</p>
+<h2 id="11-erasure-receipts">11. Erasure receipts</h2>
+<p>Schema identifier <code>onym-backup-erasure-receipt-v1</code>, pinned in §3 beside the
+outcome schema — the two are different documents and were previously covered by
+one name.</p>
+<pre><code class="language-json">{
+  &quot;receiptVersion&quot;: 1,
+  &quot;receiptId&quot;: &quot;&lt;random 128-bit, lowercase hex&gt;&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator&gt;&quot;,
+  &quot;scope&quot;: &quot;&lt;echoed scope&gt;&quot;,
+  &quot;acknowledgedAt&quot;: &quot;2026-08-19T10:00:05Z&quot;,
+  &quot;completionCommittedBy&quot;: &quot;2026-08-26T10:00:05Z&quot;,
+  &quot;coveredScope&quot;: &quot;&lt;from the pinned terms&gt;&quot;,
+  &quot;excludedScope&quot;: &quot;&lt;from the pinned terms; non-empty&gt;&quot;,
+  &quot;termsId&quot;: &quot;sha256:…&quot;,
+  &quot;signature&quot;: &quot;&lt;base64 Ed25519 over canonical bytes&gt;&quot;
+}
+</code></pre>
+<p><code>completionCommittedBy</code> is <code>acknowledgedAt</code> plus the pinned terms' completion
+deadline. <code>coveredScope</code> and <code>excludedScope</code> are copied from the pinned terms of
+the erased snapshot — not from current terms, and not composed at request time.</p>
+<p><strong><code>excludedScope</code> must be non-empty</strong>, and a receipt with an empty one is
+malformed rather than generous. There is always something excluded: at minimum,
+copies held by the other participants in every conversation the snapshot
+contained, and copies the holder exported. An operator that cannot name what its
+erasure does not reach has not understood what it is signing.</p>
+<p>A receipt is a signed commitment measured against pinned terms. It is not proof
+of destruction, and a client must not render it as one
+(<a href="../backup/UI-Backup.html">UI-Backup.md</a> §10.3).</p>
+<h2 id="12-portable-export-container">12. Portable export container</h2>
+<p>A <code>tar</code> archive, no compression:</p>
+<pre><code class="language-text">manifest.json
+snapshots/&lt;digest-hex&gt;.seal
+receipts/&lt;receiptId&gt;.json
+terms/&lt;termsId-hex&gt;.json
+terms/&lt;termsId-hex&gt;.json.sig
+</code></pre>
+<p><code>manifest.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;exportVersion&quot;: 1,
+  &quot;exportedAt&quot;: &quot;2026-08-19T10:00:00Z&quot;,
+  &quot;operator&quot;: &quot;onym:key:&lt;operator&gt;&quot;,
+  &quot;snapshots&quot;: [
+    {&quot;snapshotReference&quot;: { … }, &quot;acceptedTermsId&quot;: &quot;sha256:…&quot;,
+     &quot;termsUrl&quot;: &quot;https://…/terms/&lt;termsId&gt;.json&quot;, &quot;retainedAt&quot;: &quot;…&quot;,
+     &quot;file&quot;: &quot;snapshots/&lt;digest-hex&gt;.seal&quot;}
+  ],
+  &quot;receipts&quot;: [&quot;receipts/&lt;receiptId&gt;.json&quot;],
+  &quot;terms&quot;: [
+    {&quot;termsId&quot;: &quot;sha256:…&quot;, &quot;file&quot;: &quot;terms/&lt;termsId-hex&gt;.json&quot;,
+     &quot;signature&quot;: &quot;terms/&lt;termsId-hex&gt;.json.sig&quot;}
+  ]
+}
+</code></pre>
+<p><strong>The terms bytes travel with the container, not just their digest.</strong> One entry
+per distinct <code>acceptedTermsId</code> referenced by any exported snapshot, with the
+operator's detached signature beside it.</p>
+<p>The <code>.seal</code> files are the sealed bytes verbatim — byte-identical to what was
+uploaded, digest unchanged. Migration to another conforming operator is therefore
+an upload of the same bytes under the same reference, with <strong>no re-sealing and no
+cooperation from the operator being left</strong>, which is
+<a href="../backup/UI-Backup.html">UI-Backup.md</a> §18.3.</p>
+<p>This closes what would otherwise be a hole in the one scenario the export path
+exists for. §4.1 obliges an operator to serve every historical terms document
+forever — but only for as long as the operator exists, and §16.3 concedes that a
+shut-down operator serves nothing. A container carrying <code>termsUrl</code> and a digest
+would leave a holder, after shutdown, with sealed bytes they can verify and a
+<code>termsId</code> whose preimage is gone: no way to check what retention, what
+jurisdiction, or what erasure scope the snapshot was actually accepted under.
+Pinning would survive as an unresolvable reference, which is not pinning. Since
+the whole point of <code>shutdownNotice</code> is that export outlives the operator, the
+export has to carry everything the pin needs.</p>
+<p>Beyond that, the container carries no operator-specific field, no locator, and no
+credential. <code>termsUrl</code> remains as a convenience for as long as it resolves; the
+bytes beside it are what make the pin checkable afterwards.</p>
+<h2 id="13-limits">13. Limits</h2>
+<p>An operator declares, in its manifest: <code>maximumSealedSnapshotBytes</code>,
+<code>maximumRetainedSnapshots</code>, concurrent uploads per holder, request rate, and
+upload expiry. This profile pins only the shapes:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Limit</th>
+<th scope="col">Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JSON request body</td>
+<td>at most 256 KiB; exceeded is <code>413</code></td>
+</tr>
+<tr>
+<td>Chunk body</td>
+<td>exactly the granted <code>chunkBytes</code>, or the remainder for the last</td>
+</tr>
+<tr>
+<td>Upload lifetime</td>
+<td>declared; expiry discards the partial upload</td>
+</tr>
+<tr>
+<td>Redirects</td>
+<td>a client follows none, on any operation</td>
+</tr>
+<tr>
+<td>Response size</td>
+<td>a client bounds <strong>every</strong> response body</td>
+</tr>
+<tr>
+<td>Sealed streams</td>
+<td><code>/v1/snapshots/{digest}</code> and <code>/v1/exports/{digest}</code> are bounded by the declared <code>maximumSealedSnapshotBytes</code>, not by a fixed cap</td>
+</tr>
+<tr>
+<td>List and manifest bodies</td>
+<td><code>/v1/snapshots</code> and <code>/v1/exports</code> are bounded by <code>maximumRetainedSnapshots</code> × a per-entry ceiling, with a hard client maximum above which the response is discarded as <code>operator_unavailable</code></td>
+</tr>
+</tbody>
+</table></div><p>The three rows are separate because the paths are four categorically different
+things, and one prefix would have exempted all of them. Exempting the two byte
+streams from a fixed cap is right — <code>maximumSealedSnapshotBytes</code> is signed policy
+the holder verified at enrolment, and a profile-level number would only get in
+the way. Exempting the two JSON bodies is not: their only soft bound is
+<code>maximumRetainedSnapshots</code>, an operator-supplied figure with no per-response
+signature behind it, so an operator declaring ten thousand and returning a
+billion fabricated entries would meet a client with no cap at all.</p>
+<p>A client treats every locator, retention date, receipt field, and diagnostic as
+untrusted input (<a href="../backup/UI-Backup.html">UI-Backup.md</a> §7.12) — which is precisely why the
+size of the envelope carrying them cannot be left to the sender.</p>
+<h2 id="14-error-mapping">14. Error mapping</h2>
+<pre><code class="language-json">{&quot;error&quot;: &quot;&lt;code&gt;&quot;, &quot;message&quot;: &quot;&lt;safe, bounded diagnostic&gt;&quot;, &quot;...&quot;: &quot;&lt;per-code fields&gt;&quot;}
+</code></pre>
+<p><code>error</code> and <code>message</code> are always present. Some codes carry additional
+<strong>top-level</strong> fields, and their names are pinned here rather than left to each
+operator — §9.2's re-consent flow depends on a client reliably reading
+<code>currentTermsId</code> out of a refusal, and three conforming operators putting it in
+three different places (top level, nested under <code>details</code>, interpolated into
+<code>message</code>) would leave clients unable to parse a response the protocol requires
+them to act on.</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Code</th>
+<th scope="col">Additional top-level fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>terms_changed</code></td>
+<td><code>currentTermsId</code></td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td><code>paymentRequired</code> (§10.1)</td>
+</tr>
+<tr>
+<td><code>snapshot_too_large</code></td>
+<td><code>maximumSealedSnapshotBytes</code></td>
+</tr>
+<tr>
+<td><code>quota_exceeded</code></td>
+<td><code>retainedSnapshots</code>, <code>maximumRetainedSnapshots</code>, <code>retainedBytes</code>, <code>limitBytes</code></td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td><code>entitlementIssuers</code></td>
+</tr>
+</tbody>
+</table></div><p>Every other code carries <code>error</code> and <code>message</code> only. A client ignores unknown
+top-level fields rather than refusing the response.</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Code</th>
+<th scope="col">HTTP</th>
+<th scope="col">Abstract error</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unsupported_profile</code></td>
+<td>400</td>
+<td><code>unsupported_profile</code></td>
+<td>The client asked for a profile this operator does not implement</td>
+</tr>
+<tr>
+<td><code>invalid_reference</code></td>
+<td>400</td>
+<td><code>invalid_reference</code></td>
+<td>Reference syntax, algorithm, or byte count is malformed</td>
+</tr>
+<tr>
+<td><code>terms_changed</code></td>
+<td>409</td>
+<td><code>terms_changed</code></td>
+<td><code>acceptedTermsId</code> is not current</td>
+</tr>
+<tr>
+<td><code>signature_invalid</code></td>
+<td>401</td>
+<td>—</td>
+<td>Proof of possession failed, stale, or replayed</td>
+</tr>
+<tr>
+<td><code>payment_required</code></td>
+<td>402</td>
+<td><code>payment_required</code></td>
+<td>No valid entitlement (§10)</td>
+</tr>
+<tr>
+<td><code>invalid_entitlement</code></td>
+<td>401</td>
+<td><code>invalid_entitlement</code></td>
+<td>Entitlement malformed, wrong audience/subject, expired, or revoked</td>
+</tr>
+<tr>
+<td><code>snapshot_too_large</code></td>
+<td>413</td>
+<td><code>snapshot_too_large</code></td>
+<td>Exceeds the declared maximum</td>
+</tr>
+<tr>
+<td><code>quota_exceeded</code></td>
+<td>409</td>
+<td><code>quota_exceeded</code></td>
+<td>Retained count or bytes limit reached</td>
+</tr>
+<tr>
+<td><code>chunk_mismatch</code></td>
+<td>409</td>
+<td>—</td>
+<td>A chunk index was re-sent with different bytes</td>
+</tr>
+<tr>
+<td><code>digest_mismatch</code></td>
+<td>409</td>
+<td><code>incomplete_snapshot</code></td>
+<td>Commit recomputation disagreed with the reference</td>
+</tr>
+<tr>
+<td><code>snapshot_not_found</code></td>
+<td>404</td>
+<td>—</td>
+<td>No such snapshot for this holder</td>
+</tr>
+<tr>
+<td><code>retention_expired</code></td>
+<td>410</td>
+<td><code>retention_expired</code></td>
+<td>Retained once; no longer held</td>
+</tr>
+<tr>
+<td><code>export_withheld</code></td>
+<td>403</td>
+<td><code>export_withheld</code></td>
+<td><strong>Non-conforming.</strong> A client records it as an operator violation</td>
+</tr>
+<tr>
+<td><code>operator_unavailable</code></td>
+<td>503</td>
+<td><code>unreachable</code></td>
+<td>Try later; nothing was decided</td>
+</tr>
+</tbody>
+</table></div><p><code>export_withheld</code> exists in the table so a client can name what happened, not
+because an operator may return it. A client that receives it must preserve its
+local evidence and must not soften the wording it shows.</p>
+<p><strong><code>terms_regression</code> is not in the table, because the operator cannot compute
+it.</strong> A regression is a comparison against the terms
+<em>this holder's retained snapshots pinned</em> — state the operator may not even have,
+since after a §12 migration the snapshots were accepted by someone else
+entirely. The operator's honest response to changed terms is <code>terms_changed</code>,
+which is in the table; the client then fetches the new document and runs
+<code>regresses(against:)</code> over its own pinned set. An operator returning
+<code>terms_regression</code> is reporting a conclusion it is not positioned to draw.</p>
+<p><strong><code>erasure_unconfirmed</code> is not in the table, because it is not an operator
+response.</strong> Erase returns <code>200</code> with a signed receipt (§9.6), and that receipt is
+<em>always</em> an acknowledgment rather than proof of destruction — there is no second,
+worse kind of acknowledgment for the operator to signal. <code>erasure_unconfirmed</code> is
+a <strong>client-side state</strong>, derived from the receipt by comparing
+<code>completionCommittedBy</code> against the clock: until that deadline passes the client
+shows &quot;acknowledged, not proven destroyed&quot;, and it never shows &quot;erased&quot;. An
+operator that misses its own committed deadline has violated the terms it signed,
+which the client detects from the receipt it already holds rather than from a
+status code the operator would have to volunteer against its own interest.</p>
+<p>A timeout or transport failure is <code>unknown</code>, reconciled through §9.8. It is never
+<code>retained</code> and never <code>erased</code>.</p>
+<h2 id="15-logging-and-retained-metadata">15. Logging and retained metadata</h2>
+<p>Two different things are governed here, and conflating them is how a
+<code>metadataRetention</code> declaration ends up understating what an operator holds.</p>
+<p><strong>Logs</strong> are diagnostic and are discarded. A conforming operator logs route,
+status, byte count, and duration. It does <strong>not</strong> log the holder key, the holder
+handle, a snapshot digest, an upload id, an operation id, or a client address,
+and it does not aggregate any of these per holder over time. There is no
+access-log table; that absence is a design commitment, and an operator adding one
+has changed what it is.</p>
+<p><strong>Records</strong> are the state the profile's own operations require, and they must be
+declared rather than wished away:</p>
+<div class="tscroll"><table><thead>
+<tr>
+<th scope="col">Record</th>
+<th scope="col">Declared as</th>
+<th scope="col">Why it must exist</th>
+<th scope="col">Bound</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Holder handle</td>
+<td><code>holderIdentifiers</code></td>
+<td>the only identity this seat has</td>
+<td>while any snapshot or receipt is held</td>
+</tr>
+<tr>
+<td><code>sealedByteSize</code>, <code>retainedAt</code>, <code>acceptedTermsId</code>, <code>supersedes</code> per snapshot</td>
+<td><code>sizeAndTiming</code></td>
+<td><code>listSnapshots</code>, quota, lapse, and terms pinning</td>
+<td>while the snapshot is retained</td>
+</tr>
+<tr>
+<td>Outcome per <code>operationId</code></td>
+<td><code>operationOutcomes</code></td>
+<td>§9.8 exists so a lost response is reconciled rather than relabelled</td>
+<td>a declared window past the operation, then discarded</td>
+</tr>
+<tr>
+<td>Issued erasure receipts</td>
+<td><code>erasureReceipts</code></td>
+<td>§12 exports them, and a holder may need to re-present one</td>
+<td>a declared window, disclosed as outliving the erased snapshot</td>
+</tr>
+<tr>
+<td>Live entitlement records</td>
+<td><code>entitlementRecords</code></td>
+<td>§10.4</td>
+<td>to <code>expiresAt</code> plus one revocation-epoch interval</td>
+</tr>
+</tbody>
+</table></div><p>Those are the field names of <code>metadataRetention</code> in
+<a href="../backup/UI-Backup.html">UI-Backup.md</a> §5.4, which this profile extends from two fields to
+six so the declaration can actually say what an operator holds. <code>accessLogs</code> is
+the sixth, and under this profile its only conforming value is <code>none</code> — which is
+why the field is worth keeping rather than dropping: a signed, content-addressed
+<code>none</code> is a checkable claim that the table of §8.3 does not exist, where silence
+would be indistinguishable from an operator that simply never mentioned it.</p>
+<p>The outcome record is the awkward one, and it is worth naming rather than
+hiding: keeping an operation id long enough to answer §9.8 is precisely the
+per-holder timing trace §15 otherwise forbids. The resolution is a <strong>bound, not
+an exception</strong> — the window is declared in <code>metadataRetention</code>, it is measured in
+hours rather than months, and nothing is retained past it. An operator that finds
+this uncomfortable is reading it correctly; the alternative is a client that
+converts silence into <code>retained</code>, which is worse.</p>
+<p>An operator's <code>metadataRetention</code> declaration must cover every row of that table.
+Declaring less than it holds is the exact failure this field exists to prevent.</p>
+<h2 id="16-corrections-to-the-abstract-boundary">16. Corrections to the abstract boundary</h2>
+<p>Three claims in <a href="../backup/UI-Backup.html">UI-Backup.md</a> cannot be implemented as written.
+All three are wording problems rather than design problems, and this PR amends
+the abstract document alongside publishing this profile.</p>
+<h3 id="161-§141-group-secrets-never-enter-operator-requests">16.1 §14.1 — &quot;group secrets never enter operator requests&quot;</h3>
+<p>A snapshot that restores a person's conversations necessarily <em>contains</em> group
+secrets and per-blob content keys; that is what makes it a restore rather than a
+transcript. The invariant is sound as an opacity rule and unsatisfiable as a
+containment rule. It should read: such material never appears <strong>in the clear, in
+metadata, in a locator, in a receipt, or in a log</strong>. Under this profile that is
+mechanically true — everything sensitive is inside the AEAD, and the operator
+sees a handle, a digest, a byte count, and a date.</p>
+<h3 id="162-§58-and-§144-the-access-key-separate-from-the-identity-signing-key">16.2 §5.8 and §14.4 — the access key &quot;separate from the identity signing key&quot;</h3>
+<p>§5.8 said a backup credential &quot;can be rotated or abandoned without touching the
+identity&quot;, §7.10 required a client to &quot;offer its rotation&quot;, and §14.4 stated
+rotation as a property of the seat. This profile derives the access key from the
+same BIP39 seed as the identity keys, through a distinct HKDF context and per
+<code>componentId</code>. Half of the claim is met: it is a different key, it is unlinkable
+to the identity keys, and abandoning it touches nothing else.</p>
+<p>Rotation is the half that is not. §5.5 above makes it destructive in the absence
+of a re-binding proof, so all three sections are amended to state rotation as a
+profile decision with a disclosed cost rather than a property of the seat.</p>
+<p>The spirit is not fully met, and the profile should say so rather than claim it
+is. Because the root is shared, <strong>&quot;lost access key&quot; and &quot;lost identity&quot; are one
+event</strong>. The alternative — an independently generated access key the person must
+store separately from their recovery phrase — is more faithful to §11's intent and
+substantially worse in practice: it doubles the number of secrets a person must
+survive, and the second one exists only for backup, so it is the one they will
+lose. This profile takes the shared root deliberately. A future profile may take
+the other side of that trade; it should not pretend the trade does not exist.</p>
+<h3 id="163-§1415-export-survives-operator-shutdown">16.3 §14.15 — &quot;export survives operator shutdown&quot;</h3>
+<p>It cannot. A shut-down operator serves nothing, and no wire protocol changes that.
+The honest invariant is that export is never withheld for non-payment, and that
+shutdown carries a declared notice window during which export works. Operators
+under this profile declare <code>shutdownNotice</code> in their terms, and a client shows it
+on the consent surface alongside retention and grace.</p>
+<h2 id="17-known-gaps">17. Known gaps</h2>
+<ol>
+<li><strong>No incremental upload.</strong> <a href="../backup/UI-Backup.html">UI-Backup.md</a> §17 names a scheme
+that is verifiable against a whole-snapshot reference without leaking a change
+map as unsolved design work, and this profile does not solve it. Every snapshot
+is a full upload. On a large history that is a real cost — in bytes, in time,
+and in battery — and a client must tell the person so rather than discovering
+it for them.</li>
+<li><strong>No re-bind after rotation</strong> (§5.5). Rotation is therefore either destructive
+or absent, and both options are worse than a re-bind operation that this
+profile is not yet confident enough to specify. A re-bind proven by a signature
+from <em>both</em> the old and the new key is the obvious shape; what is not obvious
+is what it does to the &quot;no operator-controlled reset path&quot; argument of §8.3,
+which is exactly why it is deferred rather than guessed.</li>
+<li><strong><code>sealedByteSize</code> remains observable.</strong> Padding coarsens it; nothing here
+hides it. An operator that retains a long series of a holder's snapshot sizes
+learns the shape of a history's growth. §15 forbids retaining the series, and
+nothing but the operator's conduct enforces that.</li>
+<li><strong>The disclosure pattern of §10.4 is still unsolved.</strong> This profile requires
+the third-party consequence to be stated plainly and first (§18.7); it does not
+claim that is a <em>good</em> pattern, only an honest one. <a href="../backup/UI-Backup.html">UI-Backup.md</a>
+§17 lists finding a pattern that is honest without being unusable as open work,
+and it remains open.</li>
+<li><strong>No fixtures exist yet.</strong> Until §18 is implemented on both sides, conformance
+is a claim rather than a result.</li>
+</ol>
+<h2 id="18-conformance-tests">18. Conformance tests</h2>
+<p>A conforming implementation ships fixtures for each of these. They are the
+executable content of <a href="../backup/UI-Backup.html">UI-Backup.md</a> §18.</p>
+<ol>
+<li><strong>Seal round trip.</strong> Seal, digest, upload, download, verify, open, compare.</li>
+<li><strong>Tamper.</strong> Flip one bit in any chunk; the AEAD fails and no plaintext is
+produced. Truncate; the commit fails before any state is written.</li>
+<li><strong>Non-convergence.</strong> Seal identical plaintext twice; the digests differ.</li>
+<li><strong>Padding.</strong> Two archives of substantially different length round to the same
+<code>sealedByteSize</code>, and overhead never exceeds 12%.</li>
+<li><strong>Reference discipline.</strong> An upload whose caller-supplied reference disagrees
+with the bytes is refused by the <em>client</em> before it reaches the network.</li>
+<li><strong>Terms.</strong> Pinning survives a terms change; <code>terms_changed</code> stops uploads; and
+a weakened terms document is refused on each axis independently — longer
+retention, narrowed erasure scope, added jurisdiction, added sub-processor,
+removed export path.</li>
+<li><strong>Consent surface.</strong> The rendered enrolment text contains the retention
+period, the jurisdictions, and the sentence stating that the snapshot extends
+this history's life for every participant in it. Asserted by fixture, not by
+review.</li>
+<li><strong>Restore refusal.</strong> A partial or unverified snapshot leaves local state
+untouched.</li>
+<li><strong>Eligibility.</strong> Compose over a source seeded with a known mnemonic; assert the
+seed, every one of its words, the identity key material, and any per-invite
+private keys are absent from the <em>plaintext</em> archive.</li>
+<li><strong>Proof of possession.</strong> An upload signature cannot be replayed as an erase
+signature, into another chunk index, or after the freshness window.</li>
+<li><strong>Entitlement and canonical bytes.</strong> Forged issuer, mutated field, expired
+window, wrong <code>audience</code>, wrong <code>subject</code>, and revoked id are each refused.
+Canonical-byte fixtures are <strong>byte-identical</strong> across the broker, the
+operator, and the client, and include at least one document whose keys
+distinguish UTF-8 byte order from case-insensitive and <strong>UTF-16 code-unit</strong>
+order — an uppercase-initial key, and a key above U+FFFF to catch a
+UTF-16-sorting runtime. The real documents cannot
+distinguish them (§6.3), which is exactly why the fixture must.</li>
+<li><strong>Payment loop.</strong> <code>402</code> at preflight, entitlement obtained, retry with the
+same operation id and the same bytes, <code>retained</code>.</li>
+<li><strong>Export while unpaid.</strong> A holder with zero entitlements exports successfully.</li>
+<li><strong>No reset path.</strong> The operator's route table equals §9's, and no code path
+reassigns a snapshot's holder.</li>
+<li><strong>Receipts.</strong> An erasure receipt with an empty <code>excludedScope</code> is rejected as
+malformed.</li>
+<li><strong>Metadata declaration.</strong> Every record class in §15's table appears in the
+operator's declared <code>metadataRetention</code>, asserted against the running
+operator's own storage rather than against its prose.</li>
+<li><strong>Unknown.</strong> A lost response is reconciled through <code>queryOutcome</code> and never
+rendered as <code>retained</code> or <code>erased</code>.</li>
+<li><strong>Migration.</strong> Export from one operator, upload to a second, restore — with no
+re-sealing and no digest change.</li>
+</ol>
+<h2 id="19-acceptance-criteria">19. Acceptance criteria</h2>
+<p>This profile is complete when a client and an operator built independently from
+this document alone can perform §18.18 — export from one, import to the other,
+restore on a third device holding only a recovery phrase — with byte-identical
+references throughout, and when every fixture in §18 passes on both.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="../backup/UI-Backup.html">UI-Backup.md</a> — the abstract boundary this profile implements</li>
+<li><a href="../WHITEPAPER.html">../WHITEPAPER.md</a> §16.1, §17 — channel offers, the billing
+broker, and the <code>SeatEntitlement</code> credential</li>
+<li><a href="../interface/Interface.html">../interface/Interface.md</a> §8, §13 — the eligible
+set and the error vocabulary</li>
+<li><a href="../blob/UI-Blob.html">../blob/UI-Blob.md</a> — live attachment storage, which this
+seat archives references to but never replaces</li>
+<li><a href="../recovery/Recovery-Trustee.html">../recovery/Recovery-Trustee.md</a> — where the
+access key may be protected, and what that discloses</li>
+</ul>
+
+    </div>
+    <p class="fnote">This document is maintained in the public
+      <a href="https://github.com/onymchat/onym-system">onym-system repository</a> and rendered here from a pinned commit.
+      The repository is the authoritative source — <a href="https://github.com/onymchat/onym-system/blob/main/backup/UI-Backup-Object-HTTP.md">latest version on main →</a></p>
+  </article>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="fgroups">
+      <div><span class="eyebrow">Foundation</span><a href="../../governance.html">Governance</a><a href="../../transparency.html">Transparency</a><a href="../../remediation.html">Remediation plan</a><a href="mailto:lead@onym.app">Contact</a></div>
+      <div><span class="eyebrow">Network</span><a href="https://onym.app">onym.app</a><a href="../../seats.html">Seats</a><a href="../../contracts/WHITEPAPER.html">Whitepaper</a><a href="https://github.com/onymchat/onym-system">Source repository</a></div>
+      <div><span class="eyebrow">Take a seat</span><a href="mailto:lead@onym.app?subject=Seat%20interest" data-seat="&lt;tell us which&gt;">Register interest — lead@onym.app</a></div>
+      <div><span class="eyebrow">Legal</span><a href="../../governance.html#status">Status notice</a><a href="../../governance.html#legal">Imprint</a></div>
+    </div>
+    <p class="legalline">The Onym Foundation is being formed as a sihtasutus under Estonian law. No legal entity exists yet.</p>
+  </div>
+</footer>
+<script src="../../main.js"></script>
+</body>
+</html>

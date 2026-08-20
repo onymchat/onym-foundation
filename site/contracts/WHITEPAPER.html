@@ -50,7 +50,7 @@
     <p class="mono docback"><a href="../index.html">← Foundation</a> · <a href="../seats.html">All seats</a></p>
     <header>
       <p class="eyebrow mb12">The system model</p>
-      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/0a2834180b789d0cfbe41e2ca4ce45d0e0b23aba/WHITEPAPER.md">source on GitHub →</a></div>
+      <div class="badges"><span class="tag">draft</span><span class="tag">01.08.2026</span><span class="metaline">proposed by Claude, Codex &amp; @rinat-enikeev</span><a class="metaline" href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/WHITEPAPER.md">source on GitHub →</a></div>
     </header>
     <aside class="note mt20"><b>Consistency notice:</b> Known draft conflict: this whitepaper states a 4% ordinary endowment rule, while the Foundation proposal selects 5% ordinary and 7% exceptional limits. No rule is in force; the upstream drafts must be harmonized before the Foundation accepts money. <a href="../remediation.html">Remediation plan →</a></aside>
     <div class="doc">
@@ -1099,6 +1099,11 @@ agree on a signed <code>ChannelOffer</code> containing:</p>
 <li>entitlement issuer key and relay verification method; and</li>
 <li>validity period and signatures of both commercial parties.</li>
 </ul>
+<p><a href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/settlement/ChannelOffer.md">settlement/ChannelOffer.md</a> pins these into a
+signed, content-addressed document and defines the statement and payout cycle
+that measures performance against it. Its load-bearing rule is that the share
+base is what the platform actually remits to the publisher, never the storefront
+price (§17.6).</p>
 <p>The seat defines the service model. The frontend decides whether it can offer
 that model through its distribution channel. Neither can unilaterally alter the
 signed commercial terms.</p>
@@ -1232,21 +1237,28 @@ metadata.</p>
   &quot;type&quot;: &quot;SeatEntitlement&quot;,
   &quot;issuer&quot;: &quot;onym:key:&lt;billing-broker&gt;&quot;,
   &quot;audience&quot;: &quot;onym:component:&lt;relay-id&gt;&quot;,
-  &quot;subject&quot;: &quot;onym:seat-key:&lt;scoped-public-key&gt;&quot;,
+  &quot;subject&quot;: &quot;onym:seat-key:&lt;64 lowercase hex&gt;&quot;,
   &quot;offerId&quot;: &quot;relay-monthly-v1&quot;,
   &quot;entitlementId&quot;: &quot;&lt;random-nonreusable-id&gt;&quot;,
   &quot;notBefore&quot;: &quot;2026-08-01T00:00:00Z&quot;,
   &quot;expiresAt&quot;: &quot;2026-09-01T00:00:00Z&quot;,
   &quot;quota&quot;: null,
-  &quot;status&quot;: &quot;&lt;privacy-limited-revocation-endpoint-or-epoch&gt;&quot;,
+  &quot;status&quot;: &quot;&lt;broker-signed-revocation-epoch-url&gt;&quot;,
   &quot;signature&quot;: &quot;&lt;broker-signature&gt;&quot;
 }
 </code></pre>
 <p>For a consumable, <code>quota</code> states the purchased unit and the relay keeps a
 replay-protected balance keyed by <code>entitlementId</code>. For a subscription, expiry
-and renewal state control access. Credentials should be short-lived enough to
-bound refund and revocation delay but not so short-lived that the billing broker
-can observe every relay connection.</p>
+and renewal state control access.</p>
+<p><code>status</code> is a <strong>revocation-epoch document</strong>: a broker-signed, publicly fetchable,
+unauthenticated list of the <code>entitlementId</code> values revoked and not yet expired,
+republished on a declared interval. A per-entitlement status endpoint is the
+obvious alternative and is prohibited, because a seat that checks it learns
+nothing the epoch document does not carry, while the broker learns every
+seat-to-holder session — which is exactly what §17.8 forbids. The epoch document
+also decouples revocation latency from credential lifetime: credentials can live
+long enough that the broker is contacted twice a week rather than per connection,
+while a refund still bites within one publication interval.</p>
 <p>The access key must be unique to the seat. Reusing the long-lived Nostr,
 Stellar, BLS, or association identity key would let providers correlate the
 same person across roles. A future identity capability should derive or store a
@@ -1557,8 +1569,8 @@ DeviceCheck and Google Play Integrity device recall profiles.</li>
 with retention, erasure, jurisdiction, sub-processor, export, and
 end-of-payment terms pinned at acceptance and binding forward only, no
 operator key or reset path, and the third-party retention cost disclosed
-before enrolment (<a href="backup/UI-Backup.html">backup/UI-Backup.md</a>). No
-implementation profile exists yet.</li>
+before enrolment (<a href="backup/UI-Backup.html">backup/UI-Backup.md</a>), with a drafted
+<a href="backup/UI-Backup-Object-HTTP.html">object-HTTP profile</a>.</li>
 <li>A non-custodial payment capability profile and additional financial-services
 application profiles.</li>
 <li>Group-state migration between notary deployments.</li>
@@ -1600,7 +1612,10 @@ full recovery, rotation, lapse, and incident drills.</li>
 <h3 id="phase-3-incentives">Phase 3 — incentives</h3>
 <ul>
 <li>Specify <code>ServiceManifest</code>, <code>SeatOffer</code>, <code>ChannelOffer</code>, <code>PaymentRequired</code>, and
-<code>SeatEntitlement</code> canonical formats.</li>
+<code>SeatEntitlement</code> canonical formats. <code>ChannelOffer</code> is drafted in
+<a href="https://github.com/onymchat/onym-system/blob/b2d06d4b20af4bdef2864dcbc7abba3f86b32a72/settlement/ChannelOffer.md">settlement/ChannelOffer.md</a>; <code>PaymentRequired</code>
+and the <code>SeatEntitlement</code> verification rules are drafted for the backup seat
+in <a href="backup/UI-Backup-Object-HTTP.html">backup/UI-Backup-Object-HTTP.md</a> §10.</li>
 <li>Implement NIP-42 relay authentication with <code>payment-required:</code> handling and
 relay-scoped pseudonymous keys.</li>
 <li>Implement an Apple billing broker with StoreKit transaction validation,
